@@ -73,7 +73,7 @@
 define('APPNAME', getenv("APPNAME"));
 
 define('LOCAL_URL', 'api.bambupay.local');
-define('TEST_URL', 'api-dev.bambupay.com');
+define('TEST_URL', 'dev-api.resolveitthrough.us');
 
 $localhost_url 	= LOCAL_URL;
 $environment_state = (preg_match("/\b{$localhost_url}\b/", $_SERVER['HTTP_HOST']) ? 'development' : 'production');
@@ -84,13 +84,13 @@ $environment_state = (preg_match("/\b{$testing_url}\b/", $_SERVER['HTTP_HOST']) 
 define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : $environment_state);
 
 # DATABASE GLOBAL VARIABLE
-$database = ENVIRONMENT == "production" ? getenv("DBPROD") : (ENVIRONMENT == "testing" ? getenv("DBTEST") : getenv("DBLOCAL"));
+$database = ENVIRONMENT == "production" ? getenv("DBPROD") : (ENVIRONMENT == "testing" ? getenv("DBDEV") : getenv("DBLOCAL"));
 define('DB_NAME', $database);
 
-$database_username = ENVIRONMENT == "production" ? getenv("DBPRODUSR") : (ENVIRONMENT == "testing" ? getenv("DBTESTUSR") : getenv("DBLOCALUSR"));
+$database_username = ENVIRONMENT == "production" ? getenv("DBPRODUSR") : (ENVIRONMENT == "testing" ? getenv("DBDEVUSR") : getenv("DBLOCALUSR"));
 define('DB_USERNAME', $database_username);
 
-$database_password = ENVIRONMENT == "production" ? getenv("DBPRODPWD") : (ENVIRONMENT == "testing" ? getenv("DBTESTPWD") : getenv("DBLOCALPWD"));
+$database_password = ENVIRONMENT == "production" ? getenv("DBPRODPWD") : (ENVIRONMENT == "testing" ? getenv("DBDEVPWD") : getenv("DBLOCALPWD"));
 define('DB_PWD', $database_password);
 
 /*

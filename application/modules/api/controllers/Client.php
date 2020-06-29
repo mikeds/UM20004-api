@@ -45,8 +45,7 @@ class Client extends Api_Controller {
 			if ($row_mobile == "" && $row_email == "") {
 				$message = array(
 					'error' => true, 
-					'error_description' => 'The username or password is/are incorrect!',
-					'value' => []
+					'error_description' => 'The username or password is/are incorrect!'
 				);
 
 				// bad request
@@ -122,8 +121,7 @@ class Client extends Api_Controller {
 			) {
 				$message = array(
 					'error' => true, 
-					'error_description' => 'Incomplete Fields!',
-					'value' => []
+					'error_description' => 'Incomplete Fields!'
 				);
 
 				// bad request
@@ -145,8 +143,7 @@ class Client extends Api_Controller {
 			if ($row != "") {
 				$message = array(
 					'error' => true, 
-					'error_description' => 'Username already exist!',
-					'value' => []
+					'error_description' => 'Username already exist!'
 				);
 
 				// bad request
@@ -171,8 +168,7 @@ class Client extends Api_Controller {
 
 				$message = array(
 					'error' => false, 
-					'message' => 'Succefully registred!',
-					'value' => []
+					'message' => 'Succefully registred!'
 				);
 			}
 		} else {

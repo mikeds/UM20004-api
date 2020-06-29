@@ -3,10 +3,10 @@ function force_ssl() {
 
     $host_arr = array(
         array(
-            "admin360.digitalrx.local", false 
+            DEV_URL, true 
         ),
         array(
-            "marknelpogi.com", false 
+            PROD_URL, true 
         ),
     );
 

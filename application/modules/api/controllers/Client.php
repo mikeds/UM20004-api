@@ -44,13 +44,13 @@ class Client extends Api_Controller {
 
 			if ($row_mobile == "" && $row_email == "") {
 				$message = array(
-					'error' => 'invalid_login', 
+					'error' => true, 
 					'error_description' => 'The username or password is/are incorrect!',
 					'value' => []
 				);
 
 				// bad request
-				http_response_code(400);
+				http_response_code(200);
 				echo json_encode($message);
 				die();
 			} else {
@@ -121,13 +121,13 @@ class Client extends Api_Controller {
 				$mobile_no == ""
 			) {
 				$message = array(
-					'error' => 'invalid_login', 
+					'error' => true, 
 					'error_description' => 'Incomplete Fields!',
 					'value' => []
 				);
 
 				// bad request
-				http_response_code(400);
+				http_response_code(200);
 				echo json_encode($message);
 				die();
 			}
@@ -144,13 +144,13 @@ class Client extends Api_Controller {
 
 			if ($row != "") {
 				$message = array(
-					'error' => 'invalid_login', 
+					'error' => true, 
 					'error_description' => 'Username already exist!',
 					'value' => []
 				);
 
 				// bad request
-				http_response_code(400);
+				http_response_code(200);
 				echo json_encode($message);
 				die();
 			} else {

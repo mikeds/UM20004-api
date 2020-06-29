@@ -50,7 +50,7 @@ class Client extends Api_Controller {
 				);
 
 				// bad request
-				http_response_code(400);
+				http_response_code(200);
 				echo json_encode($message);
 				die();
 			} else {
@@ -127,7 +127,7 @@ class Client extends Api_Controller {
 				);
 
 				// bad request
-				http_response_code(400);
+				http_response_code(200);
 				echo json_encode($message);
 				die();
 			}
@@ -150,7 +150,7 @@ class Client extends Api_Controller {
 				);
 
 				// bad request
-				http_response_code(400);
+				http_response_code(200);
 				echo json_encode($message);
 				die();
 			} else {

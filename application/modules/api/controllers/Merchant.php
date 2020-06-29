@@ -36,7 +36,8 @@ class Merchant extends Api_Controller {
 			if ($row == "") {
 				$message = array(
 					'error' => 'invalid_login', 
-					'error_description' => 'The username or password is/are incorrect!'
+					'error_description' => 'The username or password is/are incorrect!',
+					'value' => []
 				);
 
 				// bad request

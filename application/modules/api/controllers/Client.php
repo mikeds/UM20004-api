@@ -44,7 +44,7 @@ class Client extends Api_Controller {
 
 			if ($row_mobile == "" && $row_email == "") {
 				$message = array(
-					'error' => 'invalid_login', 
+					'error' => true, 
 					'error_description' => 'The username or password is/are incorrect!',
 					'value' => []
 				);
@@ -121,7 +121,7 @@ class Client extends Api_Controller {
 				$mobile_no == ""
 			) {
 				$message = array(
-					'error' => 'invalid_login', 
+					'error' => true, 
 					'error_description' => 'Incomplete Fields!',
 					'value' => []
 				);
@@ -144,7 +144,7 @@ class Client extends Api_Controller {
 
 			if ($row != "") {
 				$message = array(
-					'error' => 'invalid_login', 
+					'error' => true, 
 					'error_description' => 'Username already exist!',
 					'value' => []
 				);

@@ -6,6 +6,8 @@ class Client extends Api_Controller {
 	public function after_init() {
 		$this->load->library('OAuth2', 'oauth2');
 		$this->load->model('api/clients_model', 'clients');
+		$this->load->model('api/oauth_clients_model', 'oauth_clients');
+		$this->load->model('api/oauth_client_bridges_model', 'oauth_client_bridges');
 
 		$this->oauth2->get_resource();
 	}
@@ -56,6 +58,23 @@ class Client extends Api_Controller {
 
 				$row = $row_mobile != "" ? row_mobile : $row_email;
 
+				// get key and code
+				$oauth_client_row = $this->oauth_clients->get_datum(
+					'',
+					array(
+						'oauth_client_bridge_id'	=> $row->oauth_client_bridge_id,
+						'oauth_client_bridge_id !='	=> 0
+					)
+				)->row();
+
+				$key = "";
+				$code = "";
+
+				if ($oauth_client_row != "") {
+					$key = $oauth_client_row->client_id;
+					$code = $oauth_client_row->client_secret;
+				}
+
 				$value = array(
 					'first_name'		=> $row->client_fname,
 					'middle_name'		=> $row->client_mname,
@@ -63,7 +82,9 @@ class Client extends Api_Controller {
 					'ext_name'			=> $row->client_ext_name,
 					'email_address'		=> $row->client_email_address,
 					'mobile_country_code'	=> $row->client_mobile_country_code,
-					'mobile_no'				=> $row->client_mobile_no
+					'mobile_no'				=> $row->client_mobile_no,
+					'secret_key'			=> $key,
+					'secret_code'			=> $code
 				);
 
 				$message = array(
@@ -151,6 +172,14 @@ class Client extends Api_Controller {
 				echo json_encode($message);
 				die();
 			} else {
+				// create ouath client bridges
+				$bridge_id = $this->oauth_client_bridges->insert(
+					array(
+						'oauth_client_bridge_date_added'	=> $this->_today
+					)
+				);
+
+				// create user
 				$data = array(
 					'client_password'				=> $password,
 					'client_fname'					=> $fname,
@@ -159,11 +188,28 @@ class Client extends Api_Controller {
 					'client_ext_name'				=> $ext_name,
 					'client_email_address'			=> $email_address,
 					'client_mobile_country_code'	=> $mobile_country_code,
-					'client_mobile_no'				=> $mobile_no
+					'client_mobile_no'				=> $mobile_no,
+					'oauth_client_bridge_id'		=> $bridge_id
 				);
 
 				$this->clients->insert(
 					$data
+				);
+
+				$today = date("Y-m-d H:i:s");
+				$key = generate_password(19) . strtotime($today);
+				$key = hash("sha256", $key);
+
+				$code = generate_password(14) . strtotime($today);
+				$code = hash("sha256", $code);
+
+				// create secret key and secret code
+				$this->oauth_clients->insert(
+					array(
+						'client_id'					=> $key,
+						'client_secret'				=> $code,
+						'oauth_client_bridge_id'	=> $bridge_id
+					)
 				);
 
 				$message = array(

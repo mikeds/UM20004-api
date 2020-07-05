@@ -8,6 +8,7 @@ class Client extends Api_Controller {
 		$this->load->model('api/clients_model', 'clients');
 		$this->load->model('api/oauth_clients_model', 'oauth_clients');
 		$this->load->model('api/oauth_client_bridges_model', 'oauth_client_bridges');
+		$this->load->model('api/wallets_model', 'wallets');
 
 		$this->oauth2->get_resource();
 	}
@@ -58,6 +59,8 @@ class Client extends Api_Controller {
 
 				$row = $row_mobile != "" ? row_mobile : $row_email;
 
+				$client_id = $row->client_id;
+
 				// get key and code
 				$oauth_client_row = $this->oauth_clients->get_datum(
 					'',
@@ -75,6 +78,8 @@ class Client extends Api_Controller {
 					$code = $oauth_client_row->client_secret;
 				}
 
+				$wallet_address = $this->get_wallet_address($key, $code);
+
 				$value = array(
 					'first_name'		=> $row->client_fname,
 					'middle_name'		=> $row->client_mname,
@@ -83,6 +88,7 @@ class Client extends Api_Controller {
 					'email_address'		=> $row->client_email_address,
 					'mobile_country_code'	=> $row->client_mobile_country_code,
 					'mobile_no'				=> $row->client_mobile_no,
+					'wallet_address'		=> $wallet_address,
 					'secret_key'			=> $key,
 					'secret_code'			=> $code
 				);
@@ -192,7 +198,7 @@ class Client extends Api_Controller {
 					'oauth_client_bridge_id'		=> $bridge_id
 				);
 
-				$this->clients->insert(
+				$client_id = $this->clients->insert(
 					$data
 				);
 
@@ -212,6 +218,10 @@ class Client extends Api_Controller {
 					)
 				);
 
+				// create wallet address
+				$this->set_wallet_address($key, $code);
+
+				// done process
 				$message = array(
 					'error' => false, 
 					'message' => 'Succefully registred!'
@@ -226,5 +236,55 @@ class Client extends Api_Controller {
 		end:
 		echo json_encode($message);
 		die();
+	}
+
+	private function set_wallet_address($key, $code) {
+		// create client wallet
+		// combination of client primary id and client id/key
+		// $wallet_address = hash_hmac("sha256", "", $code);
+		$json = json_encode(
+			array(
+				'key'	=> $key,
+				'code'	=> $code
+			)
+		);
+
+		$wallet_address = hash_hmac("sha256", $json, $code);
+		
+		// insert new wallet
+		$this->wallets->insert(
+			array(
+				'wallet_address'	=> $wallet_address
+			)
+		);
+	}
+
+	private function get_wallet_address($key, $code) {
+		$wallet_address = "";
+
+		// create client wallet
+		// combination of client primary id and client id/key
+		// $wallet_address = hash_hmac("sha256", "", $code);
+		$json = json_encode(
+			array(
+				'key'	=> $key,
+				'code'	=> $code
+			)
+		);
+
+		$address = hash_hmac("sha256", $json, $code);
+
+		$row = $this->wallets->get_datum(
+			'',
+			array(
+				'wallet_address'	=> $address
+			)
+		)->row();
+
+		if ($row != "") {
+			$wallet_address = $row->wallet_address;
+		}
+
+		return $wallet_address;
 	}
 }

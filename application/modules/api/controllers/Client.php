@@ -58,7 +58,7 @@ class Client extends Api_Controller {
 				if ($row->client_status == 0) {
 					$message = array(
 						'error' => true, 
-						'error_description' => 'Unverified email address!'
+						'error_description' => 'Unverified account!'
 					);
 	
 					// bad request
@@ -216,8 +216,70 @@ class Client extends Api_Controller {
 		die();
 	}
 
-	public function resend_confirmation_code() {
+	public function code_confirmation() {
 		header('Content-type: application/json');
+		$message = "";
+
+		if ($_POST) {
+			$username 	= $this->input->post("username");
+			$code		= $this->input->post("code");
+
+			$row = $this->get_client($username, 0);
+
+			if ($row == "") {
+				$message = array(
+					'error' => true, 
+					'message' => 'Account already activated!'
+				);
+
+				goto end;
+			}
+
+			$client_code = $row->client_code_confirmation;
+			$date_expiration = $row->client_code_date_expiration;
+
+			if (strtoupper($code) != strtoupper($client_code)) {
+				$message = array(
+					'error' => true, 
+					'message' => 'Invalid code!'
+				);
+
+				goto end;
+			}
+
+
+			if (strtotime($date_expiration) < strtotime($this->_today)) {
+				$message = array(
+					'error' => true, 
+					'message' => 'Code is already expired!'
+				);
+
+				goto end;
+			}
+
+			$this->clients->update(
+				$row->client_id,
+				array(
+					'client_status' => 1
+				)
+			);
+
+			// success
+			$message = array(
+				'error' => false, 
+				'message' => 'Successfully activated!'
+			);
+
+			end:
+			http_response_code(200);
+			echo json_encode($message);
+			die();
+		}
+	}
+
+	public function resend_code_confirmation() {
+		header('Content-type: application/json');
+		$message = "";
 
 		if ($_POST) {
 			$username = $this->input->post("username");
@@ -235,10 +297,10 @@ class Client extends Api_Controller {
 
 			$date_expiration = $row->client_code_date_expiration;
 
-			if (strtotime($this->generate_date_expiration(5)) > strtotime($date_expiration)) {
+			if (strtotime($date_expiration) > strtotime($this->_today)) {
 				$message = array(
 					'error' => true, 
-					'message' => 'You can resend confirmation code after 5 minutes!'
+					'message' => 'You can resend confirmation code after 10 minutes!'
 				);
 
 				goto end;
@@ -254,8 +316,8 @@ class Client extends Api_Controller {
 			$this->clients->update(
 				$row->client_id,
 				array(
-					'client_confirmation_code' => $code,
-					'client_code_date_expiration' => $this->_today
+					'client_code_confirmation' => $code,
+					'client_code_date_expiration' => $this->generate_date_expiration(5) // add expiration datetime after 10 minutes
 				)
 			);
 

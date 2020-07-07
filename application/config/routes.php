@@ -62,7 +62,9 @@ $route["merchant/registration"]     = "api/Merchant/registration";
 
 $route["client/login"]                  = "api/Client/login";
 $route["client/registration"]           = "api/Client/registration";
-$route["client/resend-confirmation-code"]    = "api/Client/resend_confirmation_code";
+
+$route["client/resend-code-confirmation"]   = "api/Client/resend_code_confirmation";
+$route["client/code-confirmation"]          = "api/Client/code_confirmation";
 
 $route["client/history"]            = "api/Client_transaction/history";
 $route["client/balance"]            = "api/Client_transaction/balance";

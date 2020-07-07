@@ -179,6 +179,12 @@ class Client extends Api_Controller {
 				// create new oauth bridge
 				$bridge_id = $this->set_oauth_bridge();
 
+				// generate confirmation code
+				// update client row
+				$code = generate_code(4);
+				$code = strtoupper($code);
+				$date_expiration = $this->generate_date_expiration(10);
+
 				// create user
 				$data = array(
 					'client_password'				=> $password,
@@ -189,7 +195,9 @@ class Client extends Api_Controller {
 					'client_email_address'			=> $email_address,
 					'client_mobile_country_code'	=> $mobile_country_code,
 					'client_mobile_no'				=> $mobile_no,
-					'oauth_client_bridge_id'		=> $bridge_id
+					'oauth_client_bridge_id'		=> $bridge_id,
+					'client_code_confirmation'		=> $code,
+					'client_code_date_expiration'	=> $date_expiration
 				);
 
 				$client_id = $this->clients->insert(
@@ -317,7 +325,7 @@ class Client extends Api_Controller {
 				$row->client_id,
 				array(
 					'client_code_confirmation' => $code,
-					'client_code_date_expiration' => $this->generate_date_expiration(5) // add expiration datetime after 10 minutes
+					'client_code_date_expiration' => $this->generate_date_expiration(10) // add expiration datetime after 10 minutes
 				)
 			);
 

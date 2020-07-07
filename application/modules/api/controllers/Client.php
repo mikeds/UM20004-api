@@ -29,7 +29,6 @@ class Client extends Api_Controller {
 				array(
 					'CONCAT(client_mobile_country_code, client_mobile_no) ='	=> $username,
 					'client_password'											=> $password,
-					'client_status'												=> 1
 				)
 			)->row();
 
@@ -38,7 +37,6 @@ class Client extends Api_Controller {
 				array(
 					'client_email_address'	=> $username,
 					'client_password'		=> $password,
-					'client_status'			=> 1
 				)
 			)->row();
 
@@ -55,6 +53,32 @@ class Client extends Api_Controller {
 			} else {
 
 				$row = $row_mobile != "" ? row_mobile : $row_email;
+
+				// check if account email verified
+				if ($row->client_status == 0) {
+					$message = array(
+						'error' => true, 
+						'error_description' => 'Unverified email address!'
+					);
+	
+					// bad request
+					http_response_code(200);
+					echo json_encode($message);
+					die();
+				}
+
+				// check if account kyc verified
+				if ($row->client_kyc_status == 0) {
+					$message = array(
+						'error' => true, 
+						'error_description' => 'Unverified KYC!'
+					);
+	
+					// bad request
+					http_response_code(200);
+					echo json_encode($message);
+					die();
+				}
 
 				$client_id = $row->client_id;
 				$bridge_id = $row->oauth_client_bridge_id;

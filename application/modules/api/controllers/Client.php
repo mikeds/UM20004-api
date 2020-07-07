@@ -67,18 +67,20 @@ class Client extends Api_Controller {
 					die();
 				}
 
-				// check if account kyc verified
-				if ($row->client_kyc_status == 0) {
-					$message = array(
-						'error' => true, 
-						'error_description' => 'Unverified KYC!'
-					);
-	
-					// bad request
-					http_response_code(200);
-					echo json_encode($message);
-					die();
-				}
+				/*
+					// check if account kyc verified
+					if ($row->client_kyc_status == 0) {
+						$message = array(
+							'error' => true, 
+							'error_description' => 'Unverified KYC!'
+						);
+		
+						// bad request
+						http_response_code(200);
+						echo json_encode($message);
+						die();
+					}
+				*/
 
 				$client_id = $row->client_id;
 				$bridge_id = $row->oauth_client_bridge_id;

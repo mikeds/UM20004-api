@@ -98,6 +98,10 @@ class Api_Controller extends MX_Controller {
 	public function get_client($username) {
 		$this->load->model('api/clients_model', 'clients');
 		
+		if (is_null($username)) {
+			goto null_username;
+		}
+
 		$row_mobile = $this->clients->get_datum(
 			'',
 			array(
@@ -115,6 +119,8 @@ class Api_Controller extends MX_Controller {
 		)->row();
 
 		if ($row_mobile == "" && $row_email == "") {
+			null_username:
+
 			header('Content-type: application/json');
 
 			$message = array(

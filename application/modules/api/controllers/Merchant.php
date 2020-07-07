@@ -35,24 +35,26 @@ class Merchant extends Api_Controller {
 
 			if ($row == "") {
 				$message = array(
-					'error' => 'invalid_login', 
-					'error_description' => 'The username or password is/are incorrect!',
-					'value' => []
+					'error' => true, 
+					'error_description' => 'The username or password is/are incorrect!'
 				);
 
 				// bad request
-				http_response_code(400);
+				http_response_code(200);
 				echo json_encode($message);
 				die();
 			} else {
 				$message = array(
-					'first_name'		=> $row->merchant_fname,
-					'middle_name'		=> $row->merchant_mname,
-					'last_name'			=> $row->merchant_lname,
-					'ext_name'			=> $row->merchant_ext_name,
-					'email_address'		=> $row->merchant_email_address,
-					'mobile_country_code'	=> $row->merchant_mobile_country_code,
-					'mobile_no'				=> $row->merchant_mobile_no
+					'value'	=> 
+					array(
+						'first_name'		=> $row->merchant_fname,
+						'middle_name'		=> $row->merchant_mname,
+						'last_name'			=> $row->merchant_lname,
+						'ext_name'			=> $row->merchant_ext_name,
+						'email_address'		=> $row->merchant_email_address,
+						'mobile_country_code'	=> $row->merchant_mobile_country_code,
+						'mobile_no'				=> $row->merchant_mobile_no
+					)
 				);
 			}
 		} else {
@@ -105,12 +107,12 @@ class Merchant extends Api_Controller {
 				$mobile_no == ""
 			) {
 				$message = array(
-					'error' => 'invalid_login', 
+					'error' => true, 
 					'description' => 'Incomplete fields!'
 				);
 
 				// bad request
-				http_response_code(400);
+				http_response_code(200);
 				echo json_encode($message);
 				die();
 			}
@@ -127,15 +129,18 @@ class Merchant extends Api_Controller {
 
 			if ($row != "") {
 				$message = array(
-					'error' => 'invalid_login', 
+					'error' => true, 
 					'error_description' => 'Username already exist!'
 				);
 
 				// bad request
-				http_response_code(400);
+				http_response_code(200);
 				echo json_encode($message);
 				die();
 			} else {
+				// create new oauth bridge
+				$bridge_id = $this->set_oauth_bridge();
+
 				$data = array(
 					'merchant_password'				=> $password,
 					'merchant_fname'				=> $fname,
@@ -144,14 +149,18 @@ class Merchant extends Api_Controller {
 					'merchant_ext_name'				=> $ext_name,
 					'merchant_email_address'		=> $email_address,
 					'merchant_mobile_country_code'	=> $mobile_country_code,
-					'merchant_mobile_no'			=> $mobile_no
+					'merchant_mobile_no'			=> $mobile_no,
+					'oauth_client_bridge_id'		=> $bridge_id
 				);
 
 				$this->merchants->insert(
 					$data
 				);
 
-				$message = array('success' => true, 'message' => 'Succefully registred!');
+				// create oauth client and merchannt wallet
+				$this->set_oauth_client($bridge_id);
+
+				$message = array('error' => false, 'message' => 'Succefully registred!');
 			}
 		} else {
 			// unauthorized request

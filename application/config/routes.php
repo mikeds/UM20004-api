@@ -50,7 +50,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |		my-controller/my-method	-> my_controller/my_method
 */
 
-$route["default_controller"]    = "api/Home";
+$route["default_controller"]        = "api/Home";
 
 $route["token"]                     = "api/Token";
 
@@ -63,8 +63,9 @@ $route["merchant/registration"]     = "api/Merchant/registration";
 $route["client/login"]              = "api/Client/Login";
 $route["client/registration"]       = "api/Client/registration";
 
-$route["member/login"]              = "api/Member/Login";
-$route["member/registration"]       = "api/Member/registration";
+$route["client/cash-in"]            = "api/Client_transaction/cash_in";
+$route["client/cash-out"]           = "api/Client_transaction/cash_out";
+$route["client/send-to"]            = "api/Client_transaction/send_to";
 
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;

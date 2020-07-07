@@ -67,21 +67,6 @@ class Client extends Api_Controller {
 					die();
 				}
 
-				/*
-					// check if account kyc verified
-					if ($row->client_kyc_status == 0) {
-						$message = array(
-							'error' => true, 
-							'error_description' => 'Unverified KYC!'
-						);
-		
-						// bad request
-						http_response_code(200);
-						echo json_encode($message);
-						die();
-					}
-				*/
-
 				$client_id = $row->client_id;
 				$bridge_id = $row->oauth_client_bridge_id;
 
@@ -226,14 +211,66 @@ class Client extends Api_Controller {
 		}
 
 		end:
+		http_response_code(200);
 		echo json_encode($message);
 		die();
 	}
 
-	public function resend_verification() {
+	public function resend_confirmation_code() {
+		header('Content-type: application/json');
+
 		if ($_POST) {
 			$username = $this->input->post("username");
-			$this->send_verification($username);
+
+			$row = $this->get_client($username, 0);
+
+			if ($row == "") {
+				$message = array(
+					'error' => true, 
+					'message' => 'Unable to find username!'
+				);
+
+				goto end;
+			}
+
+			$date_expiration = $row->client_code_date_expiration;
+
+			if (strtotime($this->generate_date_expiration(5)) > strtotime($date_expiration)) {
+				$message = array(
+					'error' => true, 
+					'message' => 'You can resend confirmation code after 5 minutes!'
+				);
+
+				goto end;
+			}
+
+			$email_to = $row->client_email_address;
+
+			// generate confirmation code
+			// update client row
+			$code = generate_code(4);
+			$code = strtoupper($code);
+
+			$this->clients->update(
+				$row->client_id,
+				array(
+					'client_confirmation_code' => $code,
+					'client_code_date_expiration' => $this->_today
+				)
+			);
+
+			$data = array(
+				'code' => $code
+			);
+
+			$email_message = $this->load->view("templates/email_templates/account_verification", $data, true);;
+
+			$this->send_verification($email_to, $email_message);
+
+			end:
+			http_response_code(200);
+			echo json_encode($message);
+			die();
 		}
 	}
 }

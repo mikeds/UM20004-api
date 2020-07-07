@@ -392,40 +392,16 @@ class Api_Controller extends MX_Controller {
 		return $wallet_address;
 	}
 
-	public function generate_date_expiration() {
-		$newtimestamp = strtotime("{$this->_today} + 30 minute");
+	public function generate_date_expiration($minutes = 30) {
+		$newtimestamp = strtotime("{$this->_today} + {$minutes} minute");
 		return date('Y-m-d H:i:s', $newtimestamp);
 	}
 
-	public function send_verification($username, $acc_type = 1) {
+	public function send_verification($email_to, $email_message = "") {
 		header('Content-type: application/json');
-		$row = "";
-		$status = 0; // not account verified
 
-		if ($acc_type == 1) {
-			// client type
-			$row = $this->get_client($username, $status);
-		} else {
-			// merchant
-			$row = $this->get_merchant($username, $status);
-		}
-
-		if ($row == "") {
-			$message = array(
-				'error' => true,
-				'error_description' => "Unable to find username!"
-			);
-
-			http_response_code(200);
-			echo json_encode($message);
-			die();
-		}
-
-		/*
-		$email_from = "";
-		$email_to = "";
-		$email_subject = "";
-		$email_message = "";
+		$email_from = "no-reply@resolveitthrough.us";
+		$email_subject = "BambuPAY - Account confirmation code";
 
 		// do send email
 		// send confirmation code
@@ -433,10 +409,25 @@ class Api_Controller extends MX_Controller {
 			$email_from,
 			$email_to,
 			$email_subject,
-			$email_message
+			$email_message,
+			"BambuPAY Service"
 		)){
-			
+			$message = array(
+				'error' => true,
+				'error_description' => "Failed to send confirmation code!"
+			);
+	
+			goto end;
 		}
-		*/
+
+		$message = array(
+			'error' => false,
+			'message'	=> "Successfully resend account verification code!"
+		);
+
+		end:
+		http_response_code(200);
+		echo json_encode($message);
+		die();
 	}
 }

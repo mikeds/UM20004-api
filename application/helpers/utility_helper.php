@@ -209,7 +209,7 @@ if ( ! function_exists("generate_code"))
 		// 3 = letter
 		// $length = how many digits or characters to return.
 		// You can use any set of characters you want.
-		$possible = '0123456789abcdefghijkmnopqrstvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		//$possible = '0123456789';
 		$code = '';
 		$i = 0;

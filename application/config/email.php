@@ -3,11 +3,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $config = Array(
     'protocol'  => 'smtp',
-    'smtp_host' => 'ssl://smtp.googlemail.com',
+    'smtp_crypto'   => 'ssl',
+    'smtp_host' => 'mail.resolveitthrough.us',
     'smtp_port' => 465,
-    'smtp_user' => 'support@gmail.com',
-    'smtp_pass' => '',
-    'newline'   => "\r\n",
+    'smtp_user' => 'no-reply@resolveitthrough.us',
+    'smtp_pass' => 'YZuXrbg&gI?&',
+    'wordwrap'  => true,
     'mailtype'  => 'html', 
-    'charset'   => 'utf-8'
+    'charset'   => 'iso-8859-1'
 );

@@ -73,12 +73,13 @@
 define('APPNAME', getenv("APPNAME"));
 
 define('LOCAL_URL', 'api.bambupay.local');
-define('TEST_URL', 'dev-api.resolveitthrough.us');
+define('DEV_URL', 'dev-api.resolveitthrough.us');
+define('PROD_URL', 'api.resolveitthrough.us');
 
 $localhost_url 	= LOCAL_URL;
 $environment_state = (preg_match("/\b{$localhost_url}\b/", $_SERVER['HTTP_HOST']) ? 'development' : 'production');
 
-$testing_url	= TEST_URL;
+$testing_url	= DEV_URL;
 $environment_state = (preg_match("/\b{$testing_url}\b/", $_SERVER['HTTP_HOST']) ? 'testing' : $environment_state);
 
 define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : $environment_state);

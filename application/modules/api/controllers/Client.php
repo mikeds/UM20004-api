@@ -45,8 +45,7 @@ class Client extends Api_Controller {
 			if ($row_mobile == "" && $row_email == "") {
 				$message = array(
 					'error' => true, 
-					'error_description' => 'The username or password is/are incorrect!',
-					'value' => []
+					'error_description' => 'The username or password is/are incorrect!'
 				);
 
 				// bad request
@@ -57,6 +56,17 @@ class Client extends Api_Controller {
 
 				$row = $row_mobile != "" ? row_mobile : $row_email;
 
+				$client_id = $row->client_id;
+				$bridge_id = $row->oauth_client_bridge_id;
+
+				// get key and code
+				$oauth_key = $this->get_oauth_client($bridge_id);
+
+				$key = $oauth_key['key'];
+				$code = $oauth_key['code'];
+
+				$wallet_address = $this->get_wallet_address($key, $code);
+
 				$value = array(
 					'first_name'		=> $row->client_fname,
 					'middle_name'		=> $row->client_mname,
@@ -64,7 +74,10 @@ class Client extends Api_Controller {
 					'ext_name'			=> $row->client_ext_name,
 					'email_address'		=> $row->client_email_address,
 					'mobile_country_code'	=> $row->client_mobile_country_code,
-					'mobile_no'				=> $row->client_mobile_no
+					'mobile_no'				=> $row->client_mobile_no,
+					// 'wallet_address'		=> $wallet_address,
+					'secret_key'			=> $key,
+					'secret_code'			=> $code
 				);
 
 				$message = array(
@@ -122,8 +135,7 @@ class Client extends Api_Controller {
 			) {
 				$message = array(
 					'error' => true, 
-					'error_description' => 'Incomplete Fields!',
-					'value' => []
+					'error_description' => 'Incomplete Fields!'
 				);
 
 				// bad request
@@ -145,8 +157,7 @@ class Client extends Api_Controller {
 			if ($row != "") {
 				$message = array(
 					'error' => true, 
-					'error_description' => 'Username already exist!',
-					'value' => []
+					'error_description' => 'Username already exist!'
 				);
 
 				// bad request
@@ -154,6 +165,10 @@ class Client extends Api_Controller {
 				echo json_encode($message);
 				die();
 			} else {
+				// create new oauth bridge
+				$bridge_id = $this->set_oauth_bridge();
+
+				// create user
 				$data = array(
 					'client_password'				=> $password,
 					'client_fname'					=> $fname,
@@ -162,17 +177,20 @@ class Client extends Api_Controller {
 					'client_ext_name'				=> $ext_name,
 					'client_email_address'			=> $email_address,
 					'client_mobile_country_code'	=> $mobile_country_code,
-					'client_mobile_no'				=> $mobile_no
+					'client_mobile_no'				=> $mobile_no,
+					'oauth_client_bridge_id'		=> $bridge_id
 				);
 
-				$this->clients->insert(
+				$client_id = $this->clients->insert(
 					$data
 				);
 
+				$this->set_oauth_client($bridge_id);
+
+				// done process
 				$message = array(
 					'error' => false, 
-					'message' => 'Succefully registred!',
-					'value' => []
+					'message' => 'Succefully registred!'
 				);
 			}
 		} else {

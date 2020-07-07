@@ -21,13 +21,15 @@ class Client_transaction extends Api_Controller {
 
 		$wallet_address = $this->_client['wallet_address'];
 
+		$or_where = array(
+			'transaction_from_wallet_address' => $wallet_address,
+			'transaction_to_wallet_address' => $wallet_address
+		);
+
 		$data = $this->transactions->get_data(
 			array("*"),
 			array(),
-			array(
-				'transaction_from_wallet_address' => $wallet_address,
-				'transaction_to_wallet_address' => $wallet_address
-			),
+			$or_where,
 			array(),
 			array(
 				'filter' => "transaction_date_created",
@@ -36,6 +38,22 @@ class Client_transaction extends Api_Controller {
 			0, // offset
 			10 // limit
 		);
+
+		$data_1 = $this->transactions->get_data(
+			array("*"),
+			array(),
+			$or_where,
+			array(),
+			array(
+				'filter' => "transaction_date_created",
+				'sort' => "ASC"
+			),
+			0, // offset
+			1 // limit
+		);
+
+		$last_data = isset($data_1[0]) ? $data_1[0] : NULL;
+		$last_transaction_id = is_null($last_data) ? NULL : floatval($last_data['transaction_id']);
 		
 		$results = array();
 
@@ -47,9 +65,10 @@ class Client_transaction extends Api_Controller {
 			$amount = floatval($amount);
 
 			$results[] = array(
+				'transaction_id'	=> floatval($datum['transaction_id']),
+				'transaction_number' => strtoupper($datum['transaction_number']),
 				'status' 			=> $status,
 				'type'				=> $type,
-				'transaction_numer' => strtoupper($datum['transaction_number']),
 				'amount'			=> $amount,
 				'date'				=> $datum['transaction_date_created'],
 				'date_expiration'	=> $datum['transaction_date_expiration'],
@@ -58,7 +77,10 @@ class Client_transaction extends Api_Controller {
 
 		$message = array(
 			'value' => 
-			$results
+			array(
+				'last_transaction_id'	=> $last_transaction_id,
+				'history'	=> $results
+			)
 		);
 
 		echo json_encode($message);

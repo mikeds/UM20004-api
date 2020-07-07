@@ -63,6 +63,8 @@ $route["merchant/registration"]     = "api/Merchant/registration";
 $route["client/login"]              = "api/Client/Login";
 $route["client/registration"]       = "api/Client/registration";
 
+$route["client/balance"]            = "api/Client_transaction/balance";
+
 $route["client/cash-in"]            = "api/Client_transaction/cash_in";
 $route["client/cash-out"]           = "api/Client_transaction/cash_out";
 $route["client/send-to"]            = "api/Client_transaction/send_to";

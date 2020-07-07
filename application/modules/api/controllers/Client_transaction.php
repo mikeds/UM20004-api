@@ -14,6 +14,38 @@ class Client_transaction extends Api_Controller {
 
 		$this->oauth2->get_resource();
 		$this->_client = $this->get_client_access();
+		
+	}
+
+	public function balance() {
+		header('Content-type: application/json');
+
+		$wallet_address = $this->_client['wallet_address'];
+
+		$wallet_row = $this->wallets->get_datum(
+			'',
+			array(
+				'wallet_address' => $wallet_address
+			)
+		)->row();
+
+		if ($wallet_row == "") {
+			// unauthorized request
+			http_response_code(401);
+			die();
+		}
+
+		$message = array(
+			'value' => 
+			array(
+				'balance' => $wallet_row->wallet_balance,
+				'hold_balance'	=> $wallet_row->wallet_holding_balance
+			)
+		);
+
+		echo json_encode($message);
+		http_response_code(200);
+		die();
 	}
 
 	public function cash_in() {
@@ -30,16 +62,6 @@ class Client_transaction extends Api_Controller {
 
 	private function make_transaction($type) {
 		header('Content-type: application/json');
-
-		if (empty($this->_client)) {
-			// invalid wallet address
-			$message = array(
-				'error' => true, 
-				'error_description' => 'Wallet address is error!'
-			);
-
-			goto end;
-		}
 
 		$message = "";
 		$wallet_address = $this->_client['wallet_address'];

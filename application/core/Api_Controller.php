@@ -95,7 +95,7 @@ class Api_Controller extends MX_Controller {
 		);
 	}
 
-	public function get_client($username) {
+	public function get_client($username, $status = 1) {
 		$this->load->model('api/clients_model', 'clients');
 		
 		if (is_null($username)) {
@@ -106,7 +106,7 @@ class Api_Controller extends MX_Controller {
 			'',
 			array(
 				'CONCAT(client_mobile_country_code, client_mobile_no) ='	=> $username,
-				'client_status'												=> 1
+				'client_status'												=> $status
 			)
 		)->row();
 
@@ -114,7 +114,7 @@ class Api_Controller extends MX_Controller {
 			'',
 			array(
 				'client_email_address'	=> $username,
-				'client_status'			=> 1
+				'client_status'			=> $status
 			)
 		)->row();
 
@@ -136,7 +136,7 @@ class Api_Controller extends MX_Controller {
 		return $row_mobile != "" ? row_mobile : $row_email;
 	}
 
-	public function get_merchant($username) {
+	public function get_merchant($username, $status = 1) {
 		$this->load->model('api/merchants_model', 'merchants');
 		
 		if (is_null($username)) {
@@ -147,7 +147,7 @@ class Api_Controller extends MX_Controller {
 			'',
 			array(
 				'CONCAT(merchant_mobile_country_code, merchant_mobile_no) ='	=> $username,
-				'merchant_status'												=> 1
+				'merchant_status'												=> $status
 			)
 		)->row();
 
@@ -155,7 +155,7 @@ class Api_Controller extends MX_Controller {
 			'',
 			array(
 				'merchant_email_address'	=> $username,
-				'merchant_status'			=> 1
+				'merchant_status'			=> $status
 			)
 		)->row();
 
@@ -400,13 +400,14 @@ class Api_Controller extends MX_Controller {
 	public function send_verification($username, $acc_type = 1) {
 		header('Content-type: application/json');
 		$row = "";
+		$status = 0; // not account verified
 
 		if ($acc_type == 1) {
 			// client type
-			$row = $this->get_client($username);
+			$row = $this->get_client($username, $status);
 		} else {
 			// merchant
-			$row = $this->get_merchant($username);
+			$row = $this->get_merchant($username, $status);
 		}
 
 		if ($row == "") {

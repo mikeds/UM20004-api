@@ -229,4 +229,11 @@ class Client extends Api_Controller {
 		echo json_encode($message);
 		die();
 	}
+
+	public function resend_verification() {
+		if ($_POST) {
+			$username = $this->input->post("username");
+			$this->send_verification($username);
+		}
+	}
 }

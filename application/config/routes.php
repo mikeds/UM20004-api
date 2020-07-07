@@ -60,8 +60,9 @@ $route["device/registration"]       = "api/Device/registration";
 $route["merchant/login"]            = "api/Merchant/Login";
 $route["merchant/registration"]     = "api/Merchant/registration";
 
-$route["client/login"]              = "api/Client/Login";
-$route["client/registration"]       = "api/Client/registration";
+$route["client/login"]                  = "api/Client/login";
+$route["client/registration"]           = "api/Client/registration";
+$route["client/resend-verification"]    = "api/Client/resend_verification";
 
 $route["client/history"]            = "api/Client_transaction/history";
 $route["client/balance"]            = "api/Client_transaction/balance";

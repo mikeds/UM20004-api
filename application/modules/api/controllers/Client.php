@@ -58,20 +58,7 @@ class Client extends Api_Controller {
 				if ($row->client_status == 0) {
 					$message = array(
 						'error' => true, 
-						'error_description' => 'Unverified email address!'
-					);
-	
-					// bad request
-					http_response_code(200);
-					echo json_encode($message);
-					die();
-				}
-
-				// check if account kyc verified
-				if ($row->client_kyc_status == 0) {
-					$message = array(
-						'error' => true, 
-						'error_description' => 'Unverified KYC!'
+						'error_description' => 'Unverified account!'
 					);
 	
 					// bad request
@@ -192,6 +179,12 @@ class Client extends Api_Controller {
 				// create new oauth bridge
 				$bridge_id = $this->set_oauth_bridge();
 
+				// generate confirmation code
+				// update client row
+				$code = generate_code(4);
+				$code = strtoupper($code);
+				$date_expiration = $this->generate_date_expiration(10);
+
 				// create user
 				$data = array(
 					'client_password'				=> $password,
@@ -202,7 +195,9 @@ class Client extends Api_Controller {
 					'client_email_address'			=> $email_address,
 					'client_mobile_country_code'	=> $mobile_country_code,
 					'client_mobile_no'				=> $mobile_no,
-					'oauth_client_bridge_id'		=> $bridge_id
+					'oauth_client_bridge_id'		=> $bridge_id,
+					'client_code_confirmation'		=> $code,
+					'client_code_date_expiration'	=> $date_expiration
 				);
 
 				$client_id = $this->clients->insert(
@@ -224,7 +219,128 @@ class Client extends Api_Controller {
 		}
 
 		end:
+		http_response_code(200);
 		echo json_encode($message);
 		die();
+	}
+
+	public function code_confirmation() {
+		header('Content-type: application/json');
+		$message = "";
+
+		if ($_POST) {
+			$username 	= $this->input->post("username");
+			$code		= $this->input->post("code");
+
+			$row = $this->get_client($username, 0);
+
+			if ($row == "") {
+				$message = array(
+					'error' => true, 
+					'message' => 'Account already activated!'
+				);
+
+				goto end;
+			}
+
+			$client_code = $row->client_code_confirmation;
+			$date_expiration = $row->client_code_date_expiration;
+
+			if (strtoupper($code) != strtoupper($client_code)) {
+				$message = array(
+					'error' => true, 
+					'message' => 'Invalid code!'
+				);
+
+				goto end;
+			}
+
+
+			if (strtotime($date_expiration) < strtotime($this->_today)) {
+				$message = array(
+					'error' => true, 
+					'message' => 'Code is already expired!'
+				);
+
+				goto end;
+			}
+
+			$this->clients->update(
+				$row->client_id,
+				array(
+					'client_status' => 1
+				)
+			);
+
+			// success
+			$message = array(
+				'error' => false, 
+				'message' => 'Successfully activated!'
+			);
+
+			end:
+			http_response_code(200);
+			echo json_encode($message);
+			die();
+		}
+	}
+
+	public function resend_code_confirmation() {
+		header('Content-type: application/json');
+		$message = "";
+
+		if ($_POST) {
+			$username = $this->input->post("username");
+
+			$row = $this->get_client($username, 0);
+
+			if ($row == "") {
+				$message = array(
+					'error' => true, 
+					'message' => 'Unable to find username!'
+				);
+
+				goto end;
+			}
+
+			$date_expiration = $row->client_code_date_expiration;
+
+			if (strtotime($date_expiration) > strtotime($this->_today)) {
+				$message = array(
+					'error' => true, 
+					'message' => 'You can resend confirmation code after 10 minutes!'
+				);
+
+				goto end;
+			}
+
+			$email_to = $row->client_email_address;
+
+			// generate confirmation code
+			// update client row
+			$code = generate_code(4);
+			$code = strtoupper($code);
+
+			$this->clients->update(
+				$row->client_id,
+				array(
+					'client_code_confirmation' => $code,
+					'client_code_date_expiration' => $this->generate_date_expiration(10) // add expiration datetime after 10 minutes
+				)
+			);
+
+			$data = array(
+				'code' => $code
+			);
+
+			$email_message = $this->load->view("templates/email_templates/account_verification", $data, true);;
+
+			$this->send_verification($email_to, $email_message);
+
+			end:
+			http_response_code(200);
+			echo json_encode($message);
+			die();
+		}
 	}
 }

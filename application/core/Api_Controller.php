@@ -95,7 +95,7 @@ class Api_Controller extends MX_Controller {
 		);
 	}
 
-	public function get_client($username) {
+	public function get_client($username, $status = 1) {
 		$this->load->model('api/clients_model', 'clients');
 		
 		if (is_null($username)) {
@@ -106,7 +106,7 @@ class Api_Controller extends MX_Controller {
 			'',
 			array(
 				'CONCAT(client_mobile_country_code, client_mobile_no) ='	=> $username,
-				'client_status'												=> 1
+				'client_status'												=> $status
 			)
 		)->row();
 
@@ -114,7 +114,7 @@ class Api_Controller extends MX_Controller {
 			'',
 			array(
 				'client_email_address'	=> $username,
-				'client_status'			=> 1
+				'client_status'			=> $status
 			)
 		)->row();
 
@@ -136,14 +136,18 @@ class Api_Controller extends MX_Controller {
 		return $row_mobile != "" ? row_mobile : $row_email;
 	}
 
-	public function get_merchant($username) {
+	public function get_merchant($username, $status = 1) {
 		$this->load->model('api/merchants_model', 'merchants');
 		
+		if (is_null($username)) {
+			goto null_username;
+		}
+
 		$row_mobile = $this->merchants->get_datum(
 			'',
 			array(
 				'CONCAT(merchant_mobile_country_code, merchant_mobile_no) ='	=> $username,
-				'merchant_status'												=> 1
+				'merchant_status'												=> $status
 			)
 		)->row();
 
@@ -151,12 +155,23 @@ class Api_Controller extends MX_Controller {
 			'',
 			array(
 				'merchant_email_address'	=> $username,
-				'merchant_status'			=> 1
+				'merchant_status'			=> $status
 			)
 		)->row();
 
 		if ($row_mobile == "" && $row_email == "") {
-			return false;
+			null_username:
+
+			header('Content-type: application/json');
+
+			$message = array(
+				'error' => true,
+				'error_description' => "Unable to find merchant!"
+			);
+
+			http_response_code(200);
+			echo json_encode($message);
+			die();
 		}
 
 		return $row_mobile != "" ? row_mobile : $row_email;
@@ -377,8 +392,42 @@ class Api_Controller extends MX_Controller {
 		return $wallet_address;
 	}
 
-	public function generate_date_expiration() {
-		$newtimestamp = strtotime("{$this->_today} + 30 minute");
+	public function generate_date_expiration($minutes = 30) {
+		$newtimestamp = strtotime("{$this->_today} + {$minutes} minute");
 		return date('Y-m-d H:i:s', $newtimestamp);
+	}
+
+	public function send_verification($email_to, $email_message = "") {
+		header('Content-type: application/json');
+
+		$email_from = "no-reply@resolveitthrough.us";
+		$email_subject = "BambuPAY - Account confirmation code";
+
+		// do send email
+		// send confirmation code
+		if (!send_email(
+			$email_from,
+			$email_to,
+			$email_subject,
+			$email_message,
+			"BambuPAY Service"
+		)){
+			$message = array(
+				'error' => true,
+				'error_description' => "Failed to send confirmation code!"
+			);
+	
+			goto end;
+		}
+
+		$message = array(
+			'error' => false,
+			'message'	=> "Successfully resend account verification code!"
+		);
+
+		end:
+		http_response_code(200);
+		echo json_encode($message);
+		die();
 	}
 }

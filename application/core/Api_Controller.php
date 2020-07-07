@@ -44,6 +44,57 @@ class Api_Controller extends MX_Controller {
 		return $token_row;
 	}
 
+	public function get_user_by_wallet_address($wallet_address) {
+		
+	}
+
+	public function get_client_access() {
+		$token_row = $this->get_token();
+
+		if (!$token_row) {
+			// invalid token
+			// unauthorized request
+			http_response_code(401);
+			die();
+		}
+
+		$oauth_client_id = $token_row->client_id;
+
+		$oauth_client_row = $this->get_oauth_client_by_id($oauth_client_id);
+
+		if (!$oauth_client_row) {
+			// unauthorized request
+			http_response_code(401);
+			die();
+		}
+
+		$bridge_id = $oauth_client_row->oauth_client_bridge_id;
+
+		$client_row = $this->get_client_by_bridge_id($bridge_id);
+
+		if (!$client_row) {
+			// unauthorized request
+			http_response_code(401);
+			die();
+		}
+
+		$key = $oauth_client_row->client_id;
+		$code = $oauth_client_row->client_secret;
+
+		$wallet_address = $this->get_wallet_address($key, $code);
+
+		if ($wallet_address == "") {
+			// unauthorized request
+			http_response_code(401);
+			die();
+		}
+
+		return array(
+			'client_row' 		=> $client_row,
+			'wallet_address'	=> $wallet_address
+		);
+	}
+
 	public function get_client($username) {
 		$this->load->model('api/clients_model', 'clients');
 		

@@ -14,7 +14,84 @@ class Client_transaction extends Api_Controller {
 
 		$this->oauth2->get_resource();
 		$this->_client = $this->get_client_access();
+	}
+
+	public function history() {
+		header('Content-type: application/json');
+
+		$wallet_address = $this->_client['wallet_address'];
+
+		$data = $this->transactions->get_data(
+			array("*"),
+			array(),
+			array(
+				'transaction_from_wallet_address' => $wallet_address,
+				'transaction_to_wallet_address' => $wallet_address
+			),
+			array(),
+			array(
+				'filter' => "transaction_date_created",
+				'sort' => "DESC"
+			),
+			0, // offset
+			10 // limit
+		);
 		
+		$results = array();
+
+		foreach ($data as $datum) {
+			$type = $this->get_transaction_type($datum['transaction_type_id']);
+			$status = $this->get_transaction_status($datum['transaction_status']);
+
+			$amount = $datum['transaction_amount'];
+			$amount = floatval($amount);
+
+			$results[] = array(
+				'status' 			=> $status,
+				'type'				=> $type,
+				'transaction_numer' => strtoupper($datum['transaction_number']),
+				'amount'			=> $amount,
+				'date'				=> $datum['transaction_date_created'],
+				'date_expiration'	=> $datum['transaction_date_expiration'],
+			);
+		}
+
+		$message = array(
+			'value' => 
+			$results
+		);
+
+		echo json_encode($message);
+		http_response_code(200);
+		die();
+	}
+
+	private function get_transaction_status($status_id) {
+		$status = "";
+
+		if ($status_id == 0) {
+			$status = "pending";
+		} else if ($status_id == 1) {
+			$status = "approved";
+		} else if ($status_id == 2) {
+			$status = "cancelled";
+		}
+
+		return $status;
+	}
+
+	private function get_transaction_type($type_id) {
+		$type = "";
+
+		if ($type_id == 1) {
+			$type = "cash_in";
+		} else if ($type_id == 2) {
+			$type = "cash_out";
+		} else if ($type_id == 3) {
+			$type = "transfer";
+		}
+
+		return $type;
 	}
 
 	public function balance() {
@@ -313,52 +390,5 @@ class Client_transaction extends Api_Controller {
 		}
 
 		return $merchant_wallet_address;
-	}
-
-	private function get_client_access() {
-		$token_row = $this->get_token();
-
-		if (!$token_row) {
-			// invalid token
-			// unauthorized request
-			http_response_code(401);
-			die();
-		}
-
-		$oauth_client_id = $token_row->client_id;
-
-		$oauth_client_row = $this->get_oauth_client_by_id($oauth_client_id);
-
-		if (!$oauth_client_row) {
-			// unauthorized request
-			http_response_code(401);
-			die();
-		}
-
-		$bridge_id = $oauth_client_row->oauth_client_bridge_id;
-
-		$client_row = $this->get_client_by_bridge_id($bridge_id);
-
-		if (!$client_row) {
-			// unauthorized request
-			http_response_code(401);
-			die();
-		}
-
-		$key = $oauth_client_row->client_id;
-		$code = $oauth_client_row->client_secret;
-
-		$wallet_address = $this->get_wallet_address($key, $code);
-
-		if ($wallet_address == "") {
-			// unauthorized request
-			http_response_code(401);
-			die();
-		}
-
-		return array(
-			'client_row' 		=> $client_row,
-			'wallet_address'	=> $wallet_address
-		);
 	}
 }

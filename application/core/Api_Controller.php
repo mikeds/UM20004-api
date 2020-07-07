@@ -139,6 +139,10 @@ class Api_Controller extends MX_Controller {
 	public function get_merchant($username) {
 		$this->load->model('api/merchants_model', 'merchants');
 		
+		if (is_null($username)) {
+			goto null_username;
+		}
+
 		$row_mobile = $this->merchants->get_datum(
 			'',
 			array(
@@ -156,7 +160,18 @@ class Api_Controller extends MX_Controller {
 		)->row();
 
 		if ($row_mobile == "" && $row_email == "") {
-			return false;
+			null_username:
+
+			header('Content-type: application/json');
+
+			$message = array(
+				'error' => true,
+				'error_description' => "Unable to find merchant!"
+			);
+
+			http_response_code(200);
+			echo json_encode($message);
+			die();
 		}
 
 		return $row_mobile != "" ? row_mobile : $row_email;
@@ -380,5 +395,47 @@ class Api_Controller extends MX_Controller {
 	public function generate_date_expiration() {
 		$newtimestamp = strtotime("{$this->_today} + 30 minute");
 		return date('Y-m-d H:i:s', $newtimestamp);
+	}
+
+	public function send_verification($username, $acc_type = 1) {
+		header('Content-type: application/json');
+		$row = "";
+
+		if ($acc_type == 1) {
+			// client type
+			$row = $this->get_client($username);
+		} else {
+			// merchant
+			$row = $this->get_merchant($username);
+		}
+
+		if ($row == "") {
+			$message = array(
+				'error' => true,
+				'error_description' => "Unable to find username!"
+			);
+
+			http_response_code(200);
+			echo json_encode($message);
+			die();
+		}
+
+		/*
+		$email_from = "";
+		$email_to = "";
+		$email_subject = "";
+		$email_message = "";
+
+		// do send email
+		// send confirmation code
+		if (!send_email(
+			$email_from,
+			$email_to,
+			$email_subject,
+			$email_message
+		)){
+			
+		}
+		*/
 	}
 }

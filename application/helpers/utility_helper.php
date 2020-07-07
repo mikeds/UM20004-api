@@ -1188,25 +1188,23 @@ if (! function_exists('generate_password')){
 
 if (! function_exists('send_email')){
 
-	function send_email($email_to = "", $subject = "", $message = "", $alias = "Support"){
+	function send_email($email_from, $email_to = "", $subject = "", $message = "", $alias = "Support"){
 		$CI =& get_instance();
 		$CI->load->library('email'); // load the library 
 		
 		$CI->email->clear();
  
-	  	$CI->email->from('btmgsupp@gmail.com', $alias);
+	  	$CI->email->from($email_from, $alias);
 	  	$CI->email->to($email_to);
 	  	$CI->email->subject($subject);
 
 	  	$CI->email->message($message);
 	   
 		if($CI->email->send()) {
-			return TRUE;
+			return true;
 		} else {
-			die();
-			return FALSE;
-		}	
-
+			return false;
+		}
 	}
 }
 

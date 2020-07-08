@@ -73,6 +73,7 @@ $route["client/cash-in"]            = "api/Client_transaction/cash_in";
 $route["client/cash-out"]           = "api/Client_transaction/cash_out";
 $route["client/send-to"]            = "api/Client_transaction/send_to";
 
+$route["transaction/qr-code-(:any)"]    = "api/Qr_code/index/$1";      
 
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;

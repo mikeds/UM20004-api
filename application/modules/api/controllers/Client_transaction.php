@@ -64,9 +64,12 @@ class Client_transaction extends Api_Controller {
 			$amount = $datum['transaction_amount'];
 			$amount = floatval($amount);
 
+			$transaction_number = $datum['transaction_number'];
+
 			$results[] = array(
 				'transaction_id'	=> floatval($datum['transaction_id']),
-				'transaction_number' => strtoupper($datum['transaction_number']),
+				'transaction_number' => strtoupper($transaction_number),
+				'transactionn_qr_code'	=> base_url() . "transaction/qr-code-{$transaction_number}",
 				'status' 			=> $status,
 				'type'				=> $type,
 				'amount'			=> $amount,
@@ -341,6 +344,7 @@ class Client_transaction extends Api_Controller {
 				array_merge(
 					array(
 						'transaction_number'	=> strtoupper($transaction_number),
+						'transactionn_qr_code'	=> base_url() . "transaction/qr-code-{$transaction_number}"
 					),
 					$message_data,
 					array(

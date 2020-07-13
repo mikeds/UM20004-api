@@ -23,9 +23,11 @@ class Api_Controller extends MX_Controller {
 
 	public function JSON_POST() {
 		$content_type = $this->input->get_request_header('Content-Type', TRUE);
-		if ($content_type == "application/json") {
+		$json = "application/json";
+		
+		if (preg_match("/\bjson\b/", $content_type)) {
 			return true;
-		} 
+		}
 
 		return false;
 	}

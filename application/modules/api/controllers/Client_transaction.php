@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Client_transaction extends Api_Controller {
 	private
 		$_client = NULL,
-		$_limit = 5;
+		$_limit = 10;
 
 	public function after_init() {
 		$this->load->library('OAuth2', 'oauth2');

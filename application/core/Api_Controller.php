@@ -21,6 +21,15 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function JSON_POST() {
+		$content_type = $this->input->get_request_header('Content-Type', TRUE);
+		if ($content_type == "application/json") {
+			return true;
+		} 
+
+		return false;
+	}
+
 	public function get_token() {
 		$this->load->model('api/tokens_model', 'tokens');
 

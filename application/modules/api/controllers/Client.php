@@ -17,11 +17,16 @@ class Client extends Api_Controller {
 			- Token Bearer - from device auth
 		*/
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
+
 		$message = "";
 
-		if ($_POST) {
-			$username = $this->input->post("username");
-			$password = $this->input->post("password");
+		if ($this->JSON_POST()) {
+			$username = isset($post["username"]) ? $post["username"] : "";
+			$password = isset($post["password"]) ? $post["password"] : "";
+			// $username = $this->input->post("username");
+			// $password = $this->input->post("password");
+
 			$password = hash("sha256", $password);
 
 			$row_mobile = $this->clients->get_datum(
@@ -120,20 +125,31 @@ class Client extends Api_Controller {
 		*/
 
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
 		$message = "";
 
-		if ($_POST) {
-			$password 	= null_to_empty($this->input->post("password"));
+		if ($this->JSON_POST()) {
+			$password = isset($post["password"]) ? $post["password"] : "";
+			// $password = $this->input->post("password");
+
+			$password 	= null_to_empty($password);
 			$password 	= hash("sha256", $password);
 
-			$fname 			= null_to_empty($this->input->post("first_name"));
-			$mname 			= null_to_empty($this->input->post("middle_name"));
-			$lname 			= null_to_empty($this->input->post("last_name"));
-			$ext_name 		= null_to_empty($this->input->post("ext_name"));
-			$email_address 	= null_to_empty($this->input->post("email_address"));
+			$first_name = isset($post["first_name"]) ? $post["first_name"] : "";
+			$middle_name = isset($post["middle_name"]) ? $post["middle_name"] : "";
+			$last_name = isset($post["last_name"]) ? $post["last_name"] : "";
+			$ext_name = isset($post["ext_name"]) ? $post["ext_name"] : "";
+			$email_address = isset($post["email_address"]) ? $post["email_address"] : "";
+			// $fname 			= null_to_empty($this->input->post("first_name"));
+			// $mname 			= null_to_empty($this->input->post("middle_name"));
+			// $lname 			= null_to_empty($this->input->post("last_name"));
+			// $ext_name 		= null_to_empty($this->input->post("ext_name"));
+			// $email_address 	= null_to_empty($this->input->post("email_address"));
 			
-			$mobile_country_code 	= null_to_empty($this->input->post("mobile_country_code"));
-			$mobile_no 				= null_to_empty($this->input->post("mobile_no"));
+			$mobile_country_code = isset($post["mobile_country_code"]) ? $post["mobile_country_code"] : "";
+			$mobile_no = isset($post["mobile_no"]) ? $post["mobile_no"] : "";
+			// $mobile_country_code 	= null_to_empty($this->input->post("mobile_country_code"));
+			// $mobile_no 				= null_to_empty($this->input->post("mobile_no"));
 
 			$username = $mobile_country_code . $mobile_no;
 
@@ -226,11 +242,14 @@ class Client extends Api_Controller {
 
 	public function code_confirmation() {
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
 		$message = "";
 
-		if ($_POST) {
-			$username 	= $this->input->post("username");
-			$code		= $this->input->post("code");
+		if ($this->JSON_POST()) {
+			$username = isset($post["username"]) ? $post["username"] : "";
+			$code = isset($post["code"]) ? $post["code"] : "";
+			// $username 	= $this->input->post("username");
+			// $code		= $this->input->post("code");
 
 			$row = $this->get_client($username, 0);
 
@@ -287,10 +306,12 @@ class Client extends Api_Controller {
 
 	public function resend_code_confirmation() {
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
 		$message = "";
 
-		if ($_POST) {
-			$username = $this->input->post("username");
+		if ($this->JSON_POST()) {
+			$username = isset($post["username"]) ? $post["username"] : "";
+			// $username = $this->input->post("username");
 
 			$row = $this->get_client($username, 0);
 

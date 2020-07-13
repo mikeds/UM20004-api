@@ -136,6 +136,7 @@ class Client_transaction extends Api_Controller {
 
 	private function make_transaction($type) {
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
 
 		$message = "";
 		$wallet_address = $this->_client['wallet_address'];
@@ -145,8 +146,9 @@ class Client_transaction extends Api_Controller {
 		$status = 0;
 		$message_data = array();
 
-		if ($_POST) {
-			$amount		= $this->input->post("amount");
+		if ($this->JSON_POST()) {
+			$amount = isset($post["amount"]) ? $post["amount"] : "";
+			// $amount		= $this->input->post("amount");
 
 			if (!is_numeric($amount)) {
 				$message = array(
@@ -160,7 +162,9 @@ class Client_transaction extends Api_Controller {
 			$amount = floatval($amount);
 
 			if ($type == "cash_in" || $type == "cash_out") {
-				$merchant		= $this->input->post("merchant");
+				$merchant = isset($post["merchant"]) ? $post["merchant"] : "";
+				// $merchant		= $this->input->post("merchant");
+
 				$message_data = array(
 					'merchant'	=> $merchant
 				);
@@ -187,7 +191,9 @@ class Client_transaction extends Api_Controller {
 					$to_wallet_address = $merchant_wallet_address; // merchant
 				}
 			} else if ($type == "send_to") {
-				$send_to	= $this->input->post("send_to");
+				$send_to = isset($post["send_to"]) ? $post["send_to"] : "";
+				// $send_to	= $this->input->post("send_to");
+
 				$type_id 	= 3;
 
 				// get to client row
@@ -269,7 +275,8 @@ class Client_transaction extends Api_Controller {
 						'hold_balance'	=> $new_holding_balance
 					);
 				} else if ($type_id == 3) {
-					$send_to		= $this->input->post("send_to");
+					$send_to = isset($post["send_to"]) ? $post["send_to"] : "";
+					// $send_to	= $this->input->post("send_to");
 
 					// update status to approved automatically
 					$status = 1;

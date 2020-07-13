@@ -9,7 +9,7 @@
  * @author: Marknel Pineda<marknel.pineda23@gmail.com>
  * @date created: 05/14/2013 5:33 PM
  */
- 
+
 // ------------------------------------------------------------------------
 /** 
  * Get header Authorization

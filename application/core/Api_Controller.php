@@ -441,4 +441,11 @@ class Api_Controller extends MX_Controller {
 		echo json_encode($message);
 		die();
 	}
+
+	public function get_pagination_offset($page = 1, $limit = 10, $num_rows = 10) {
+		$page 	= ($page < 1 ? 1 : $page);
+		$offset = ($page - 1) * $limit;
+		$offset = ($offset >= $num_rows && $page == 1 ? 0 : $offset);
+		return $offset;
+	}
 }

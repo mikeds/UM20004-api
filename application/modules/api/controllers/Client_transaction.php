@@ -3,7 +3,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Client_transaction extends Api_Controller {
 	private
-		$_client = NULL;
+		$_client = NULL,
+		$_limit = 5;
 
 	public function after_init() {
 		$this->load->library('OAuth2', 'oauth2');
@@ -16,33 +17,41 @@ class Client_transaction extends Api_Controller {
 		$this->_client = $this->get_client_access();
 	}
 
-	public function history() {
+	public function history($page = 1) {
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
+
+		$limit = isset($post["limit"]) ? $post["limit"] : $this->_limit;
 
 		$wallet_address = $this->_client['wallet_address'];
 
-		$or_where = array(
-			'transaction_from_wallet_address' => $wallet_address,
-			'transaction_to_wallet_address' => $wallet_address
+		$where = array(
+			'transaction_requested_by' => $wallet_address
 		);
+
+		$total_rows = $this->transactions->get_count(
+			$where
+		);
+		
+		$offset = $this->get_pagination_offset($page, $limit, $total_rows);
 
 		$data = $this->transactions->get_data(
 			array("*"),
+			$where,
 			array(),
-			$or_where,
 			array(),
 			array(
 				'filter' => "transaction_date_created",
 				'sort' => "DESC"
 			),
-			0, // offset
-			10 // limit
+			$offset, // offset
+			$limit // limit
 		);
 
 		$data_1 = $this->transactions->get_data(
 			array("*"),
+			$where,
 			array(),
-			$or_where,
 			array(),
 			array(
 				'filter' => "transaction_date_created",

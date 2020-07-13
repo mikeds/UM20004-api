@@ -67,6 +67,7 @@ $route["client/resend-code-confirmation"]   = "api/Client/resend_code_confirmati
 $route["client/code-confirmation"]          = "api/Client/code_confirmation";
 
 $route["client/history"]            = "api/Client_transaction/history";
+$route["client/history/(:num)"]     = "api/Client_transaction/history/$1";
 $route["client/balance"]            = "api/Client_transaction/balance";
 
 $route["client/cash-in"]            = "api/Client_transaction/cash_in";

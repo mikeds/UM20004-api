@@ -70,9 +70,9 @@ class Api_Controller extends MX_Controller {
 
 		$bridge_id = $oauth_client_row->oauth_client_bridge_id;
 
-		$client_row = $this->get_client_by_bridge_id($bridge_id);
+		$row = $this->get_client_by_bridge_id($bridge_id);
 
-		if (!$client_row) {
+		if (!$row) {
 			// unauthorized request
 			http_response_code(401);
 			die();
@@ -90,7 +90,7 @@ class Api_Controller extends MX_Controller {
 		}
 
 		return array(
-			'client_row' 		=> $client_row,
+			'client_row' 		=> $row,
 			'wallet_address'	=> $wallet_address
 		);
 	}
@@ -133,7 +133,7 @@ class Api_Controller extends MX_Controller {
 			die();
 		}
 
-		return $row_mobile != "" ? row_mobile : $row_email;
+		return $row_mobile != "" ? $row_mobile : $row_email;
 	}
 
 	public function get_merchant($username, $status = 1) {
@@ -174,7 +174,7 @@ class Api_Controller extends MX_Controller {
 			die();
 		}
 
-		return $row_mobile != "" ? row_mobile : $row_email;
+		return $row_mobile != "" ? $row_mobile : $row_email;
 	}
 
 	public function generate_transaction_number($amount, $from_wallet_address, $to_wallet_address) {
@@ -196,18 +196,18 @@ class Api_Controller extends MX_Controller {
 	public function get_client_by_bridge_id($bridge_id) {
 		$this->load->model('api/clients_model', 'clients');
 
-		$client_row = $this->clients->get_datum(
+		$row = $this->clients->get_datum(
 			'',
 			array(
 				'oauth_client_bridge_id'	=> $bridge_id
 			)
 		)->row();
 
-		if ($client_row == "") {
+		if ($row == "") {
 			return false;
 		}
 
-		return $client_row;
+		return $row;
 	}
 
 	public function get_oauth_client_by_id($oauth_client_id) {

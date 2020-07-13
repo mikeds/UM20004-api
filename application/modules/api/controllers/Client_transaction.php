@@ -58,8 +58,8 @@ class Client_transaction extends Api_Controller {
 		$results = array();
 
 		foreach ($data as $datum) {
-			$type = $this->get_transaction_type($datum['transaction_type_id']);
-			$status = $this->get_transaction_status($datum['transaction_status']);
+			$type = get_transaction_type($datum['transaction_type_id']);
+			$status = get_transaction_status($datum['transaction_status']);
 
 			$amount = $datum['transaction_amount'];
 			$amount = floatval($amount);
@@ -89,34 +89,6 @@ class Client_transaction extends Api_Controller {
 		echo json_encode($message);
 		http_response_code(200);
 		die();
-	}
-
-	private function get_transaction_status($status_id) {
-		$status = "";
-
-		if ($status_id == 0) {
-			$status = "pending";
-		} else if ($status_id == 1) {
-			$status = "approved";
-		} else if ($status_id == 2) {
-			$status = "cancelled";
-		}
-
-		return $status;
-	}
-
-	private function get_transaction_type($type_id) {
-		$type = "";
-
-		if ($type_id == 1) {
-			$type = "cash_in";
-		} else if ($type_id == 2) {
-			$type = "cash_out";
-		} else if ($type_id == 3) {
-			$type = "transfer";
-		}
-
-		return $type;
 	}
 
 	public function balance() {

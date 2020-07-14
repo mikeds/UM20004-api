@@ -3,7 +3,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Client_transaction extends Api_Controller {
 	private
-		$_client = NULL;
+		$_client = NULL,
+		$_limit = 10;
 
 	public function after_init() {
 		$this->load->library('OAuth2', 'oauth2');
@@ -16,33 +17,41 @@ class Client_transaction extends Api_Controller {
 		$this->_client = $this->get_client_access();
 	}
 
-	public function history() {
+	public function history($page = 1) {
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
+
+		$limit = isset($post["limit"]) ? $post["limit"] : $this->_limit;
 
 		$wallet_address = $this->_client['wallet_address'];
 
-		$or_where = array(
-			'transaction_from_wallet_address' => $wallet_address,
-			'transaction_to_wallet_address' => $wallet_address
+		$where = array(
+			'transaction_requested_by' => $wallet_address
 		);
+
+		$total_rows = $this->transactions->get_count(
+			$where
+		);
+		
+		$offset = $this->get_pagination_offset($page, $limit, $total_rows);
 
 		$data = $this->transactions->get_data(
 			array("*"),
+			$where,
 			array(),
-			$or_where,
 			array(),
 			array(
 				'filter' => "transaction_date_created",
 				'sort' => "DESC"
 			),
-			0, // offset
-			10 // limit
+			$offset, // offset
+			$limit // limit
 		);
 
 		$data_1 = $this->transactions->get_data(
 			array("*"),
+			$where,
 			array(),
-			$or_where,
 			array(),
 			array(
 				'filter' => "transaction_date_created",
@@ -136,6 +145,7 @@ class Client_transaction extends Api_Controller {
 
 	private function make_transaction($type) {
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
 
 		$message = "";
 		$wallet_address = $this->_client['wallet_address'];
@@ -145,8 +155,9 @@ class Client_transaction extends Api_Controller {
 		$status = 0;
 		$message_data = array();
 
-		if ($_POST) {
-			$amount		= $this->input->post("amount");
+		if ($this->JSON_POST()) {
+			$amount = isset($post["amount"]) ? $post["amount"] : "";
+			// $amount		= $this->input->post("amount");
 
 			if (!is_numeric($amount)) {
 				$message = array(
@@ -160,7 +171,9 @@ class Client_transaction extends Api_Controller {
 			$amount = floatval($amount);
 
 			if ($type == "cash_in" || $type == "cash_out") {
-				$merchant		= $this->input->post("merchant");
+				$merchant = isset($post["merchant"]) ? $post["merchant"] : "";
+				// $merchant		= $this->input->post("merchant");
+
 				$message_data = array(
 					'merchant'	=> $merchant
 				);
@@ -187,7 +200,9 @@ class Client_transaction extends Api_Controller {
 					$to_wallet_address = $merchant_wallet_address; // merchant
 				}
 			} else if ($type == "send_to") {
-				$send_to	= $this->input->post("send_to");
+				$send_to = isset($post["send_to"]) ? $post["send_to"] : "";
+				// $send_to	= $this->input->post("send_to");
+
 				$type_id 	= 3;
 
 				// get to client row
@@ -269,7 +284,8 @@ class Client_transaction extends Api_Controller {
 						'hold_balance'	=> $new_holding_balance
 					);
 				} else if ($type_id == 3) {
-					$send_to		= $this->input->post("send_to");
+					$send_to = isset($post["send_to"]) ? $post["send_to"] : "";
+					// $send_to	= $this->input->post("send_to");
 
 					// update status to approved automatically
 					$status = 1;

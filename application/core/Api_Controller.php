@@ -21,6 +21,17 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function JSON_POST() {
+		$content_type = $this->input->get_request_header('Content-Type', TRUE);
+		$json = "application/json";
+		
+		if (preg_match("/\bjson\b/", $content_type)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public function get_token() {
 		$this->load->model('api/tokens_model', 'tokens');
 
@@ -429,5 +440,12 @@ class Api_Controller extends MX_Controller {
 		http_response_code(200);
 		echo json_encode($message);
 		die();
+	}
+
+	public function get_pagination_offset($page = 1, $limit = 10, $num_rows = 10) {
+		$page 	= ($page < 1 ? 1 : $page);
+		$offset = ($page - 1) * $limit;
+		$offset = ($offset >= $num_rows && $page == 1 ? 0 : $offset);
+		return $offset;
 	}
 }

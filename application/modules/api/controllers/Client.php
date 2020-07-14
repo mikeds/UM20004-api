@@ -135,9 +135,9 @@ class Client extends Api_Controller {
 			$password 	= null_to_empty($password);
 			$password 	= hash("sha256", $password);
 
-			$first_name = isset($post["first_name"]) ? $post["first_name"] : "";
-			$middle_name = isset($post["middle_name"]) ? $post["middle_name"] : "";
-			$last_name = isset($post["last_name"]) ? $post["last_name"] : "";
+			$fname = isset($post["first_name"]) ? $post["first_name"] : "";
+			$mname = isset($post["middle_name"]) ? $post["middle_name"] : "";
+			$lname = isset($post["last_name"]) ? $post["last_name"] : "";
 			$ext_name = isset($post["ext_name"]) ? $post["ext_name"] : "";
 			$email_address = isset($post["email_address"]) ? $post["email_address"] : "";
 			// $fname 			= null_to_empty($this->input->post("first_name"));

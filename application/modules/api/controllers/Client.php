@@ -222,6 +222,13 @@ class Client extends Api_Controller {
 
 				$this->set_oauth_client($bridge_id);
 
+				// send confirmation code
+				$email_message = $this->load->view("templates/email_templates/account_verification", array(
+					"code" => $code
+				), true);
+
+				$this->send_verification($email_address, $email_message);
+
 				// done process
 				$message = array(
 					'error' => false, 
@@ -354,7 +361,7 @@ class Client extends Api_Controller {
 				'code' => $code
 			);
 
-			$email_message = $this->load->view("templates/email_templates/account_verification", $data, true);;
+			$email_message = $this->load->view("templates/email_templates/account_verification", $data, true);
 
 			$this->send_verification($email_to, $email_message);
 

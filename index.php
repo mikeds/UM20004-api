@@ -107,8 +107,6 @@ $database_password = ENVIRONMENT == "production" ? getenv("DBPRODPWD") :
 ));
 define('DB_PWD', $database_password);
 
-print_r("{$database} {$database_username} {$database_password}");
-
 /*
  *---------------------------------------------------------------
  * ERROR REPORTING

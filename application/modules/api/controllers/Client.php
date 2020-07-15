@@ -365,6 +365,11 @@ class Client extends Api_Controller {
 
 			$this->send_verification($email_to, $email_message);
 
+			$message = array(
+				"error" => false,
+				"message" => "Successfully resend account verification code!"
+			);
+
 			end:
 			http_response_code(200);
 			echo json_encode($message);

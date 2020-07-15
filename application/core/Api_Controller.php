@@ -408,7 +408,7 @@ class Api_Controller extends MX_Controller {
 		return date('Y-m-d H:i:s', $newtimestamp);
 	}
 
-	public function send_verification($email_to, $email_message = "") {
+	public function send_verification($email_to, $email_message = "", $type = 1) {
 		header('Content-type: application/json');
 
 		$email_from = "no-reply@resolveitthrough.us";
@@ -428,18 +428,10 @@ class Api_Controller extends MX_Controller {
 				'error_description' => "Failed to send confirmation code!"
 			);
 	
-			goto end;
+			http_response_code(200);
+			echo json_encode($message);
+			die();
 		}
-
-		$message = array(
-			'error' => false,
-			'message'	=> "Successfully resend account verification code!"
-		);
-
-		end:
-		http_response_code(200);
-		echo json_encode($message);
-		die();
 	}
 
 	public function get_pagination_offset($page = 1, $limit = 10, $num_rows = 10) {

@@ -17,23 +17,51 @@ class Client_transaction extends Api_Controller {
 		$this->_client = $this->get_client_access();
 	}
 
-	public function history($page = 1) {
+	public function history($transaction_id = "") {
 		header('Content-type: application/json');
 		$post = json_decode($this->input->raw_input_stream, true);
+		$message = "";
 
 		$limit = isset($post["limit"]) ? $post["limit"] : $this->_limit;
 
 		$wallet_address = $this->_client['wallet_address'];
 
+		// default filter
 		$where = array(
 			'transaction_requested_by' => $wallet_address
 		);
+
+		if ($transaction_id != "") {
+			// checking if transaction id is belong to wallet address
+			$check_row = $this->transactions->get_datum(
+				'',
+				array(
+					'transaction_requested_by' => $wallet_address,
+					'transaction_id' => $transaction_id
+				)
+			)->row();
+
+			if ($check_row == "") {
+				$message = array(
+					'error' => true,
+					'error_descriptionn' => "Invalid transaction id!"
+				);
+
+				goto end;
+			}
+		
+			$where = array(
+				'transaction_requested_by' => $wallet_address,
+				'transaction_id <' => $transaction_id
+			);
+		}
 
 		$total_rows = $this->transactions->get_count(
 			$where
 		);
 		
-		$offset = $this->get_pagination_offset($page, $limit, $total_rows);
+		// $offset = $this->get_pagination_offset($page, $limit, $total_rows);
+		$offset = 0;
 
 		$data = $this->transactions->get_data(
 			array("*"),
@@ -95,6 +123,7 @@ class Client_transaction extends Api_Controller {
 			)
 		);
 
+		end:
 		echo json_encode($message);
 		http_response_code(200);
 		die();

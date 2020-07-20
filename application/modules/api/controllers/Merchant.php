@@ -17,12 +17,13 @@ class Merchant extends Api_Controller {
 			- Token Bearer - from device auth
 		*/
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
+		
 		$message = "";
 
-		if ($_POST) {
-			$username = $this->input->post("username");
-			$password = $this->input->post("password");
-			$password = hash("sha256", $password);
+		if ($this->JSON_POST()) {
+			$username = isset($post["username"]) ? $post["username"] : "";
+			$password = isset($post["password"]) ? $post["password"] : "";
 
 			$row = $this->merchants->get_datum(
 				'',
@@ -33,7 +34,16 @@ class Merchant extends Api_Controller {
 				)
 			)->row();
 
-			if ($row == "") {
+			$row_email = $this->merchants->get_datum(
+				'',
+				array(
+					'merchant_email_address'	=> $username,
+					'merchant_password'			=> $password,
+					'merchant_status'			=> 1
+				)
+			)->row();
+
+			if ($row == "" && $row_email == "") {
 				$message = array(
 					'error' => true, 
 					'error_description' => 'The username or password is/are incorrect!'
@@ -44,6 +54,18 @@ class Merchant extends Api_Controller {
 				echo json_encode($message);
 				die();
 			} else {
+				$row = $row != "" ? $row : $row_email;
+
+				$bridge_id = $row->oauth_client_bridge_id;
+
+				// get key and code
+				$oauth_key = $this->get_oauth_client($bridge_id);
+
+				$key = $oauth_key['key'];
+				$code = $oauth_key['code'];
+
+				$qr_code = hash("md5", $row->merchant_email_address);
+
 				$message = array(
 					'value'	=> 
 					array(
@@ -53,7 +75,10 @@ class Merchant extends Api_Controller {
 						'ext_name'			=> $row->merchant_ext_name,
 						'email_address'		=> $row->merchant_email_address,
 						'mobile_country_code'	=> $row->merchant_mobile_country_code,
-						'mobile_no'				=> $row->merchant_mobile_no
+						'mobile_no'				=> $row->merchant_mobile_no,
+						'secret_key'			=> $key,
+						'secret_code'			=> $code,
+						'qr_code'				=> base_url() . "transaction/qr-code-{$qr_code}"
 					)
 				);
 			}
@@ -82,20 +107,33 @@ class Merchant extends Api_Controller {
 		*/
 
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
+
 		$message = "";
 
-		if ($_POST) {
-			$password 	= null_to_empty($this->input->post("password"));
-			$password 	= hash("sha256", $password);
+		if ($this->JSON_POST()) {
+			$password = isset($post["password"]) ? $post["password"] : "";
+			$password 	= null_to_empty($password);
 
-			$fname 			= null_to_empty($this->input->post("first_name"));
-			$mname 			= null_to_empty($this->input->post("middle_name"));
-			$lname 			= null_to_empty($this->input->post("last_name"));
-			$ext_name 		= null_to_empty($this->input->post("ext_name"));
-			$email_address 	= null_to_empty($this->input->post("email_address"));
+			if (!valid_256_hash($password)) {
+				$message = array(
+					'error' => true, 
+					'description' => 'Invalid password format!'
+				);
+
+				http_response_code(200);
+				echo json_encode($message);
+				die();
+			}
+
+			$fname = isset($post["first_name"]) ? $post["first_name"] : "";
+			$mname = isset($post["middle_name"]) ? $post["middle_name"] : "";
+			$lname = isset($post["last_name"]) ? $post["last_name"] : "";
+			$ext_name = isset($post["ext_name"]) ? $post["ext_name"] : "";
+			$email_address = isset($post["email_address"]) ? $post["email_address"] : "";
 			
-			$mobile_country_code 	= null_to_empty($this->input->post("mobile_country_code"));
-			$mobile_no 				= null_to_empty($this->input->post("mobile_no"));
+			$mobile_country_code = isset($post["mobile_country_code"]) ? $post["mobile_country_code"] : "";
+			$mobile_no = isset($post["mobile_no"]) ? $post["mobile_no"] : "";
 
 			$username = $mobile_country_code . $mobile_no;
 
@@ -111,7 +149,6 @@ class Merchant extends Api_Controller {
 					'description' => 'Incomplete fields!'
 				);
 
-				// bad request
 				http_response_code(200);
 				echo json_encode($message);
 				die();
@@ -141,6 +178,12 @@ class Merchant extends Api_Controller {
 				// create new oauth bridge
 				$bridge_id = $this->set_oauth_bridge();
 
+				// generate confirmation code
+				// update client row
+				$code = generate_code(4);
+				$code = strtoupper($code);
+				$date_expiration = $this->generate_date_expiration(10);
+
 				$data = array(
 					'merchant_password'				=> $password,
 					'merchant_fname'				=> $fname,
@@ -150,7 +193,9 @@ class Merchant extends Api_Controller {
 					'merchant_email_address'		=> $email_address,
 					'merchant_mobile_country_code'	=> $mobile_country_code,
 					'merchant_mobile_no'			=> $mobile_no,
-					'oauth_client_bridge_id'		=> $bridge_id
+					'oauth_client_bridge_id'		=> $bridge_id,
+					'merchant_code_confirmation'	=> $code,
+					'merchant_code_date_expiration'	=> $date_expiration
 				);
 
 				$this->merchants->insert(
@@ -160,7 +205,18 @@ class Merchant extends Api_Controller {
 				// create oauth client and merchannt wallet
 				$this->set_oauth_client($bridge_id);
 
-				$message = array('error' => false, 'message' => 'Succefully registred!');
+				// send confirmation code
+				$email_message = $this->load->view("templates/email_templates/account_verification", array(
+					"code" => $code
+				), true);
+
+				$this->send_verification($email_address, $email_message);
+
+				// done process
+				$message = array(
+					'error' => false, 
+					'message' => 'Succefully registred!'
+				);
 			}
 		} else {
 			// unauthorized request

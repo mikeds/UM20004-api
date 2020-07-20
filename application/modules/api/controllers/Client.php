@@ -27,7 +27,7 @@ class Client extends Api_Controller {
 			// $username = $this->input->post("username");
 			// $password = $this->input->post("password");
 
-			$password = hash("sha256", $password);
+			// $password = hash("sha256", $password);
 
 			$row_mobile = $this->clients->get_datum(
 				'',
@@ -57,7 +57,7 @@ class Client extends Api_Controller {
 				die();
 			} else {
 
-				$row = $row_mobile != "" ? row_mobile : $row_email;
+				$row = $row_mobile != "" ? $row_mobile : $row_email;
 
 				// check if account email verified
 				if ($row->client_status == 0) {
@@ -83,6 +83,8 @@ class Client extends Api_Controller {
 
 				$wallet_address = $this->get_wallet_address($key, $code);
 
+				$qr_code = hash("md5", $row->client_email_address);
+
 				$value = array(
 					'first_name'		=> $row->client_fname,
 					'middle_name'		=> $row->client_mname,
@@ -93,7 +95,8 @@ class Client extends Api_Controller {
 					'mobile_no'				=> $row->client_mobile_no,
 					// 'wallet_address'		=> $wallet_address,
 					'secret_key'			=> $key,
-					'secret_code'			=> $code
+					'secret_code'			=> $code,
+					'qr_code'				=> base_url() . "transaction/qr-code-{$qr_code}"
 				);
 
 				$message = array(
@@ -130,10 +133,18 @@ class Client extends Api_Controller {
 
 		if ($this->JSON_POST()) {
 			$password = isset($post["password"]) ? $post["password"] : "";
-			// $password = $this->input->post("password");
-
 			$password 	= null_to_empty($password);
-			$password 	= hash("sha256", $password);
+
+			if (!valid_256_hash($password)) {
+				$message = array(
+					'error' => true, 
+					'description' => 'Invalid password format!'
+				);
+
+				http_response_code(200);
+				echo json_encode($message);
+				die();
+			}
 
 			$fname = isset($post["first_name"]) ? $post["first_name"] : "";
 			$mname = isset($post["middle_name"]) ? $post["middle_name"] : "";

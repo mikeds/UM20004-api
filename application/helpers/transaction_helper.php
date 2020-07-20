@@ -27,3 +27,11 @@ function get_transaction_type($type_id) {
 
 	return $type;
 }
+
+function valid_256_hash($hash) {
+	if (preg_match("/^([a-f0-9]{64})$/", $hash) == 1) {
+		return true;
+	} else {
+		return false;
+	}
+}

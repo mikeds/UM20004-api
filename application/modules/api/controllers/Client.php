@@ -27,7 +27,7 @@ class Client extends Api_Controller {
 			// $username = $this->input->post("username");
 			// $password = $this->input->post("password");
 
-			// $password = hash("sha256", $password);
+			$password = hash("sha256", $password);
 
 			$row_mobile = $this->clients->get_datum(
 				'',
@@ -133,7 +133,7 @@ class Client extends Api_Controller {
 			// $password = $this->input->post("password");
 
 			$password 	= null_to_empty($password);
-			// $password 	= hash("sha256", $password);
+			$password 	= hash("sha256", $password);
 
 			$fname = isset($post["first_name"]) ? $post["first_name"] : "";
 			$mname = isset($post["middle_name"]) ? $post["middle_name"] : "";

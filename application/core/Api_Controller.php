@@ -21,6 +21,49 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function get_master_account() {
+		$this->load->model('api/tms_admins_model', 'tms_admins');
+
+		$token_row = $this->get_token();
+
+		if (!$token_row) {
+			// invalid token
+			// unauthorized request
+			http_response_code(401);
+			die();
+		}
+
+		$oauth_client_id = $token_row->client_id;
+
+		$oauth_client_row = $this->get_oauth_client_by_id($oauth_client_id);
+
+		if (!$oauth_client_row) {
+			// unauthorized request
+			http_response_code(401);
+			die();
+		}
+
+		$bridge_id = $oauth_client_row->oauth_client_bridge_id;
+
+		$datum = $this->tms_admins->get_datum(
+			'',
+			array(
+				'oauth_client_bridge_id' => $bridge_id
+			)
+		)->row();
+
+		if ($datum == "") {
+			// unauthorized request
+			http_response_code(401);
+			die();
+		} 
+
+		return array(
+			'account_id' => $datum->tms_admin_id,
+			'account_name' => $datum->tms_admin_name
+		);
+	}
+
 	public function JSON_POST() {
 		$content_type = $this->input->get_request_header('Content-Type', TRUE);
 		$json = "application/json";
@@ -35,7 +78,7 @@ class Api_Controller extends MX_Controller {
 	public function get_token() {
 		$this->load->model('api/tokens_model', 'tokens');
 
-		$token = getBearerToken();
+		$token = get_bearer_token();
 
 		if (is_null($token)) {
 			return false;

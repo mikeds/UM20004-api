@@ -2,12 +2,15 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Merchant extends Api_Controller {
+	private
+		$_master_account = NULL;
 
 	public function after_init() {
 		$this->load->library('OAuth2', 'oauth2');
 		$this->load->model('api/merchants_model', 'merchants');
 
 		$this->oauth2->get_resource();
+		$this->_master_account = $this->get_master_account();
 	}
 
 	public function login() {
@@ -30,7 +33,8 @@ class Merchant extends Api_Controller {
 				array(
 					'CONCAT(merchant_mobile_country_code, merchant_mobile_no) ='	=> $username,
 					'merchant_password'												=> $password,
-					'merchant_status'												=> 1
+					'merchant_status'												=> 1,
+					'tms_admin_id'													=> $this->_master_account['account_id']
 				)
 			)->row();
 
@@ -39,7 +43,8 @@ class Merchant extends Api_Controller {
 				array(
 					'merchant_email_address'	=> $username,
 					'merchant_password'			=> $password,
-					'merchant_status'			=> 1
+					'merchant_status'			=> 1,
+					'tms_admin_id'				=> $this->_master_account['account_id']
 				)
 			)->row();
 
@@ -195,7 +200,9 @@ class Merchant extends Api_Controller {
 					'merchant_mobile_no'			=> $mobile_no,
 					'oauth_client_bridge_id'		=> $bridge_id,
 					'merchant_code_confirmation'	=> $code,
-					'merchant_code_date_expiration'	=> $date_expiration
+					'merchant_code_date_expiration'	=> $date_expiration,
+					'merchant_date_added'			=> $this->_today,
+					'tms_admin_id'					=> $this->_master_account['account_id']
 				);
 
 				$this->merchants->insert(

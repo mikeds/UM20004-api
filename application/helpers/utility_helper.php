@@ -36,7 +36,7 @@ function getAuthorizationHeader(){
 /**
 * get access token from header
 * */
-function getBearerToken() {
+function get_bearer_token() {
 	$headers = getAuthorizationHeader();
 	// HEADER: Get the access token from the header
 	if (!empty($headers)) {

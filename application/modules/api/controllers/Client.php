@@ -2,12 +2,15 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Client extends Api_Controller {
+	private
+		$_master_account = NULL;
 
 	public function after_init() {
 		$this->load->library('OAuth2', 'oauth2');
 		$this->load->model('api/clients_model', 'clients');
 
 		$this->oauth2->get_resource();
+		$this->_master_account = $this->get_master_account();
 	}
 
 	public function login() {
@@ -34,6 +37,7 @@ class Client extends Api_Controller {
 				array(
 					'CONCAT(client_mobile_country_code, client_mobile_no) ='	=> $username,
 					'client_password'											=> $password,
+					'tms_admin_id'												=> $this->_master_account['account_id']
 				)
 			)->row();
 
@@ -42,6 +46,7 @@ class Client extends Api_Controller {
 				array(
 					'client_email_address'	=> $username,
 					'client_password'		=> $password,
+					'tms_admin_id'			=> $this->_master_account['account_id']
 				)
 			)->row();
 
@@ -224,7 +229,9 @@ class Client extends Api_Controller {
 					'client_mobile_no'				=> $mobile_no,
 					'oauth_client_bridge_id'		=> $bridge_id,
 					'client_code_confirmation'		=> $code,
-					'client_code_date_expiration'	=> $date_expiration
+					'client_code_date_expiration'	=> $date_expiration,
+					'client_date_added'				=> $this->_today,
+					'tms_admin_id'					=> $this->_master_account['account_id']
 				);
 
 				$client_id = $this->clients->insert(

@@ -21,6 +21,49 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function get_master_account() {
+		$this->load->model('api/tms_admins_model', 'tms_admins');
+
+		$token_row = $this->get_token();
+
+		if (!$token_row) {
+			// invalid token
+			// unauthorized request
+			http_response_code(401);
+			die();
+		}
+
+		$oauth_client_id = $token_row->client_id;
+
+		$oauth_client_row = $this->get_oauth_client_by_id($oauth_client_id);
+
+		if (!$oauth_client_row) {
+			// unauthorized request
+			http_response_code(401);
+			die();
+		}
+
+		$bridge_id = $oauth_client_row->oauth_client_bridge_id;
+
+		$datum = $this->tms_admins->get_datum(
+			'',
+			array(
+				'oauth_client_bridge_id' => $bridge_id
+			)
+		)->row();
+
+		if ($datum == "") {
+			// unauthorized request
+			http_response_code(401);
+			die();
+		} 
+
+		return array(
+			'account_id' => $datum->tms_admin_id,
+			'account_name' => $datum->tms_admin_name
+		);
+	}
+
 	public function JSON_POST() {
 		$content_type = $this->input->get_request_header('Content-Type', TRUE);
 		$json = "application/json";
@@ -35,7 +78,7 @@ class Api_Controller extends MX_Controller {
 	public function get_token() {
 		$this->load->model('api/tokens_model', 'tokens');
 
-		$token = getBearerToken();
+		$token = get_bearer_token();
 
 		if (is_null($token)) {
 			return false;
@@ -188,7 +231,7 @@ class Api_Controller extends MX_Controller {
 		return $row_mobile != "" ? $row_mobile : $row_email;
 	}
 
-	public function generate_transaction_number($amount, $from_wallet_address, $to_wallet_address) {
+	public function generate_transaction_number($amount, $fees, $from_wallet_address, $to_wallet_address) {
 		$date_expiration = $this->generate_date_expiration();
 
 		$transaction_data = json_encode(
@@ -197,7 +240,9 @@ class Api_Controller extends MX_Controller {
 				'to_wallet_address'		=> $to_wallet_address,
 				'date_created'			=> $this->_today,
 				'date_expiration'		=> "{$date_expiration}",
-				'amount'				=> $amount
+				'amount'				=> $amount,
+				'fees'					=> $fees,
+				'total_amount'			=> $amount + $fees
 			)
 		);
 

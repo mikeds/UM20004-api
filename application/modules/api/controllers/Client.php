@@ -2,12 +2,15 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Client extends Api_Controller {
+	private
+		$_master_account = NULL;
 
 	public function after_init() {
 		$this->load->library('OAuth2', 'oauth2');
 		$this->load->model('api/clients_model', 'clients');
 
 		$this->oauth2->get_resource();
+		$this->_master_account = $this->get_master_account();
 	}
 
 	public function login() {
@@ -27,13 +30,14 @@ class Client extends Api_Controller {
 			// $username = $this->input->post("username");
 			// $password = $this->input->post("password");
 
-			$password = hash("sha256", $password);
+			// $password = hash("sha256", $password);
 
 			$row_mobile = $this->clients->get_datum(
 				'',
 				array(
 					'CONCAT(client_mobile_country_code, client_mobile_no) ='	=> $username,
 					'client_password'											=> $password,
+					'tms_admin_id'												=> $this->_master_account['account_id']
 				)
 			)->row();
 
@@ -42,6 +46,7 @@ class Client extends Api_Controller {
 				array(
 					'client_email_address'	=> $username,
 					'client_password'		=> $password,
+					'tms_admin_id'			=> $this->_master_account['account_id']
 				)
 			)->row();
 
@@ -57,7 +62,7 @@ class Client extends Api_Controller {
 				die();
 			} else {
 
-				$row = $row_mobile != "" ? row_mobile : $row_email;
+				$row = $row_mobile != "" ? $row_mobile : $row_email;
 
 				// check if account email verified
 				if ($row->client_status == 0) {
@@ -83,6 +88,8 @@ class Client extends Api_Controller {
 
 				$wallet_address = $this->get_wallet_address($key, $code);
 
+				$qr_code = hash("md5", $row->client_email_address);
+
 				$value = array(
 					'first_name'		=> $row->client_fname,
 					'middle_name'		=> $row->client_mname,
@@ -93,7 +100,8 @@ class Client extends Api_Controller {
 					'mobile_no'				=> $row->client_mobile_no,
 					// 'wallet_address'		=> $wallet_address,
 					'secret_key'			=> $key,
-					'secret_code'			=> $code
+					'secret_code'			=> $code,
+					'qr_code'				=> base_url() . "transaction/qr-code-{$qr_code}"
 				);
 
 				$message = array(
@@ -130,10 +138,18 @@ class Client extends Api_Controller {
 
 		if ($this->JSON_POST()) {
 			$password = isset($post["password"]) ? $post["password"] : "";
-			// $password = $this->input->post("password");
-
 			$password 	= null_to_empty($password);
-			$password 	= hash("sha256", $password);
+
+			if (!valid_256_hash($password)) {
+				$message = array(
+					'error' => true, 
+					'description' => 'Invalid password format!'
+				);
+
+				http_response_code(200);
+				echo json_encode($message);
+				die();
+			}
 
 			$fname = isset($post["first_name"]) ? $post["first_name"] : "";
 			$mname = isset($post["middle_name"]) ? $post["middle_name"] : "";
@@ -193,7 +209,7 @@ class Client extends Api_Controller {
 				die();
 			} else {
 				// create new oauth bridge
-				$bridge_id = $this->set_oauth_bridge();
+				// $bridge_id = $this->set_oauth_bridge();
 
 				// generate confirmation code
 				// update client row
@@ -211,16 +227,18 @@ class Client extends Api_Controller {
 					'client_email_address'			=> $email_address,
 					'client_mobile_country_code'	=> $mobile_country_code,
 					'client_mobile_no'				=> $mobile_no,
-					'oauth_client_bridge_id'		=> $bridge_id,
+					// 'oauth_client_bridge_id'		=> $bridge_id,
 					'client_code_confirmation'		=> $code,
-					'client_code_date_expiration'	=> $date_expiration
+					'client_code_date_expiration'	=> $date_expiration,
+					'client_date_added'				=> $this->_today,
+					'tms_admin_id'					=> $this->_master_account['account_id']
 				);
 
 				$client_id = $this->clients->insert(
 					$data
 				);
 
-				$this->set_oauth_client($bridge_id);
+				// $this->set_oauth_client($bridge_id);
 
 				// send confirmation code
 				$email_message = $this->load->view("templates/email_templates/account_verification", array(
@@ -291,9 +309,14 @@ class Client extends Api_Controller {
 				goto end;
 			}
 
+			// create wallet and oauth bridge
+			$bridge_id = $this->set_oauth_bridge(); // create oauth bridge
+			$this->set_oauth_client($bridge_id); // create wallet
+
 			$this->clients->update(
 				$row->client_id,
 				array(
+					'oauth_client_bridge_id' => $bridge_id,
 					'client_status' => 1
 				)
 			);

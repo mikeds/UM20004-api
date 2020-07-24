@@ -19,10 +19,12 @@ class Device extends Api_Controller {
 		*/
 
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
+
 		$message = "";
 
-		if ($_POST) {
-			$uuid = $this->input->post("uuid");
+		if ($this->JSON_POST()) {
+			$uuid = isset($post["uuid"]) ? $post["uuid"] : "";
 			$uuid = trim($uuid);
 			$uuid = strtolower($uuid);
 
@@ -61,10 +63,12 @@ class Device extends Api_Controller {
 		*/
 
 		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
+
 		$message = "";
 
-		if ($_POST) {
-			$uuid = $this->input->post("uuid");
+		if ($this->JSON_POST()) {
+			$uuid = isset($post["uuid"]) ? $post["uuid"] : "";
 			$uuid = trim($uuid);
 			$uuid = strtolower($uuid);
 

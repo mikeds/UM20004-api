@@ -231,7 +231,7 @@ class Api_Controller extends MX_Controller {
 		return $row_mobile != "" ? $row_mobile : $row_email;
 	}
 
-	public function generate_transaction_number($amount, $from_wallet_address, $to_wallet_address) {
+	public function generate_transaction_number($amount, $fees, $from_wallet_address, $to_wallet_address) {
 		$date_expiration = $this->generate_date_expiration();
 
 		$transaction_data = json_encode(
@@ -240,7 +240,9 @@ class Api_Controller extends MX_Controller {
 				'to_wallet_address'		=> $to_wallet_address,
 				'date_created'			=> $this->_today,
 				'date_expiration'		=> "{$date_expiration}",
-				'amount'				=> $amount
+				'amount'				=> $amount,
+				'fees'					=> $fees,
+				'total_amount'			=> $amount + $fees
 			)
 		);
 

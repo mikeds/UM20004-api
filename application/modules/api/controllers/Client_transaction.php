@@ -198,6 +198,8 @@ class Client_transaction extends Api_Controller {
 			}
 
 			$amount = floatval($amount);
+			$fees = 0;
+			$total_amount = $amount + $fees;
 
 			if ($type == "cash_in" || $type == "cash_out") {
 				$merchant = isset($post["merchant"]) ? $post["merchant"] : "";
@@ -272,6 +274,7 @@ class Client_transaction extends Api_Controller {
 				die();
 			}
 
+			// for cash in and send to
 			if ($type_id == 2 || $type_id == 3) {
 				// check client balance
 				$client_row = $this->_client['client_row'];
@@ -281,7 +284,7 @@ class Client_transaction extends Api_Controller {
 				$client_wallet_balance = $client_wallet_row->wallet_balance;
 				$client_wallet_holding_balance = $client_wallet_row->wallet_holding_balance;
 
-				if ($client_wallet_balance < $amount) {
+				if ($client_wallet_balance < $total_amount) {
 					$message = array(
 						'error' => true, 
 						'error_description' => 'insufficient balance!'
@@ -291,12 +294,12 @@ class Client_transaction extends Api_Controller {
 				}
 				
 				// update from wallet balance 
-				$new_balance = $client_wallet_balance - $amount;
+				$new_balance = $client_wallet_balance - $total_amount;
 
 				// cash out filter
 				if ($type_id == 2) {
 					// update wallet holding balance
-					$new_holding_balance = $client_wallet_holding_balance + $amount;
+					$new_holding_balance = $client_wallet_holding_balance + $total_amount;
 
 					// update wallet balance and wallet holding balance
 					$this->wallets->update(
@@ -354,7 +357,7 @@ class Client_transaction extends Api_Controller {
 			}
 
 			$date_expiration = $this->generate_date_expiration();
-			$transaction_number = $this->create_transaction($type_id, $amount, $wallet_address, $from_wallet_address, $to_wallet_address, $date_expiration, $status);
+			$transaction_number = $this->create_transaction($type_id, $amount, $fees, $wallet_address, $from_wallet_address, $to_wallet_address, $date_expiration, $status);
 
 			$message = array(
 				'value'	=>
@@ -366,6 +369,7 @@ class Client_transaction extends Api_Controller {
 					$message_data,
 					array(
 						'amount'				=> $amount,
+						'fees'					=> $fees,
 						'request_expiration'	=> $date_expiration
 					)
 				)
@@ -385,13 +389,17 @@ class Client_transaction extends Api_Controller {
 		die();
 	}
 
-	private function create_transaction($type_id, $amount, $wallet_address, $from_wallet_address, $to_wallet_address, $date_expiration, $status = 0) {
-		$transaction_number = $this->generate_transaction_number($amount, $from_wallet_address, $to_wallet_address);
+	private function create_transaction($type_id, $amount, $fees, $wallet_address, $from_wallet_address, $to_wallet_address, $date_expiration, $status = 0) {
+		$transaction_number = $this->generate_transaction_number($amount, $fees, $from_wallet_address, $to_wallet_address);
+
+		$total_amount = $amount + $fees;
 
 		$data = array(
 			'transaction_type_id'	=> $type_id, //cash in
 			'transaction_number'	=> $transaction_number,
 			'transaction_amount'	=> $amount,
+			'transaction_fees'		=> $fees,
+			'transaction_total_amount' 			=> $total_amount,
 			'transaction_requested_by'			=> $wallet_address,
 			'transaction_from_wallet_address'	=> $from_wallet_address,
 			'transaction_to_wallet_address'		=> $to_wallet_address,

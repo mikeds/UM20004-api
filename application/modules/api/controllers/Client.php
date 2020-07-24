@@ -209,7 +209,7 @@ class Client extends Api_Controller {
 				die();
 			} else {
 				// create new oauth bridge
-				$bridge_id = $this->set_oauth_bridge();
+				// $bridge_id = $this->set_oauth_bridge();
 
 				// generate confirmation code
 				// update client row
@@ -227,7 +227,7 @@ class Client extends Api_Controller {
 					'client_email_address'			=> $email_address,
 					'client_mobile_country_code'	=> $mobile_country_code,
 					'client_mobile_no'				=> $mobile_no,
-					'oauth_client_bridge_id'		=> $bridge_id,
+					// 'oauth_client_bridge_id'		=> $bridge_id,
 					'client_code_confirmation'		=> $code,
 					'client_code_date_expiration'	=> $date_expiration,
 					'client_date_added'				=> $this->_today,
@@ -238,7 +238,7 @@ class Client extends Api_Controller {
 					$data
 				);
 
-				$this->set_oauth_client($bridge_id);
+				// $this->set_oauth_client($bridge_id);
 
 				// send confirmation code
 				$email_message = $this->load->view("templates/email_templates/account_verification", array(
@@ -309,9 +309,14 @@ class Client extends Api_Controller {
 				goto end;
 			}
 
+			// create wallet and oauth bridge
+			$bridge_id = $this->set_oauth_bridge(); // create oauth bridge
+			$this->set_oauth_client($bridge_id); // create wallet
+
 			$this->clients->update(
 				$row->client_id,
 				array(
+					'oauth_client_bridge_id' => $bridge_id,
 					'client_status' => 1
 				)
 			);

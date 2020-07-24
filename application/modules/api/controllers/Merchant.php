@@ -181,7 +181,7 @@ class Merchant extends Api_Controller {
 				die();
 			} else {
 				// create new oauth bridge
-				$bridge_id = $this->set_oauth_bridge();
+				// $bridge_id = $this->set_oauth_bridge();
 
 				// generate confirmation code
 				// update client row
@@ -198,7 +198,7 @@ class Merchant extends Api_Controller {
 					'merchant_email_address'		=> $email_address,
 					'merchant_mobile_country_code'	=> $mobile_country_code,
 					'merchant_mobile_no'			=> $mobile_no,
-					'oauth_client_bridge_id'		=> $bridge_id,
+					// 'oauth_client_bridge_id'		=> $bridge_id,
 					'merchant_code_confirmation'	=> $code,
 					'merchant_code_date_expiration'	=> $date_expiration,
 					'merchant_date_added'			=> $this->_today,
@@ -210,7 +210,7 @@ class Merchant extends Api_Controller {
 				);
 
 				// create oauth client and merchannt wallet
-				$this->set_oauth_client($bridge_id);
+				// $this->set_oauth_client($bridge_id);
 
 				// send confirmation code
 				$email_message = $this->load->view("templates/email_templates/account_verification", array(

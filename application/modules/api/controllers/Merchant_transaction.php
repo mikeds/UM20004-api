@@ -56,7 +56,7 @@ class Merchant_transaction extends Merchant_Controller {
 				'',
 				array(
 					$address_to => $merchant_wallet_row->wallet_address,
-					'transaction_date_expiration >=' => $this->_today,
+					// 'transaction_date_expiration >=' => $this->_today,
 					'transaction_number' 	=> $transaction_number,
 					// 'transaction_status' => 0, // pending,
 				)
@@ -74,26 +74,7 @@ class Merchant_transaction extends Merchant_Controller {
 			$date_expiration 	= $datum->transaction_date_expiration;
 			$status 			= $datum->transaction_status;
 			$total_amount 		= $datum->transaction_total_amount;
-
-			if (strtotime($date_expiration) < strtotime($this->_today)) {
-				// update if not updated
-				if ($status == 0) {
-					// if still on pending but date is expired
-					$this->transactions->update(
-						$datum->transaction_id,
-						array(
-							'transaction_status' => 2 // make status cancel
-						)
-					);
-				}
-
-				$message = array(
-					'error' => true,
-					'error_description' => "Transaction expired."
-				);
-
-				goto end;
-			}
+			$type_id			= $datum->transaction_type_id;
 
 			if ($status != 0) {
 				$message = array(
@@ -106,7 +87,7 @@ class Merchant_transaction extends Merchant_Controller {
 
 			// from client to merchant
 			if ($type == "cash_out") {
-				if ($datum->transaction_type_id != 2) {
+				if ($type_id != 2) {
 					$message = array(
 						'error' => true,
 						'error_description' => "Invalid transaction type!"
@@ -137,7 +118,50 @@ class Merchant_transaction extends Merchant_Controller {
 					goto end;
 				}
 
+				$client_wallet_balance 	= $client_wallet_row->wallet_balance;
 				$wallet_holding_balance = $client_wallet_row->wallet_holding_balance;
+
+				if (strtotime($date_expiration) < strtotime($this->_today)) {
+					// update if not updated
+					if ($status == 0) {
+						// if still on pending but date is expired
+						$this->transactions->update(
+							$datum->transaction_id,
+							array(
+								'transaction_status' => 2 // make status cancel
+							)
+						);
+
+						// hold balance return to client balance
+						$new_client_wallet_balance = 0;
+						$new_client_wallet_holding_balance = 0;
+
+						if ($wallet_holding_balance < $total_amount) {
+							// this might be error but we need to override this
+							// new wallet holding balance
+							$new_client_wallet_balance 			= $client_wallet_balance + $wallet_holding_balance;
+							$new_client_wallet_holding_balance 	= 0;
+						} else {
+							$new_client_wallet_balance 			= $client_wallet_balance + $total_amount;
+							$new_client_wallet_holding_balance 	= $wallet_holding_balance - $total_amount;
+						}
+
+						$this->wallets->update(
+							$client_wallet_row->wallet_address,
+							array(
+								'wallet_balance' => $new_client_wallet_balance,
+								'wallet_holding_balance' => $new_client_wallet_holding_balance
+							)
+						);
+					}
+
+					$message = array(
+						'error' => true,
+						'error_description' => "Transaction expired."
+					);
+
+					goto end;
+				}
 
 				if ($wallet_holding_balance < $total_amount) {
 					$message = array(
@@ -190,6 +214,26 @@ class Merchant_transaction extends Merchant_Controller {
 					);
 
 					goto end;
+				}
+
+				if (strtotime($date_expiration) < strtotime($this->_today)) {
+					// update if not updated
+					if ($status == 0) {
+						// if still on pending but date is expired
+						$this->transactions->update(
+							$datum->transaction_id,
+							array(
+								'transaction_status' => 2 // make status cancel
+							)
+						);
+
+						$message = array(
+							'error' => true,
+							'error_description' => "Transaction expired."
+						);
+	
+						goto end;
+					}
 				}
 
 				// 1. get client wallet details

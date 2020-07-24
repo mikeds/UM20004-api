@@ -16,6 +16,44 @@ class Merchant_transaction extends Merchant_Controller {
 		$this->load->model('api/wallets_model', 'wallets');
 	}
 
+	public function accept_transaction() {
+		header('Content-type: application/json');
+		$post = json_decode($this->input->raw_input_stream, true);
+
+		$transaction_number = isset($post["transaction_number"]) ? $post["transaction_number"] : "";
+		$transaction_number = strtolower($transaction_number);
+
+		$datum = $this->transactions->get_datum(
+			'',
+			array(
+				'transaction_number' 	=> $transaction_number,
+			)
+		)->row();
+		
+		if ($datum != "") {
+			$type_id = $datum->transaction_type_id;
+			
+			if ($type_id == 1) {
+				$this->make_transaction("cash_in");
+			} else if ($type_id == 2) {
+				$this->make_transaction("cash_out");
+			}
+		}
+
+		$message = array(
+			'error' => true,
+			'error_description' => "Transaction invalid."
+		);
+
+		goto end;
+
+		end:
+		// bad request
+		http_response_code(200);
+		echo json_encode($message);
+		die();
+	}
+
 	public function accept_cash_in() {
 		// type_id = 1
 		$this->make_transaction("cash_in");

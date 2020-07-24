@@ -274,7 +274,7 @@ class Client_transaction extends Api_Controller {
 				die();
 			}
 
-			// for cash in and send to
+			// for cash out and send to
 			if ($type_id == 2 || $type_id == 3) {
 				// check client balance
 				$client_row = $this->_client['client_row'];

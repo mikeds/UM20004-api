@@ -403,6 +403,7 @@ class Client_transaction extends Api_Controller {
 			'transaction_requested_by'			=> $wallet_address,
 			'transaction_from_wallet_address'	=> $from_wallet_address,
 			'transaction_to_wallet_address'		=> $to_wallet_address,
+			'transaction_date_created'			=> $this->_today,
 			'transaction_date_expiration'		=> $date_expiration,
 			'transaction_status'				=> $status
 		);

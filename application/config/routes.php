@@ -80,7 +80,7 @@ $route["client/send-to"]            = "api/Client_transaction/send_to";
 
 $route["transaction/qr-code-(:any)"]    = "api/Qr_code/index/$1";      
 
-$route["customer/callback/token"] = "Callback/customer_callback_token";
+$route["customer/callback/token"] = "api/Callback/customer_callback_token";
 
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;

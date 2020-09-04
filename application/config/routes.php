@@ -64,6 +64,10 @@ $route["merchant/accept"]           = "api/Merchant_transaction/accept_transacti
 $route["merchant/accept/cash-out"]  = "api/Merchant_transaction/accept_cash_out";
 $route["merchant/accept/cash-in"]   = "api/Merchant_transaction/accept_cash_in";
 
+$route["merchant/history"]            = "api/Merchant_transaction/history";
+$route["merchant/history/(:num)"]     = "api/Merchant_transaction/history/$1";
+$route["merchant/balance"]            = "api/Merchant_transaction/balance";
+
 $route["client/login"]                  = "api/Client/login";
 $route["client/registration"]           = "api/Client/registration";
 

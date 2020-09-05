@@ -51,40 +51,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 
 $route["default_controller"]        = "api/Home";
-
 $route["token"]                     = "api/Token";
-
-$route["device/auth"]               = "api/Device/auth";
-$route["device/registration"]       = "api/Device/registration";
-
-$route["merchant/login"]            = "api/Merchant/Login";
-$route["merchant/registration"]     = "api/Merchant/registration";
-
-$route["merchant/accept"]           = "api/Merchant_transaction/accept_transaction";
-$route["merchant/accept/cash-out"]  = "api/Merchant_transaction/accept_cash_out";
-$route["merchant/accept/cash-in"]   = "api/Merchant_transaction/accept_cash_in";
-
-$route["merchant/history"]            = "api/Merchant_transaction/history";
-$route["merchant/history/(:num)"]     = "api/Merchant_transaction/history/$1";
-$route["merchant/balance"]            = "api/Merchant_transaction/balance";
-
-$route["client/login"]                  = "api/Client/login";
-$route["client/registration"]           = "api/Client/registration";
-
-$route["client/resend-code-confirmation"]   = "api/Client/resend_code_confirmation";
-$route["client/code-confirmation"]          = "api/Client/code_confirmation";
-
-$route["client/history"]            = "api/Client_transaction/history";
-$route["client/history/(:num)"]     = "api/Client_transaction/history/$1";
-$route["client/balance"]            = "api/Client_transaction/balance";
-
-$route["client/cash-in"]            = "api/Client_transaction/cash_in";
-$route["client/cash-out"]           = "api/Client_transaction/cash_out";
-$route["client/send-to"]            = "api/Client_transaction/send_to";
-
-$route["transaction/qr-code-(:any)"]    = "api/Qr_code/index/$1";      
-
-$route["customer/callback/token"] = "api/Callback/customer_callback_token";
 
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;

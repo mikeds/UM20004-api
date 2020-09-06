@@ -62,6 +62,8 @@ $route["merchants/registration"]           = "api/Registration/merchant";
 $route["tools/countries"]           = "api/Tools/countries";
 $route["tools/provinces/(:num)"]    = "api/Tools/provinces/$1";
 
+$route["callback/ubp/code"]         = "api/Callback/ubp_code";
+
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;
 

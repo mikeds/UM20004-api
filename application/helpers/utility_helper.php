@@ -43,12 +43,16 @@ function error_message($error_code) {
 		return 'Password is required!'; 
 	} else if ($error_code == 'E009-1') { // email activation code
 		return 'Invalid Email!'; 
+	} else if ($error_code == 'E009-1-1') { // email activation code
+		return 'Invalid Pin!'; 
 	} else if ($error_code == 'E009-2') { // email activation code
 		return 'Invalid Email!'; 
 	} else if ($error_code == 'E010-1') { // unable to send email activation
 		return 'You can request activation code after 5 minutes!'; 
 	} else if ($error_code == 'E010-2') { // unable to send email activation
 		return 'You can request activation code after 5 minutes!'; 
+	}  else if ($error_code == 'E010-3') { // unable to send email activation
+		return 'Activation Code is expired!'; 
 	} else {
 		return 'API Error';
 	}

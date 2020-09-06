@@ -67,7 +67,9 @@ class Login extends Tms_admin_Controller {
 						'mobile_no'		=> $row->merchant_mobile_no,
 						'secret_code'	=> $row->client_id,
 						'secret_key'	=> $row->client_secret,
-						'qr_code'		=> base_url() . "transaction/qr-code-{$qr_code}"
+						'qr_code'		=> base_url() . "transaction/qr-code-{$qr_code}",
+						'merchant_status' 	=> $row->merchant_status == 1 ? "Verified" : "Unverified",
+						'email_status'		=> $row->merchant_email_status == 1 ? "Activated" : "Not Activated"
 					)
 				)
 			);

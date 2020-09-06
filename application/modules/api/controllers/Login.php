@@ -25,7 +25,8 @@ class Login extends Tms_admin_Controller {
 				),
 				array(
 					'table_name' 	=> 'oauth_clients',
-					'condition'		=> 'merchants.oauth_bridge_id = oauth_clients.client_id'
+					'condition'		=> 'merchants.oauth_bridge_id = oauth_clients.client_id',
+					'type'			=> 'left'
 				)
 			);
 
@@ -55,17 +56,19 @@ class Login extends Tms_admin_Controller {
 
 			echo json_encode(
 				array(
-					'merchant_name'	=> "{$row->merchant_fname} {$row->merchant_mname} {$row->merchant_lname}",
-					'username' 		=> $row->account_username,
-					'avatar' 		=> $row->account_avatar_base64,
-					'first_name'	=> $row->account_fname,
-					'middle_name'	=> $row->account_mname,
-					'last_name'		=> $row->account_lname,
-					'email_address'	=> $row->merchant_email_address,
-					'mobile_no'		=> $row->merchant_mobile_no,
-					'secret_code'	=> $row->client_id,
-					'secret_key'	=> $row->client_secret,
-					'qr_code'		=> base_url() . "transaction/qr-code-{$qr_code}"
+					'response' => array(
+						'merchant_name'	=> "{$row->merchant_fname} {$row->merchant_mname} {$row->merchant_lname}",
+						'username' 		=> $row->account_username,
+						'avatar' 		=> $row->account_avatar_base64,
+						'first_name'	=> $row->account_fname,
+						'middle_name'	=> $row->account_mname,
+						'last_name'		=> $row->account_lname,
+						'email_address'	=> $row->merchant_email_address,
+						'mobile_no'		=> $row->merchant_mobile_no,
+						'secret_code'	=> $row->client_id,
+						'secret_key'	=> $row->client_secret,
+						'qr_code'		=> base_url() . "transaction/qr-code-{$qr_code}"
+					)
 				)
 			);
 			return;

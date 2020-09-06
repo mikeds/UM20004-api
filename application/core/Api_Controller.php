@@ -29,6 +29,30 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function send_email_activation($send_to_email, $pin, $expiration_date = "") {
+		if ($expiration_date != "") {
+			if ($expiration_date > $this->_today) {
+				generate_error_message("E010-2");
+			}
+		}
+
+		$date	= strtotime($this->_today);
+		$date 	= date("F j, Y, g:i a", $date);
+
+		// send email activation
+		$email_message = $this->load->view("templates/email_activation", array(
+			"activation_pin" => $pin,
+			"date"	=> $date
+		), true);
+
+		send_email(
+			getenv("SMTPUSER"),
+			$send_to_email,
+			"Email Activation Code",
+			$email_message
+		);
+	}
+
 	public function generate_code($data, $hash = "sha256") {
 		$json = json_encode($data);
 		return hash_hmac($hash, $json, getenv("SYSKEY"));

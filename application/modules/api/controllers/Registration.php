@@ -70,6 +70,15 @@ class Registration extends Tms_admin_Controller {
 				)
 			);
 
+			// generate pin
+			$pin 	= generate_code(4, 2);
+
+			// expiration timestamp
+			$minutes_to_add = 5;
+			$time = new DateTime($this->_today);
+			$time->add(new DateInterval('PT' . $minutes_to_add . 'M'));
+			$stamp = $time->format('Y-m-d H:i:s');
+
 			$insert_data = array(
 				'merchant_number'			=> $merchant_number,
 				// 'merchant_code'				=> $merchant_code,
@@ -89,14 +98,29 @@ class Registration extends Tms_admin_Controller {
 				'merchant_email_address'	=> $email_address,
 				'merchant_date_created'		=> $this->_today,
 				'merchant_status'			=> 0, 
-				'oauth_bridge_id'			=> $bridge_id
+				'oauth_bridge_id'			=> $bridge_id,
+				'merchant_email_activation_pin'			=> $pin,
+				'merchant_email_activation_expiration'	=> $stamp
 			);
 
 			$this->merchants->insert(
 				$insert_data
 			);
 
-			$this->create_merchant_account($admin_oauth_bridge_id, $merchant_number, $fname, $mname, $lname, $email_address, $password);
+			$this->create_merchant_account(
+				$admin_oauth_bridge_id, 
+				$merchant_number, 
+				$fname, 
+				$mname, 
+				$lname, 
+				$email_address, 
+				$password
+			);
+
+			$this->send_email_activation(
+				$email_address, 
+				$pin
+			);
 
 			echo json_encode(
 				array(

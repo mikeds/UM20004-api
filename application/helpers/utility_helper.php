@@ -41,6 +41,14 @@ function error_message($error_code) {
 		return 'Email Address already used!'; 
 	} else if ($error_code == 'E008') { // password is required
 		return 'Password is required!'; 
+	} else if ($error_code == 'E009-1') { // email activation code
+		return 'Invalid Email!'; 
+	} else if ($error_code == 'E009-2') { // email activation code
+		return 'Invalid Email!'; 
+	} else if ($error_code == 'E010-1') { // unable to send email activation
+		return 'You can request activation code after 5 minutes!'; 
+	} else if ($error_code == 'E010-2') { // unable to send email activation
+		return 'You can request activation code after 5 minutes!'; 
 	} else {
 		return 'API Error';
 	}
@@ -256,7 +264,11 @@ if ( ! function_exists("generate_code"))
 		// $length = how many digits or characters to return.
 		// You can use any set of characters you want.
 		$possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		//$possible = '0123456789';
+		
+		if ($type == 2) {
+			$possible = '0123456789';
+		}
+
 		$code = '';
 		$i = 0;
 		while ($i < $length) { 

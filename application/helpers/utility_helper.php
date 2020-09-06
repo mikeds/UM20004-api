@@ -11,6 +11,50 @@
  */
 
 // ------------------------------------------------------------------------
+
+function error_message($error_code) {
+	if ($error_code == 'E001') {
+		return 'Token not found!';
+	} else if ($error_code == 'E002') {
+		return 'Invalid provided token!';
+	} else if ($error_code == 'E003-1') { // not account type
+		return 'Invalid provided token!'; 
+	} else if ($error_code == 'E003-2') { // not tms type
+		return 'Invalid provided token!'; 
+	} else if ($error_code == 'E003-3') { // not merchant type
+		return 'Invalid provided token!'; 
+	} else if ($error_code == 'E004-1') { // invalid login client
+		return 'Incorrect Login!'; 
+	} else if ($error_code == 'E004-2') { // invalid login merchant
+		return 'Incorrect Login!'; 
+	} else if ($error_code == 'E005-1') { // Unverified account client
+		return 'Unverified account!'; 
+	} else if ($error_code == 'E005-2') { // Unverified account merchant
+		return 'Unverified account!'; 
+	} else if ($error_code == 'E006-1') { // already exist username client
+		return 'Username Already Exist!'; 
+	} else if ($error_code == 'E006-2') { // already exist username merchant
+		return 'Username Already Exist!'; 
+	} else if ($error_code == 'E007-1') { // already exist username merchant
+		return 'Email Address already used!'; 
+	} else if ($error_code == 'E007-2') { // already exist username merchant
+		return 'Email Address already used!'; 
+	} else {
+		return 'API Error';
+	}
+}
+
+function generate_error_message($code) {
+	echo json_encode(
+		array(
+			'error' 			=> true,
+			'error_code'		=> $code,
+			'error_description' => error_message($code)
+		)
+	);
+	die();
+}
+
 /** 
  * Get header Authorization
  * */

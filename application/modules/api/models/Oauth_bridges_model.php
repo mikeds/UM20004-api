@@ -1,15 +1,31 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Transactions_model extends CI_Model {
+class Oauth_bridges_model extends CI_Model {
 	private 
-		$_table	= 'transactions transactions',
-		$_table_x	= 'transactions';
+		$_table	= 'oauth_bridges  oauth_bridges',
+		$_table_x	= 'oauth_bridges';
 
 	private
-		$_id = "transaction_number";
+		$_id = "oauth_bridge_id";
 
-	function get_datum($id = '', $data = array(), $where_or = array()) {
-		$this->db->from( $this->_table_x );
+	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array()) {
+		$this->db->from($this->_table);
+		if (!empty($inner_joints)) {
+			foreach($inner_joints as $join) {
+				if (isset($join['type'])) {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition'],
+						$join['type']
+					);
+				} else {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition']
+					);
+				}
+			}
+		}
 
 		if( !empty($data) ){
 			$this->db->where( $data );
@@ -50,7 +66,7 @@ class Transactions_model extends CI_Model {
 				}
 			}
 		}
-		
+
 		if(!empty($data)){
 			$this->db->where($data);
 		}
@@ -148,3 +164,4 @@ class Transactions_model extends CI_Model {
 	*/
 }
 
+	

@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class oauth_clients_model extends CI_Model {
+class Oauth_clients_model extends CI_Model {
 	private 
 		$_table	= 'oauth_clients  oauth_clients',
 		$_table_x	= 'oauth_clients';
@@ -8,8 +8,24 @@ class oauth_clients_model extends CI_Model {
 	private
 		$_id = "client_id";
 
-	function get_datum($id = '', $data = array(), $where_or = array()) {
-		$this->db->from( $this->_table_x );
+	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array()) {
+		$this->db->from($this->_table);
+		if (!empty($inner_joints)) {
+			foreach($inner_joints as $join) {
+				if (isset($join['type'])) {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition'],
+						$join['type']
+					);
+				} else {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition']
+					);
+				}
+			}
+		}
 
 		if( !empty($data) ){
 			$this->db->where( $data );
@@ -28,12 +44,29 @@ class oauth_clients_model extends CI_Model {
 		return $query;
 	}
 
-	function get_data( $select = array('*'), $data = array(), $like= array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
+	function get_data( $select = array('*'), $data = array(), $like= array(), $inner_joints = array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
 		
 		$this->db->select(ARRtoSTR($select),false);
 
 		$this->db->from( $this->_table );
-		
+
+		if (!empty($inner_joints)) {
+			foreach($inner_joints as $join) {
+				if (isset($join['type'])) {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition'],
+						$join['type']
+					);
+				} else {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition']
+					);
+				}
+			}
+		}
+
 		if(!empty($data)){
 			$this->db->where($data);
 		}
@@ -62,10 +95,27 @@ class oauth_clients_model extends CI_Model {
 
 	}
 
-	function get_count( $data = array(), $like = array(), $order_by = array(), $offset = 0, $count = 0 ) {
+	function get_count( $data = array(), $like = array(), $inner_joints = array(), $order_by = array(), $offset = 0, $count = 0 ) {
 		if( !empty($data) ){
 			
 			$this->db->from($this->_table);
+
+			if (!empty($inner_joints)) {
+				foreach($inner_joints as $join) {
+					if (isset($join['type'])) {
+						$this->db->join(
+							$join['table_name'],
+							$join['condition'],
+							$join['type']
+						);
+					} else {
+						$this->db->join(
+							$join['table_name'],
+							$join['condition']
+						);
+					}
+				}
+			}
 
 			if( !empty( $data ) ) {
 				$this->db->where( $data );
@@ -113,4 +163,4 @@ class oauth_clients_model extends CI_Model {
 	}
 	*/
 }
-
+	

@@ -1,15 +1,31 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Wallets_model extends CI_Model {
+class Tms_admin_accounts_model extends CI_Model {
 	private 
-		$_table	= 'bambupay_wallets  wallets',
-		$_table_x	= 'bambupay_wallets';
+		$_table	= 'tms_admin_accounts  admin_accounts',
+		$_table_x	= 'tms_admin_accounts';
 
 	private
-		$_id = "wallet_address";
+		$_id = "account_number";
 
-	function get_datum($id = '', $data = array(), $where_or = array()) {
-		$this->db->from( $this->_table_x );
+	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array()) {
+		$this->db->from($this->_table);
+		if (!empty($inner_joints)) {
+			foreach($inner_joints as $join) {
+				if (isset($join['type'])) {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition'],
+						$join['type']
+					);
+				} else {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition']
+					);
+				}
+			}
+		}
 
 		if( !empty($data) ){
 			$this->db->where( $data );
@@ -28,12 +44,29 @@ class Wallets_model extends CI_Model {
 		return $query;
 	}
 
-	function get_data( $select = array('*'), $data = array(), $like= array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
+	function get_data( $select = array('*'), $data = array(), $like= array(), $inner_joints = array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
 		
 		$this->db->select(ARRtoSTR($select),false);
 
 		$this->db->from( $this->_table );
-		
+
+		if (!empty($inner_joints)) {
+			foreach($inner_joints as $join) {
+				if (isset($join['type'])) {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition'],
+						$join['type']
+					);
+				} else {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition']
+					);
+				}
+			}
+		}
+
 		if(!empty($data)){
 			$this->db->where($data);
 		}
@@ -62,10 +95,27 @@ class Wallets_model extends CI_Model {
 
 	}
 
-	function get_count( $data = array(), $like = array(), $order_by = array(), $offset = 0, $count = 0 ) {
+	function get_count( $data = array(), $like = array(), $inner_joints = array(), $order_by = array(), $offset = 0, $count = 0 ) {
 		if( !empty($data) ){
 			
 			$this->db->from($this->_table);
+
+			if (!empty($inner_joints)) {
+				foreach($inner_joints as $join) {
+					if (isset($join['type'])) {
+						$this->db->join(
+							$join['table_name'],
+							$join['condition'],
+							$join['type']
+						);
+					} else {
+						$this->db->join(
+							$join['table_name'],
+							$join['condition']
+						);
+					}
+				}
+			}
 
 			if( !empty( $data ) ) {
 				$this->db->where( $data );

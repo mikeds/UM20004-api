@@ -53,6 +53,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route["default_controller"]        = "api/Home";
 $route["token"]                     = "api/Token";
 
+$route["clients/login"]             = "api/Login/client";
+$route["merchants/login"]           = "api/Login/merchant";
+
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;
 

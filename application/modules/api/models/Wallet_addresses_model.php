@@ -1,12 +1,12 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Transactions_model extends CI_Model {
+class Wallet_addresses_model extends CI_Model {
 	private 
-		$_table	= 'transactions transactions',
-		$_table_x	= 'transactions';
+		$_table	= 'wallet_addresses  wallet_addresses',
+		$_table_x	= 'wallet_addresses';
 
 	private
-		$_id = "transaction_number";
+		$_id = "wallet_address";
 
 	function get_datum($id = '', $data = array(), $where_or = array()) {
 		$this->db->from( $this->_table_x );
@@ -28,28 +28,11 @@ class Transactions_model extends CI_Model {
 		return $query;
 	}
 
-	function get_data( $select = array('*'), $data = array(), $like= array(), $inner_joints = array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
+	function get_data( $select = array('*'), $data = array(), $like= array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
 		
 		$this->db->select(ARRtoSTR($select),false);
 
 		$this->db->from( $this->_table );
-
-		if (!empty($inner_joints)) {
-			foreach($inner_joints as $join) {
-				if (isset($join['type'])) {
-					$this->db->join(
-						$join['table_name'],
-						$join['condition'],
-						$join['type']
-					);
-				} else {
-					$this->db->join(
-						$join['table_name'],
-						$join['condition']
-					);
-				}
-			}
-		}
 		
 		if(!empty($data)){
 			$this->db->where($data);
@@ -79,27 +62,10 @@ class Transactions_model extends CI_Model {
 
 	}
 
-	function get_count( $data = array(), $like = array(), $inner_joints = array(), $order_by = array(), $offset = 0, $count = 0 ) {
+	function get_count( $data = array(), $like = array(), $order_by = array(), $offset = 0, $count = 0 ) {
 		if( !empty($data) ){
 			
 			$this->db->from($this->_table);
-
-			if (!empty($inner_joints)) {
-				foreach($inner_joints as $join) {
-					if (isset($join['type'])) {
-						$this->db->join(
-							$join['table_name'],
-							$join['condition'],
-							$join['type']
-						);
-					} else {
-						$this->db->join(
-							$join['table_name'],
-							$join['condition']
-						);
-					}
-				}
-			}
 
 			if( !empty( $data ) ) {
 				$this->db->where( $data );

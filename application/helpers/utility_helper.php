@@ -39,6 +39,8 @@ function error_message($error_code) {
 		return 'Email Address already used!'; 
 	} else if ($error_code == 'E007-2') { // already exist username merchant
 		return 'Email Address already used!'; 
+	} else if ($error_code == 'E008') { // password is required
+		return 'Password is required!'; 
 	} else {
 		return 'API Error';
 	}

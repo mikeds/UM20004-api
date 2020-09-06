@@ -29,6 +29,11 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function generate_code($data, $hash = "sha256") {
+		$json = json_encode($data);
+		return hash_hmac($hash, $json, getenv("SYSKEY"));
+	}
+
 	public function get_post() {
 		return json_decode($this->input->raw_input_stream, true);
 	}

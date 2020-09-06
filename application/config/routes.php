@@ -56,6 +56,9 @@ $route["token"]                     = "api/Token";
 $route["clients/login"]             = "api/Login/client";
 $route["merchants/login"]           = "api/Login/merchant";
 
+$route["clients/registration"]             = "api/Registration/client";
+$route["merchants/registration"]           = "api/Registration/merchant";
+
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;
 

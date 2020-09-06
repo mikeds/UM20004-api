@@ -1,12 +1,12 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Client_accounts_model extends CI_Model {
+class Merchants_model extends CI_Model {
 	private 
-		$_table	= 'client_accounts  client_accounts',
-		$_table_x	= 'client_accounts';
+		$_table	= 'merchants  merchants',
+		$_table_x	= 'merchants';
 
 	private
-		$_id = "account_number";
+		$_id = "merchant_number";
 
 	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array()) {
 		$this->db->from($this->_table);
@@ -164,3 +164,4 @@ class Client_accounts_model extends CI_Model {
 	*/
 }
 
+	

@@ -13,6 +13,10 @@ class Api_Controller extends MX_Controller {
 		$_base_session = "session";
 
 	protected
+		$_upload_path = FCPATH . UPLOAD_PATH,
+		$_ssl_method = "AES-128-ECB";
+
+	protected
 		$_account = null;
 
 	/**
@@ -242,4 +246,127 @@ class Api_Controller extends MX_Controller {
 
 		return $flag;
 	}
+
+	public function upload_files($folder_name, $files, $title = "", $is_data = false, $file_size_limit = 20, $allowed_types = "") {
+		$upload_path = "{$this->_upload_path}/uploads/{$folder_name}";
+
+		if (!file_exists($upload_path)) {
+			mkdir($upload_path, 0755, true);
+		}
+
+        $config = array(
+            'upload_path'   => $upload_path,
+            'overwrite'     => 1,                       
+		);
+		
+		if ($allowed_types != "") {
+			$config = array_merge(
+				$config,
+				array(
+					'allowed_types' => $allowed_types
+				)
+			);
+		} else {
+			$config = array_merge(
+				$config,
+				array(
+					'allowed_types' => "*"
+				)
+			);
+		}
+
+        $this->load->library('upload', $config);
+
+        $items = array();
+		$error_uploads = array();
+		$data = array();
+
+		if (!is_array($files['name'])) {
+			$tmp_file = $files;
+			$files = array();
+
+			$files['name'][]= $tmp_file['name'];
+			$files['type'][]= $tmp_file['type'];
+			$files['tmp_name'][]= $tmp_file['tmp_name'];
+			$files['error'][]= $tmp_file['error'];
+			$files['size'][]= $tmp_file['size'];
+		}
+
+        foreach ($files['name'] as $key => $file) {
+            $_FILES['files[]']['name']= $files['name'][$key];
+            $_FILES['files[]']['type']= $files['type'][$key];
+            $_FILES['files[]']['tmp_name']= $files['tmp_name'][$key];
+            $_FILES['files[]']['error']= $files['error'][$key];
+			$_FILES['files[]']['size']= $files['size'][$key];
+			
+			$file_size = $files['size'][$key];
+
+			if ($file_size > ($file_size_limit * MB)) {
+				$error_uploads[] = array(
+					'error_image' => $files['name'][$key],
+					'error_message' => "The file size is over-limit from {$file_size_limit}MB limit!"
+				);
+
+				continue;
+			}
+
+			$ext = explode(".", $file);
+			$ext = isset($ext[count($ext) - 1]) ? $ext[count($ext) - 1] : ""; 
+
+			$today = strtotime($this->_today);
+
+			if ($title != "") {
+				$file_name = "{$title}_{$key}_{$today}";
+				$file_name =  "{$file_name}.{$ext}";
+			} else {
+				$file_name = $file;
+			}
+
+            $items[] = $file_name;
+
+            $config['file_name'] = $file_name;
+
+            $this->upload->initialize($config);
+
+            if ($this->upload->do_upload('files[]')) {
+				$this->upload->data();
+
+				// get file uploaded
+				$full_path 		= "{$upload_path}/{$file_name}";
+
+				if ($is_data) {
+					$filecontent 	= file_get_contents($full_path);
+
+					// update image save base64
+					$data[] = array(
+						'file_name' => $file_name,
+						'base64_image' => rtrim(base64_encode($filecontent))
+					);
+
+					// delete uploaded image
+					if(file_exists($full_path)){
+						unlink($full_path);
+					}
+				} else {
+					$data[] = array(
+						'file_name' => $file_name,
+						'full_path'	=> $full_path
+					);
+				}
+            } else {
+				$error_uploads[] = array(
+					'error_image' => $files['name'][$key],
+					'error_message' => $this->upload->display_errors()
+				);
+            }
+        }
+
+		return array(
+			'results' => array(
+				'is_date' 	=> false,
+				'data'		=> $data
+			),
+			'errors' => $error_uploads
+		);
+    }
 }

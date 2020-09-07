@@ -56,8 +56,8 @@ $route["token"]                     = "api/Token";
 $route["clients/login"]             = "api/Login/client";
 $route["merchants/login"]           = "api/Login/merchant";
 
-$route["clients/registration"]             = "api/Registration/client";
-$route["merchants/registration"]           = "api/Registration/merchant";
+$route["clients/registration"]      = "api/Registration/client";
+$route["merchants/registration"]    = "api/Registration/merchant";
 
 $route["tools/countries"]           = "api/Tools/countries";
 $route["tools/provinces/(:num)"]    = "api/Tools/provinces/$1";
@@ -66,6 +66,8 @@ $route["callback/ubp/code"]         = "api/Callback/ubp_code";
 
 $route["activation/merchant-email/resend"]      = "api/Activation/merchant_email_resend";
 $route["activation/merchant-email/activate"]    = "api/Activation/merchant_email_activation";
+
+$route["uploads"]                    = "api/Registration/uploads";
 
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;

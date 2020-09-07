@@ -52,7 +52,7 @@ class Login extends Tms_admin_Controller {
 				generate_error_message("E005-2");
 			}
 
-			$qr_code = hash("md5", $row->x_oauth_bridge_id);
+			$qr_code = md5($row->x_oauth_bridge_id);
 
 			echo json_encode(
 				array(
@@ -67,7 +67,8 @@ class Login extends Tms_admin_Controller {
 						'mobile_no'		=> $row->merchant_mobile_no,
 						'secret_code'	=> $row->client_id,
 						'secret_key'	=> $row->client_secret,
-						'qr_code'		=> base_url() . "transaction/qr-code-{$qr_code}",
+						'avatar_image'	=> base_url() . "avatar/merchant-accounts/" . md5($row->account_number),
+						'qr_code'		=> base_url() . "qr-code/merchant-accounts/{$qr_code}",
 						'merchant_status' 	=> $row->merchant_status == 1 ? "Verified" : "Unverified",
 						'email_status'		=> $row->merchant_email_status == 1 ? "Activated" : "Not Activated"
 					)

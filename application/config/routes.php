@@ -67,6 +67,9 @@ $route["callback/ubp/code"]         = "api/Callback/ubp_code";
 $route["activation/merchant-email/resend"]      = "api/Activation/merchant_email_resend";
 $route["activation/merchant-email/activate"]    = "api/Activation/merchant_email_activation";
 
+$route["avatar/merchant-accounts/(:any)"]   = "public/Avatar/merchant_accounts/$1";
+$route["qr-code/merchant-accounts/(:any)"]  = "public/Qr_code/merchant_accounts/$1";
+
 $route["uploads"]                    = "api/Registration/uploads";
 
 $route['404_override'] = 'api/Error_404';

@@ -52,7 +52,7 @@ class Api_Controller extends MX_Controller {
 		send_email(
 			getenv("SMTPUSER"),
 			$send_to_email,
-			"Email Activation Code",
+			"Email Activation PIN",
 			$email_message
 		);
 	}
@@ -60,6 +60,51 @@ class Api_Controller extends MX_Controller {
 	public function generate_code($data, $hash = "sha256") {
 		$json = json_encode($data);
 		return hash_hmac($hash, $json, getenv("SYSKEY"));
+	}
+
+	public function create_wallet_address($account_number, $bridge_id, $oauth_bridge_parent_id) {
+		$this->load->model('api/wallet_addresses_model', 'wallet_addresses');
+
+		// add address
+		$wallet_address = $this->generate_code(
+			array(
+				'account_number' 				=> $account_number,
+				'oauth_bridge_id'				=> $bridge_id,
+				'wallet_address_date_created'	=> $this->_today,
+				'admin_oauth_bridge_id'			=> $oauth_bridge_parent_id
+			)
+		); 
+
+		// create wallet address
+		$this->wallet_addresses->insert(
+			array(
+				'wallet_address' 				=> $wallet_address,
+				'wallet_balance'				=> openssl_encrypt(0, $this->_ssl_method, getenv("BPKEY")),
+				'wallet_hold_balance'			=> openssl_encrypt(0, $this->_ssl_method, getenv("BPKEY")),
+				'oauth_bridge_id'				=> $bridge_id,
+				'wallet_address_date_created'	=> $this->_today
+			)
+		);
+	}
+
+	public function create_token_auth($account_number, $bridge_id) {
+		$this->load->model('api/oauth_clients_model', 'oauth_clients');
+
+		// create api token
+		$this->oauth_clients->insert(
+			array(
+				'client_id' 		=> $bridge_id,
+				'client_secret'		=> $this->generate_code(
+					array(
+						'account_number'	=> $account_number,
+						'date_added'		=> $this->_today,
+						'oauth_bridge_id'	=> $bridge_id
+					)
+				),
+				'oauth_bridge_id'	=> $bridge_id,
+				'client_date_added'	=> $this->_today
+			)
+		);
 	}
 
 	public function get_post() {
@@ -106,18 +151,42 @@ class Api_Controller extends MX_Controller {
 		$flag = false;
 
 		$this->load->model('api/accounts_model', 'accounts');
+		$this->load->model('api/client_accounts_model', 'client_accounts');
 		$this->load->model('api/tms_admin_accounts_model', 'admin_accounts');
 		$this->load->model('api/merchant_accounts_model', 'merchant_accounts');
 
-		$ccount_row = $this->admin_accounts->get_datum(
+		$client_row = $this->client_accounts->get_datum(
 			'',
 			array(
 				'account_username' => $username
 			)
 		)->row();
 
-		if ($ccount_row != "") {
-			$acc_id = $ccount_row->account_number;
+		if ($client_row != "") {
+			$acc_id = $client_row->account_number;
+
+			if ($type == "client" && $id != "") {
+				if ($acc_id == $id) {
+					$flag = false;
+				} else {
+					$flag = true;
+					goto end;
+				}
+			} else {
+				$flag = true;
+				goto end;
+			}
+		}
+
+		$account_row = $this->accounts->get_datum(
+			'',
+			array(
+				'account_username' => $username
+			)
+		)->row();
+
+		if ($account_row != "") {
+			$acc_id = $account_row->account_number;
 
 			if ($type == "admin" && $id != "") {
 				if ($acc_id == $id) {
@@ -199,7 +268,7 @@ class Api_Controller extends MX_Controller {
 		if ($client_row != "") {
 			$acc_id = $client_row->account_number;
 
-			if ($type == "admin" && $id != "") {
+			if ($type == "client" && $id != "") {
 				if ($acc_id == $id) {
 					$flag = false;
 				} else {

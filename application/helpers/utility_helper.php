@@ -31,8 +31,14 @@ function error_message($error_code) {
 		return 'Unverified account!'; 
 	} else if ($error_code == 'E005-2') { // Unverified account merchant
 		return 'Unverified account!'; 
+	} else if ($error_code == 'E005-3') { // Unverified account merchant
+		return 'Email address not activated!'; 
+	} else if ($error_code == 'E005-4') { // Unverified account merchant
+		return 'Account is deactivated!'; 
 	} else if ($error_code == 'E006-1') { // already exist username client
 		return 'Username Already Exist!'; 
+	} else if ($error_code == 'E006-3') { 
+		return 'Username and password are required!'; 
 	} else if ($error_code == 'E006-2') { // already exist username merchant
 		return 'Username Already Exist!'; 
 	} else if ($error_code == 'E007-1') { // already exist username merchant
@@ -48,11 +54,11 @@ function error_message($error_code) {
 	} else if ($error_code == 'E009-2') { // email activation code
 		return 'Invalid Email!'; 
 	} else if ($error_code == 'E010-1') { // unable to send email activation
-		return 'You can request activation code after 5 minutes!'; 
+		return 'You can request activation pin after 5 minutes!'; 
 	} else if ($error_code == 'E010-2') { // unable to send email activation
-		return 'You can request activation code after 5 minutes!'; 
+		return 'You can request activation pin after 5 minutes!'; 
 	}  else if ($error_code == 'E010-3') { // unable to send email activation
-		return 'Activation Code is expired!'; 
+		return 'Activation pin is expired!'; 
 	} else {
 		return 'API Error';
 	}

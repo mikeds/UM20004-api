@@ -73,6 +73,9 @@ $route["activation/client-email/activate"]    = "api/Activation/client_email_act
 $route["avatar/merchant-accounts/(:any)"]   = "public/Avatar/merchant_accounts/$1";
 $route["qr-code/merchant-accounts/(:any)"]  = "public/Qr_code/merchant_accounts/$1";
 
+$route["avatar/client-accounts/(:any)"]   = "public/Avatar/client_accounts/$1";
+$route["qr-code/client-accounts/(:any)"]  = "public/Qr_code/client_accounts/$1";
+
 $route["uploads"]                    = "api/Registration/uploads";
 
 $route['404_override'] = 'api/Error_404';

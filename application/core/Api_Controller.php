@@ -363,7 +363,7 @@ class Api_Controller extends MX_Controller {
 
 		return array(
 			'results' => array(
-				'is_date' 	=> false,
+				'is_data' 	=> $is_data,
 				'data'		=> $data
 			),
 			'errors' => $error_uploads

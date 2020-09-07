@@ -10,7 +10,7 @@ class Registration extends Tms_admin_Controller {
 			if (isset($_FILES['avatar_image'])) {
 				$files = $_FILES['avatar_image'];
 
-				$upload_files_results = $this->upload_files(
+				$upload_avatar_results = $this->upload_files(
 					"test",
 					$files,
 					"avatar_image",
@@ -19,7 +19,33 @@ class Registration extends Tms_admin_Controller {
 					"jpg|jpeg|JPG|JPEG|PNG|png|bmp"
 				);
 
-				print_r($upload_files_results);
+
+				if (isset($upload_avatar_results['results'])) {
+					$upload_results = $upload_avatar_results['results'];
+
+					if (isset($upload_results['is_data'])) {
+						if ($upload_results['is_data']) {
+							// get base64 image
+							if (isset($upload_results['data'][0])) {
+								$first_data = $upload_results['data'][0];
+								$base64_image = $first_data['base64_image'];
+
+								// // update merchant
+								// $this->merchant_accounts->update(
+								// 	$account_number,
+								// 	array(
+								// 		'account_avatar_base64' => $base64_image
+								// 	)
+								// );
+
+								echo "test2";
+								die();
+							}
+						}
+					}
+				}
+
+				// print_r($upload_avatar_results);
 			}
 		}
 	}
@@ -161,7 +187,7 @@ class Registration extends Tms_admin_Controller {
 				$insert_data
 			);
 
-			$this->create_merchant_account(
+			$account_number = $this->create_merchant_account(
 				$admin_oauth_bridge_id, 
 				$merchant_number, 
 				$fname, 
@@ -184,7 +210,7 @@ class Registration extends Tms_admin_Controller {
 				if (isset($_FILES['avatar_image'])) {
 					$avatar_image = $_FILES['avatar_image'];
 
-					$upload_files_results = $this->upload_files(
+					$upload_avatar_results = $this->upload_files(
 						$merchant_number,
 						$avatar_image,
 						"avatar_image",
@@ -192,6 +218,32 @@ class Registration extends Tms_admin_Controller {
 						5,
 						"jpg|jpeg|JPG|JPEG|PNG|png|bmp"
 					);
+
+					if (isset($upload_avatar_results['results'])) {
+						$upload_results = $upload_avatar_results['results'];
+
+						if (isset($upload_avatar_results['results'])) {
+							$upload_results = $upload_avatar_results['results'];
+		
+							if (isset($upload_results['is_data'])) {
+								if ($upload_results['is_data']) {
+									// get base64 image
+									if (isset($upload_results['data'][0])) {
+										$first_data = $upload_results['data'][0];
+										$base64_image = $first_data['base64_image'];
+		
+										// update merchant
+										$this->merchant_accounts->update(
+											$account_number,
+											array(
+												'account_avatar_base64' => $base64_image
+											)
+										);
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 
@@ -259,5 +311,7 @@ class Registration extends Tms_admin_Controller {
 		$this->merchant_accounts->insert(
 			$account_data
 		);
+
+		return $account_number;
 	}
 }

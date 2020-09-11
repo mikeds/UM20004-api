@@ -50,7 +50,7 @@ class Transactions_otp extends Api_Controller {
             echo json_encode(
                 array(
                     'error'             => true,
-                    'error_description' => "Transaction is expired"
+                    'error_description' => "Transaction is expired."
                 )
             );
             die();
@@ -71,5 +71,63 @@ class Transactions_otp extends Api_Controller {
                 )
             )
         );
-	}
+    }
+    
+    public function resende() {
+        $this->load->model("api/transactions_model", "transactions");
+        
+        $post           = $this->get_post();
+        
+        if (!isset($post["sender_ref_id"])) {
+            die();
+        }
+
+        $sender_ref_id = $post["sender_ref_id"];
+
+        if (trim($sender_ref_id) == "") {
+            die();
+        }
+
+        $row = $this->transactions->get_datum(
+            '',
+            array(
+                'transaction_sender_ref_id' => $sender_ref_id,
+                'transaction_otp_status'    => 0
+            )
+        )->row();
+
+        if ($row == "") {
+            die();
+        }
+
+        $expiration_date = $row->transaction_date_expiration;
+
+        if (strtotime($expiration_date) < strtotime($this->_today)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Transaction is expired."
+                )
+            );
+            die();
+        }
+
+        $pin = generate_code(4, 2);
+
+        $this->transactions->update(
+            $row->transaction_id,
+            array(
+                'transaction_otp_pin' => $pin
+            )
+        );
+
+        echo json_encode(
+            array(
+                'message' => "Successfully resend OTP PIN.",
+                'response' => array(
+                    'sender_ref_id' => $sender_ref_id
+                )
+            )
+        );
+    }
 }

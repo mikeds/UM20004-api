@@ -80,7 +80,7 @@ class Registration extends Tms_admin_Controller {
 
 			if ($this->JSON_POST()) {
 				$post = $this->get_post();
-				$username		= isset($post["username"]) ? $post["username"] : "";
+				// $username		= isset($post["username"]) ? $post["username"] : "";
 				$fname			= isset($post["first_name"]) ? $post["first_name"] : "";
 				$mname			= isset($post["middle_name"]) ? $post["middle_name"] : "";
 				$lname			= isset($post["last_name"]) ? $post["last_name"] : "";
@@ -96,7 +96,7 @@ class Registration extends Tms_admin_Controller {
 				$email_address	= isset($post["email_address"]) ? $post["email_address"] : "";
 				$password		= isset($post["password"]) ? $post["password"] : "";
 			} else {
-				$username		= $this->input->post("username");
+				// $username		= $this->input->post("username");
 				$fname			= $this->input->post("first_name");
 				$mname			= $this->input->post("middle_name");
 				$lname			= $this->input->post("last_name");
@@ -113,13 +113,13 @@ class Registration extends Tms_admin_Controller {
 				$password		= $this->input->post("password");
 			}
 
-			$username = trim(strtolower($username));
+			// $username = trim(strtolower($username));
 
-			if ($username == ""  || $email_address == "") {
+			if ($email_address == "") {
 				generate_error_message("E006-3");
 			}
 
-			if ($this->validate_username("client", $username)) {
+			if ($this->validate_username("client", $email_address)) {
 				generate_error_message("E006-2");
 			}
 
@@ -168,7 +168,7 @@ class Registration extends Tms_admin_Controller {
 
 			$insert_data = array(
 				'account_number'			=> $account_number,
-				'account_username'			=> $username,
+				'account_username'			=> $email_address,
 				'account_password'			=> $password,
 				'account_fname'				=> $fname,
 				'account_mname'				=> $mname,

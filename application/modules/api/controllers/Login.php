@@ -87,7 +87,7 @@ class Login extends Tms_admin_Controller {
 				),
 				array(
 					'table_name' 	=> 'oauth_clients',
-					'condition'		=> 'merchants.oauth_bridge_id = oauth_clients.client_id',
+					'condition'		=> 'merchant_accounts.oauth_bridge_id = oauth_clients.client_id',
 					'type'			=> 'left'
 				)
 			);

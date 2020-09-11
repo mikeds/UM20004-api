@@ -212,7 +212,16 @@ class Activation extends Tms_admin_Controller {
 			if (count($results) != 0) {
 				$first_row = $results[0];
 				$account_number = $first_row['account_number'];
+				$account_status = $first_row['account_status'];
 				
+				// if activated/verified
+				if ($row->merchant_status == 1 && $account_status == 0) {
+					$bridge_id 				= $first_row['oauth_bridge_id'];
+
+					// create token auth for api
+					$this->create_token_auth($account_number, $bridge_id);
+				}
+
 				$this->merchant_accounts->update(
 					$account_number,
 					array(

@@ -76,7 +76,10 @@ $route["qr-code/merchant-accounts/(:any)"]  = "public/Qr_code/merchant_accounts/
 $route["avatar/client-accounts/(:any)"]   = "public/Avatar/client_accounts/$1";
 $route["qr-code/client-accounts/(:any)"]  = "public/Qr_code/client_accounts/$1";
 
-$route["uploads"]                    = "api/Registration/uploads";
+
+$route["transactions/merchant/top-up"]   = "api/Top_up";
+
+// $route["uploads"]                    = "api/Registration/uploads";
 
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;

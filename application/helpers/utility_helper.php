@@ -12,6 +12,10 @@
 
 // ------------------------------------------------------------------------
 
+function is_decimal( $val ) {
+    return is_numeric( $val ) && floor( $val ) != $val;
+}
+
 function error_message($error_code) {
 	if ($error_code == 'E001') {
 		return 'Token not found!';

@@ -90,6 +90,17 @@ class Api_Controller extends MX_Controller {
 	public function create_token_auth($account_number, $bridge_id) {
 		$this->load->model('api/oauth_clients_model', 'oauth_clients');
 
+		$row = $this->oauth_clients->get_datum(
+			'',
+			array(
+				'oauth_bridge_id'	=> $bridge_id
+			)
+		)->row();
+
+		if ($row != "") {
+			return;
+		}
+
 		// create api token
 		$this->oauth_clients->insert(
 			array(

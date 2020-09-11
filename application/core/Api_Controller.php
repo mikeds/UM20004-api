@@ -57,6 +57,30 @@ class Api_Controller extends MX_Controller {
 		);
 	}
 
+	public function send_otp_pin($title = "OTP PIN", $send_to_email, $pin, $expiration_date = "") {
+		if ($expiration_date != "") {
+			if ($expiration_date > $this->_today) {
+				generate_error_message("E010-2");
+			}
+		}
+
+		$date	= strtotime($this->_today);
+		$date 	= date("F j, Y, g:i a", $date);
+
+		// send email activation
+		$email_message = $this->load->view("templates/otp_pin", array(
+			"activation_pin" => $pin,
+			"date"	=> $date
+		), true);
+
+		send_email(
+			getenv("SMTPUSER"),
+			$send_to_email,
+			$title,
+			$email_message
+		);
+	}
+
 	public function generate_code($data, $hash = "sha256") {
 		$json = json_encode($data);
 		return hash_hmac($hash, $json, getenv("SYSKEY"));

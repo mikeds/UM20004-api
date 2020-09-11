@@ -38,7 +38,6 @@ class Top_up extends Merchant_Controller {
         $fee = 0;
 
         if (!isset($post["amount"])) {
-            echo "test";
             die();
         }
 
@@ -92,10 +91,14 @@ class Top_up extends Merchant_Controller {
             "crc32"
         );
 
+        // generate OTP Pin
+        $pin 	= generate_code(4, 2);
+
         $data_insert = array_merge(
             $data_insert,
             array(
-                'transaction_id' => $transaction_id
+                'transaction_id'        => $transaction_id,
+                'transaction_otp_pin'   => $pin
             )
         );
 
@@ -103,6 +106,14 @@ class Top_up extends Merchant_Controller {
             $data_insert
         );
 
+        $email_address = $account->merchant_email_address;
+
+        $this->send_otp_pin(
+            "TOP-UP OTP PIN",
+            $email_address, 
+            $pin
+        );
+        
         echo json_encode(
             array(
                 'response' => array(
@@ -110,5 +121,5 @@ class Top_up extends Merchant_Controller {
                 )
             )
         );
-	}
+    }
 }

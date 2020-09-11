@@ -1,0 +1,75 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Transactions_otp extends Api_Controller {
+
+	public function after_init() {
+        if ($_SERVER['REQUEST_METHOD'] != 'POST' || !$this->JSON_POST()) {
+			$this->output->set_status_header(401);
+			die();
+		}
+    }
+
+	public function activation() {
+        $this->load->model("api/transactions_model", "transactions");
+        
+        $post           = $this->get_post();
+        
+        if (!isset($post["sender_ref_id"])) {
+            die();
+        }
+
+        if (!isset($post["pin"])) {
+            die();
+        }
+
+        $sender_ref_id = $post["sender_ref_id"];
+
+        if (trim($sender_ref_id) == "") {
+            die();
+        }
+
+        $pin = $post["pin"];
+
+        $row = $this->transactions->get_datum(
+            '',
+            array(
+                'transaction_sender_ref_id' => $sender_ref_id,
+                'transaction_otp_pin'       => $pin,
+                'transaction_otp_status'    => 0
+            )
+        )->row();
+
+        if ($row == "") {
+            die();
+        }
+
+        $expiration_date = $row->transaction_date_expiration;
+
+        if (strtotime($expiration_date) < strtotime($this->_today)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Transaction is expired"
+                )
+            );
+            die();
+        }
+
+        $this->transactions->update(
+            $row->transaction_id,
+            array(
+                'transaction_otp_status' => 1
+            )
+        );
+
+        echo json_encode(
+            array(
+                'message' => "Successfully activated OTP PIN.",
+                'response' => array(
+                    'sender_ref_id' => $sender_ref_id
+                )
+            )
+        );
+	}
+}

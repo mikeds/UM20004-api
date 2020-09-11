@@ -6,7 +6,7 @@ class Transactions_model extends CI_Model {
 		$_table_x	= 'transactions';
 
 	private
-		$_id = "transaction_number";
+		$_id = "transaction_id";
 
 	function get_datum($id = '', $data = array(), $where_or = array()) {
 		$this->db->from( $this->_table_x );

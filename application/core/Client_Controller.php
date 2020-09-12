@@ -56,4 +56,24 @@ class Client_Controller extends Api_Controller {
 		
 		$this->_account = $row;
 	}
+
+	public function filter_ledger($data) {
+		$results = array();
+
+		foreach ($data as $datum) {
+			$row = $this->get_oauth_account_info($datum['transaction_requested_by']);
+
+			$tmp_result = $datum;
+
+			if ($row) {
+				$tmp_result['transaction_requested_by'] = trim($row['account_fname'] . " ". $row['account_lname'] . " " . $row['account_lname']);
+			} else {
+				$tmp_result['transaction_requested_by'] = "SYSTEM";
+			}
+
+			$results[] = $tmp_result;
+		}
+
+		return $results;
+	}
 }

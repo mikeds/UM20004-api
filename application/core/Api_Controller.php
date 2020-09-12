@@ -7,7 +7,7 @@
  */
 class Api_Controller extends MX_Controller {
 	protected
-		$_limit = 20,
+		$_limit = 10,
 		$_today = "",
 		$_base_controller = "api",
 		$_base_session = "session";
@@ -31,6 +31,75 @@ class Api_Controller extends MX_Controller {
 		header('Content-Type: application/json');
 
 		$this->after_init();
+	}
+
+	public function get_oauth_account_info($oauth_bridge_id) {
+		$this->load->model("api/accounts_model", "accounts");
+		$this->load->model("api/tms_admin_accounts_model", "tms_admin_accounts");
+		$this->load->model("api/merchant_accounts_model", "merchant_accounts");
+		$this->load->model("api/client_accounts_model", "client_accounts");
+			
+		$where = array(
+			'oauth_bridge_id'	=> $oauth_bridge_id
+		);
+
+		$row_account = $this->accounts->get_datum(
+			'',
+			$where
+		)->row();
+
+		if ($row_account != "") {
+			return array(
+				'account_number'	=> $row_account->account_number,
+				'account_fname'		=> $row_account->account_fname,
+				'account_mname'		=> $row_account->account_mname,
+				'account_lname'		=> $row_account->account_lname, 
+			);
+		}
+
+		$row_admin = $this->tms_admin_accounts->get_datum(
+			'',
+			$where
+		)->row();
+
+		if ($row_admin != "") {
+			return array(
+				'account_number'	=> $row_admin->account_number,
+				'account_fname'		=> $row_admin->account_fname,
+				'account_mname'		=> $row_admin->account_mname,
+				'account_lname'		=> $row_admin->account_lname, 
+			);
+		}
+
+		$row_merchant = $this->merchant_accounts->get_datum(
+			'',
+			$where
+		)->row();
+
+		if ($row_merchant != "") {
+			return array(
+				'account_number'	=> $row_merchant->account_number,
+				'account_fname'		=> $row_merchant->account_fname,
+				'account_mname'		=> $row_merchant->account_mname,
+				'account_lname'		=> $row_merchant->account_lname, 
+			);
+		}
+
+		$row_client = $this->client_accounts->get_datum(
+			'',
+			$where
+		)->row();
+
+		if ($row_client != "") {
+			return array(
+				'account_number'	=> $row_client->account_number,
+				'account_fname'		=> $row_client->account_fname,
+				'account_mname'		=> $row_client->account_mname,
+				'account_lname'		=> $row_client->account_lname, 
+			);
+		}
+
+		return false;
 	}
 
 	public function new_ledger_datum($description = "", $transaction_id, $from_wallet_address, $to_wallet_address, $balances) {

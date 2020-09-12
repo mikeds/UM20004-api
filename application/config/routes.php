@@ -91,6 +91,9 @@ $route["transactions/merchant/accept-cash-in"]   = "api/Merchant_accept/cash_in"
 $route["clients/balance"]       = "api/Clients/balance";
 $route["merchants/balance"]     = "api/Merchants/balance";
 
+$route["clients/ledger"]       = "api/Clients/ledger";
+$route["merchants/ledger"]     = "api/Merchants/ledger";
+
 // $route["uploads"]                    = "api/Registration/uploads";
 
 $route['404_override'] = 'api/Error_404';

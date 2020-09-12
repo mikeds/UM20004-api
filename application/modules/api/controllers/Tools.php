@@ -16,7 +16,8 @@ class Tools extends Tms_admin_Controller {
 		$countries = $this->countries->get_data(
 			array(
 				'country_id',
-				'country_name'
+				'country_name',
+				'country_mobile_code'
 			),
 			array(
 				'country_status' => 1

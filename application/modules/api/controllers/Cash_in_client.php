@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Top_up extends Merchant_Controller {
+class Cash_in_client extends Client_Controller {
 
 	public function after_init() {
         if ($_SERVER['REQUEST_METHOD'] != 'POST' || !$this->JSON_POST()) {
@@ -26,11 +26,11 @@ class Top_up extends Merchant_Controller {
 
 	public function otc() {
         $account                = $this->_account;
-        $transaction_type_id    = "TXTYPE_1002011";
+        $transaction_type_id    = "TXTYPE_1003011"; // cash-in
         $post                   = $this->get_post();
 
-        $account_oauth_bridge_id    = $account->account_oauth_bridge_id;
-        $admin_oauth_bridge_id      = $account->oauth_bridge_parent_id;
+        $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;
+        $sender_oauth_bridge_id    = $account->account_oauth_bridge_id;
 
         $amount = 0;
         $fee = 0;
@@ -48,29 +48,30 @@ class Top_up extends Merchant_Controller {
         }
         
         $amount = $post["amount"];
+        $total_amount = $amount + $fee;
 
         $tx_row = $this->create_transaction(
             $amount, 
             $fee, 
             $transaction_type_id, 
-            $account_oauth_bridge_id, 
-            $admin_oauth_bridge_id
+            $sender_oauth_bridge_id, 
+            ""
         );
 
         $pin            = $tx_row['pin'];
         $sender_ref_id  = $tx_row['sender_ref_id'];
 
-        $email_address = $account->merchant_email_address;
+        $email_address = $account->account_email_address;
 
         $this->send_otp_pin(
-            "TOP-UP OTP PIN",
+            "CASH-IN OTP PIN",
             $email_address, 
             $pin
         );
         
         echo json_encode(
             array(
-                'message' => "Successfully created top-up, OTP Pin sent to your email.",
+                'message' =>  "Successfully created cash-in, OTP Pin sent to your email.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id
                 )

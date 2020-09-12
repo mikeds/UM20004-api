@@ -76,9 +76,18 @@ $route["qr-code/merchant-accounts/(:any)"]  = "public/Qr_code/merchant_accounts/
 $route["avatar/client-accounts/(:any)"]   = "public/Avatar/client_accounts/$1";
 $route["qr-code/client-accounts/(:any)"]  = "public/Qr_code/client_accounts/$1";
 
-$route["transactions/otp/activation"]   = "api/Transactions_otp/activation";
+$route["qr-code/transactions/(:any)"]     = "public/Qr_code/transactions/$1";
+
+$route["otp/top-up/activation"]     = "api/Otp_top_up/activation";
+$route["otp/cash-in/activation"]    = "api/Otp_cash_in/activation";
 
 $route["transactions/merchant/top-up"]  = "api/Top_up";
+
+$route["transactions/client/send-to"]   = "api/Send_to/direct";
+
+$route["transactions/client/cash-in"]   = "api/Cash_in_client";
+
+$route["transactions/merchant/accept-cash-in"]   = "api/Merchant_accept/cash_in";
 
 // $route["uploads"]                    = "api/Registration/uploads";
 

@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Transactions_otp extends Api_Controller {
+class Otp_top_up extends Api_Controller {
 
 	public function after_init() {
         if ($_SERVER['REQUEST_METHOD'] != 'POST' || !$this->JSON_POST()) {
@@ -73,7 +73,7 @@ class Transactions_otp extends Api_Controller {
         );
     }
     
-    public function resende() {
+    public function resend() {
         $this->load->model("api/transactions_model", "transactions");
         
         $post           = $this->get_post();

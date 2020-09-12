@@ -33,6 +33,153 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function new_ledger_datum($description = "", $transaction_id, $from_wallet_address, $to_wallet_address, $balances) {
+		$this->load->model("api/ledger_data_model", "ledger");
+		$this->load->model("api/wallet_addresses_model", "wallet_addresses");
+
+		$to_oauth_bridge_id 	= getenv("SYSADD");
+		$from_oauth_bridge_id 	= getenv("SYSADD");
+
+
+		$from_row = $this->wallet_addresses->get_datum(
+			'',
+			array(
+				'wallet_address' => $from_wallet_address
+			)
+		)->row();
+
+		if ($from_row != "") {
+			$from_oauth_bridge_id 	= $from_row->oauth_bridge_id;
+		}
+
+		$to_row = $this->wallet_addresses->get_datum(
+			'',
+			array(
+				'wallet_address' => $to_wallet_address
+			)
+		)->row();
+
+		if ($to_row != "") {
+			$to_oauth_bridge_id 	= $to_row->oauth_bridge_id;
+		}
+
+		$old_balance = $balances['old_balance'];
+		$new_balance = $balances['new_balance'];
+		$amount		 = $balances['amount'];
+
+		$ledger_type = 0; // unknown
+
+		if ($amount < 0) {
+			$ledger_type = 1; // debit
+		} else if ($amount >= 0) {
+			$ledger_type = 2; // credit
+		}
+
+		// add new ledger data
+		$ledger_data = array(
+			'tx_id'                         => $transaction_id,
+			'ledger_datum_type'				=> $ledger_type,
+			'ledger_datum_bridge_id'		=> $to_oauth_bridge_id,
+			'ledger_datum_desc'             => $description,
+			'ledger_from_wallet_address'    => $from_wallet_address,
+			'ledger_to_wallet_address'      => $to_wallet_address,
+			'ledger_from_oauth_bridge_id'   => $from_oauth_bridge_id,
+			'ledger_to_oauth_bridge_id'     => $to_oauth_bridge_id,
+			'ledger_datum_old_balance'      => $old_balance,
+			'ledger_datum_new_balance'      => $new_balance,
+			'ledger_datum_amount'           => $amount,
+			'ledger_datum_date_added'       => $this->_today
+		);
+
+		$ledger_datum_id = $this->generate_code(
+			$ledger_data,
+			"crc32"
+		);
+
+		$ledger_data = array_merge(
+			$ledger_data,
+			array(
+				'ledger_datum_id'   => $ledger_datum_id,
+			)
+		);
+
+		$ledger_datum_checking_data = $this->generate_code($ledger_data);
+
+		$this->ledger->insert(
+			array_merge(
+				$ledger_data,
+				array(
+					'ledger_datum_checking_data' => $ledger_datum_checking_data
+				)
+			)
+		);
+	}
+
+	public function update_wallet($wallet_address, $amount) {
+		$this->load->model("api/wallet_addresses_model", "wallet_addresses");
+
+		$row = $this->wallet_addresses->get_datum(
+			'',
+			array(
+				'wallet_address'	=> $wallet_address
+			)
+		)->row();
+
+		if ($row == "") {
+			return false;
+		}
+
+		$wallet_balance         = $this->decrypt_wallet_balance($row->wallet_balance);
+
+		$old_balance            = $wallet_balance;
+		$encryted_old_balance   = $this->encrypt_wallet_balance($old_balance);
+
+		$new_balance            = $old_balance + $amount;
+		$encryted_new_balance   = $this->encrypt_wallet_balance($new_balance);
+
+		$wallet_data = array(
+			'wallet_balance'                => $encryted_new_balance,
+			'wallet_address_date_updated'   => $this->_today
+		);
+
+		// update wallet balances
+		$this->wallet_addresses->update(
+			$wallet_address,
+			$wallet_data
+		);
+
+		return array(
+			'old_balance'	=> $old_balance,
+			'new_balance'	=> $new_balance,
+			'amount'		=> $amount
+		);
+	}
+
+	public function encrypt_wallet_balance($balance) {
+		return openssl_encrypt($balance, $this->_ssl_method, getenv("BPKEY"));
+	}
+
+	public function decrypt_wallet_balance($encrypted_balance) {
+		return openssl_decrypt($encrypted_balance, $this->_ssl_method, getenv("BPKEY"));
+	}
+
+	public function get_wallet_address($bridge_id) {
+		$this->load->model('api/wallet_addresses_model', 'wallet_addresses');
+
+		$row = $this->wallet_addresses->get_datum(
+			'',
+			array(
+				'oauth_bridge_id' => $bridge_id
+			)
+		)->row();
+
+		if ($row == "") {
+			return "";
+		}
+
+		return $row->wallet_address;
+	}
+
 	public function send_email_activation($send_to_email, $pin, $expiration_date = "") {
 		if ($expiration_date != "") {
 			if ($expiration_date > $this->_today) {
@@ -84,6 +231,70 @@ class Api_Controller extends MX_Controller {
 	public function generate_code($data, $hash = "sha256") {
 		$json = json_encode($data);
 		return hash_hmac($hash, $json, getenv("SYSKEY"));
+	}
+
+	public function create_transaction($amount, $fee, $transaction_type_id, $sender_oauth_bridge_id, $receiver_oauth_bridge_id) {
+		$this->load->model("api/transactions_model", "transactions");
+
+        // expiration timestamp
+        $minutes_to_add = 60;
+        $time = new DateTime($this->_today);
+        $time->add(new DateInterval('PT' . $minutes_to_add . 'M'));
+        $stamp = $time->format('Y-m-d H:i:s');
+
+        $total_amount = $amount + $fee;
+
+        $data_insert = array(
+            'transaction_amount' 		    => $amount,
+            'transaction_fee'		        => $fee,
+            'transaction_total_amount'      => $total_amount,
+            'transaction_type_id'           => $transaction_type_id,
+            'transaction_requested_by'      => $sender_oauth_bridge_id,
+            'transaction_requested_to'	    => $receiver_oauth_bridge_id,
+            'transaction_created_by'        => $sender_oauth_bridge_id,
+            'transaction_date_created'      => $this->_today,
+            'transaction_date_expiration'   => $stamp
+        );
+
+        // generate sender ref id
+        $sender_ref_id = $this->generate_code(
+            $data_insert,
+            "crc32"
+        );
+
+        $data_insert = array_merge(
+            $data_insert,
+            array(
+                'transaction_sender_ref_id' => $sender_ref_id
+            )
+        );
+
+        // generate transaction id
+        $transaction_id = $this->generate_code(
+            $data_insert,
+            "crc32"
+        );
+
+        // generate OTP Pin
+        $pin 	= generate_code(4, 2);
+
+        $data_insert = array_merge(
+            $data_insert,
+            array(
+                'transaction_id'        => $transaction_id,
+                'transaction_otp_pin'   => $pin
+            )
+        );
+
+        $this->transactions->insert(
+            $data_insert
+		);
+		
+		return array(
+			'transaction_id'=> $transaction_id,
+			'sender_ref_id'	=> $sender_ref_id,
+			'pin'			=> $pin
+		);
 	}
 
 	public function create_wallet_address($account_number, $bridge_id, $oauth_bridge_parent_id) {

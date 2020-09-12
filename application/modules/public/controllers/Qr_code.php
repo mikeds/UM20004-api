@@ -56,6 +56,19 @@ class Qr_code extends Public_Controller {
         $config['errorlog']		= ''; //string, the default is application/logs/
         $this->ciqrcode->generate($params);
     }
+
+    public function transactions($id) {
+        $this->load->model("api/client_accounts_model", "accounts");
+    
+        $this->load->library('ciqrcode');
+        header("Content-Type: image/png");
+        $params['data'] = $id;
+        $params['size'] = 6;
+        $config['cacheable']	= false; //boolean, the default is true
+        $config['cachedir']		= ''; //string, the default is application/cache/
+        $config['errorlog']		= ''; //string, the default is application/logs/
+        $this->ciqrcode->generate($params);
+    }
 }
 
 

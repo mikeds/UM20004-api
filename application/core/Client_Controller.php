@@ -43,7 +43,11 @@ class Client_Controller extends Api_Controller {
 				'client_accounts.oauth_bridge_id' => $client_id
 			),
 			array(),
-			$inner_joints
+			$inner_joints,
+			array(
+				'*',
+				'client_accounts.oauth_bridge_id as account_oauth_bridge_id'
+			)
 		)->row();
 		
 		if ($row == "") {

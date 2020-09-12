@@ -51,40 +51,57 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 
 $route["default_controller"]        = "api/Home";
-
 $route["token"]                     = "api/Token";
 
-$route["device/auth"]               = "api/Device/auth";
-$route["device/registration"]       = "api/Device/registration";
+$route["clients/login"]             = "api/Login/client";
+$route["merchants/login"]           = "api/Login/merchant";
 
-$route["merchant/login"]            = "api/Merchant/Login";
-$route["merchant/registration"]     = "api/Merchant/registration";
+$route["clients/registration"]      = "api/Registration/client";
+$route["merchants/registration"]    = "api/Registration/merchant";
 
-$route["merchant/accept"]           = "api/Merchant_transaction/accept_transaction";
-$route["merchant/accept/cash-out"]  = "api/Merchant_transaction/accept_cash_out";
-$route["merchant/accept/cash-in"]   = "api/Merchant_transaction/accept_cash_in";
+$route["tools/countries"]           = "api/Tools/countries";
+$route["tools/provinces/(:num)"]    = "api/Tools/provinces/$1";
 
-$route["merchant/history"]            = "api/Merchant_transaction/history";
-$route["merchant/history/(:num)"]     = "api/Merchant_transaction/history/$1";
-$route["merchant/balance"]            = "api/Merchant_transaction/balance";
+$route["callback/ubp/code"]         = "api/Callback/ubp_code";
 
-$route["client/login"]                  = "api/Client/login";
-$route["client/registration"]           = "api/Client/registration";
+$route["activation/merchant-email/resend"]      = "api/Activation/merchant_email_resend";
+$route["activation/merchant-email/activate"]    = "api/Activation/merchant_email_activation";
 
-$route["client/resend-code-confirmation"]   = "api/Client/resend_code_confirmation";
-$route["client/code-confirmation"]          = "api/Client/code_confirmation";
+$route["activation/client-email/resend"]      = "api/Activation/client_email_resend";
+$route["activation/client-email/activate"]    = "api/Activation/client_email_activation";
 
-$route["client/history"]            = "api/Client_transaction/history";
-$route["client/history/(:num)"]     = "api/Client_transaction/history/$1";
-$route["client/balance"]            = "api/Client_transaction/balance";
+$route["avatar/merchant-accounts/(:any)"]   = "public/Avatar/merchant_accounts/$1";
+$route["qr-code/merchant-accounts/(:any)"]  = "public/Qr_code/merchant_accounts/$1";
 
-$route["client/cash-in"]            = "api/Client_transaction/cash_in";
-$route["client/cash-out"]           = "api/Client_transaction/cash_out";
-$route["client/send-to"]            = "api/Client_transaction/send_to";
+$route["avatar/client-accounts/(:any)"]   = "public/Avatar/client_accounts/$1";
+$route["qr-code/client-accounts/(:any)"]  = "public/Qr_code/client_accounts/$1";
 
-$route["transaction/qr-code-(:any)"]    = "api/Qr_code/index/$1";      
+$route["qr-code/transactions/(:any)"]     = "public/Qr_code/transactions/$1";
 
-$route["customer/callback/token"] = "api/Callback/customer_callback_token";
+$route["otp/top-up/activation"]     = "api/Otp_top_up/activation";
+$route["otp/cash-in/activation"]    = "api/Otp_cash_in/activation";
+$route["otp/send-to/activation"]    = "api/Otp_send_to/activation";
+
+$route["otp/top-up/resend"]     = "api/Otp_top_up/resend";
+$route["otp/cash-in/resend"]    = "api/Otp_cash_in/resend";
+$route["otp/send-to/resend"]    = "api/Otp_send_to/resend";
+
+$route["transactions/merchant/top-up"]  = "api/Top_up";
+$route["transactions/client/send-to"]   = "api/Send_to/direct";
+$route["transactions/client/cash-in"]   = "api/Cash_in";
+
+$route["transactions/merchant/accept-cash-in"]   = "api/Merchant_accept/cash_in";
+
+$route["clients/balance"]       = "api/Clients/balance";
+$route["merchants/balance"]     = "api/Merchants/balance";
+
+$route["clients/ledger"]       = "api/Clients/ledger";
+$route["merchants/ledger"]     = "api/Merchants/ledger";
+
+$route["clients/ledger/(:any)"]     = "api/Clients/ledger/$1";
+$route["merchants/ledger/(:any)"]   = "api/Merchants/ledger/$1";
+
+// $route["uploads"]                    = "api/Registration/uploads";
 
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;

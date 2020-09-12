@@ -1,6 +1,0 @@
-/* ... so you might want to scope it */
-input:read-only, 
-textarea:read-only,
-[contenteditable]:read-only {
-  cursor: not-allowed;
-}

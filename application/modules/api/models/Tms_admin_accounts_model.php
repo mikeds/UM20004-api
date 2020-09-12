@@ -1,12 +1,12 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Merchants_model extends CI_Model {
+class Tms_admin_accounts_model extends CI_Model {
 	private 
-		$_table	= 'merchants  merchants',
-		$_table_x	= 'merchants';
+		$_table	= 'tms_admin_accounts  admin_accounts',
+		$_table_x	= 'tms_admin_accounts';
 
 	private
-		$_id = "merchant_number";
+		$_id = "account_number";
 
 	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array()) {
 		$this->db->from($this->_table);
@@ -164,4 +164,3 @@ class Merchants_model extends CI_Model {
 	*/
 }
 
-	

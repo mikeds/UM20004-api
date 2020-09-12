@@ -1,14 +1,18 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Merchants_model extends CI_Model {
+class Merchant_accounts_model extends CI_Model {
 	private 
-		$_table	= 'merchants  merchants',
-		$_table_x	= 'merchants';
+		$_table	= 'merchant_accounts  merchant_accounts',
+		$_table_x	= 'merchant_accounts';
 
 	private
-		$_id = "merchant_number";
+		$_id = "account_number";
 
-	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array()) {
+	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array(), $select = array()) {
+		if (!empty($select)) {
+			$this->db->select(ARRtoSTR($select));
+		}
+
 		$this->db->from($this->_table);
 		if (!empty($inner_joints)) {
 			foreach($inner_joints as $join) {
@@ -164,4 +168,3 @@ class Merchants_model extends CI_Model {
 	*/
 }
 
-	

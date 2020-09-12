@@ -1,12 +1,12 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Merchants_model extends CI_Model {
+class Countries_model extends CI_Model {
 	private 
-		$_table	= 'merchants  merchants',
-		$_table_x	= 'merchants';
+		$_table	= 'countries  countries',
+		$_table_x	= 'countries';
 
 	private
-		$_id = "merchant_number";
+		$_id = "country_id";
 
 	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array()) {
 		$this->db->from($this->_table);

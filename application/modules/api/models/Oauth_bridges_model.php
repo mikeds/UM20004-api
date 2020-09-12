@@ -1,14 +1,19 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Merchants_model extends CI_Model {
+class Oauth_bridges_model extends CI_Model {
 	private 
-		$_table	= 'merchants  merchants',
-		$_table_x	= 'merchants';
+		$_table	= 'oauth_bridges  oauth_bridges',
+		$_table_x	= 'oauth_bridges';
 
 	private
-		$_id = "merchant_number";
+		$_id = "oauth_bridge_id";
 
-	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array()) {
+	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array(), $select = array()) {
+
+		if (!empty($select)) {
+			$this->db->select(ARRtoSTR($select), false);
+		}
+
 		$this->db->from($this->_table);
 		if (!empty($inner_joints)) {
 			foreach($inner_joints as $join) {

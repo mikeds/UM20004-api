@@ -1,30 +1,33 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Callback extends Public_Controller {
-    public function after_init() {}
+class Callback extends Api_Controller {
 
-    public function customer_callback_token() {
-        header('Content-type: application/json');
+	public function after_init() {
+		if ($_SERVER['REQUEST_METHOD'] != 'GET') {
+			$this->output->set_status_header(401);
+			die();
+		}
+	}
 
-        if ($_GET) {
-            if (isset($_GET['code'])) {
-                $code = $_GET['code'];
+	public function ubp_code() {
+		if ($_GET) {
+			if (isset($_GET['code'])) {
+				$code = $_GET['code'];
 
-                $results = array(
-                    'message' => "UBP Customer Token",
-                    'value' => array(
-                        'code' => $code
-                    )
-                );
+				echo json_encode(
+					array(
+						'response' => array(
+							'code' => $code
+						)
+					)
+				);
+				
+				return;
+			}
+		}
 
-                echo json_encode($results);
-                die();
-            }
-        }
-
-        // unauthorized request
-        http_response_code(401);
-        die();
-    }
+		// unauthorized access
+		$this->output->set_status_header(401);
+	}
 }

@@ -11,6 +11,74 @@
  */
 
 // ------------------------------------------------------------------------
+
+function is_decimal( $val ) {
+    return is_numeric( $val ) && floor( $val ) != $val;
+}
+
+function error_message($error_code) {
+	if ($error_code == 'E001') {
+		return 'Token not found!';
+	} else if ($error_code == 'E002') {
+		return 'Invalid provided token!';
+	} else if ($error_code == 'E003-1') { // not account type
+		return 'Invalid provided token!'; 
+	} else if ($error_code == 'E003-2') { // not tms type
+		return 'Invalid provided token!'; 
+	} else if ($error_code == 'E003-3') { // not merchant type
+		return 'Invalid provided token!'; 
+	} else if ($error_code == 'E004-1') { // invalid login client
+		return 'Incorrect Login!'; 
+	} else if ($error_code == 'E004-2') { // invalid login merchant
+		return 'Incorrect Login!'; 
+	} else if ($error_code == 'E005-1') { // Unverified account client
+		return 'Unverified account!'; 
+	} else if ($error_code == 'E005-2') { // Unverified account merchant
+		return 'Unverified account!'; 
+	} else if ($error_code == 'E005-3') { // Unverified account merchant
+		return 'Email address not activated!'; 
+	} else if ($error_code == 'E005-4') { // Unverified account merchant
+		return 'Account is deactivated!'; 
+	} else if ($error_code == 'E006-1') { // already exist username client
+		return 'Username Already Exist!'; 
+	} else if ($error_code == 'E006-3') { 
+		return 'Username and password are required!'; 
+	} else if ($error_code == 'E006-2') { // already exist username merchant
+		return 'Username Already Exist!'; 
+	} else if ($error_code == 'E007-1') { // already exist username merchant
+		return 'Email Address already used!'; 
+	} else if ($error_code == 'E007-2') { // already exist username merchant
+		return 'Email Address already used!'; 
+	} else if ($error_code == 'E008') { // password is required
+		return 'Password is required!'; 
+	} else if ($error_code == 'E009-1') { // email activation code
+		return 'Invalid Email!'; 
+	} else if ($error_code == 'E009-1-1') { // email activation code
+		return 'Invalid Pin!'; 
+	} else if ($error_code == 'E009-2') { // email activation code
+		return 'Invalid Email!'; 
+	} else if ($error_code == 'E010-1') { // unable to send email activation
+		return 'You can request activation pin after 5 minutes!'; 
+	} else if ($error_code == 'E010-2') { // unable to send email activation
+		return 'You can request activation pin after 5 minutes!'; 
+	}  else if ($error_code == 'E010-3') { // unable to send email activation
+		return 'Activation pin is expired!'; 
+	} else {
+		return 'API Error';
+	}
+}
+
+function generate_error_message($code) {
+	echo json_encode(
+		array(
+			'error' 			=> true,
+			'error_code'		=> $code,
+			'error_description' => error_message($code)
+		)
+	);
+	die();
+}
+
 /** 
  * Get header Authorization
  * */
@@ -210,7 +278,11 @@ if ( ! function_exists("generate_code"))
 		// $length = how many digits or characters to return.
 		// You can use any set of characters you want.
 		$possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		//$possible = '0123456789';
+		
+		if ($type == 2) {
+			$possible = '0123456789';
+		}
+
 		$code = '';
 		$i = 0;
 		while ($i < $length) { 

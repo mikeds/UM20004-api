@@ -5,7 +5,7 @@
  *
  * @author Marknel Pineda
  */
-class Merchant_Controller extends Api_Controller {
+class Client_Controller extends Api_Controller {
 	protected
 		$_account = null;
 
@@ -34,30 +34,25 @@ class Merchant_Controller extends Api_Controller {
 
 		$inner_joints = array(
 			array(
-				'table_name' 	=> 'merchant_accounts',
-				'condition'		=> 'merchant_accounts.oauth_bridge_id = oauth_bridges.oauth_bridge_id'
-			),
-			array(
-				'table_name' 	=> 'merchants',
-				'condition'		=> 'merchants.merchant_number = merchant_accounts.merchant_number'
+				'table_name' 	=> 'client_accounts',
+				'condition'		=> 'client_accounts.oauth_bridge_id = oauth_bridges.oauth_bridge_id'
 			),
 			array(
 				'table_name' 	=> 'wallet_addresses',
-				'condition'		=> 'wallet_addresses.oauth_bridge_id = merchants.oauth_bridge_id'
+				'condition'		=> 'wallet_addresses.oauth_bridge_id = client_accounts.oauth_bridge_id'
 			)
 		);
 
 		$row = $this->bridges->get_datum(
 			'',
 			array(
-				'merchant_accounts.oauth_bridge_id' => $client_id
+				'client_accounts.oauth_bridge_id' => $client_id
 			),
 			array(),
 			$inner_joints,
 			array(
 				'*',
-				'merchant_accounts.oauth_bridge_id as account_oauth_bridge_id',
-				'merchants.oauth_bridge_id as merchant_oauth_bridge_id'
+				'client_accounts.oauth_bridge_id as account_oauth_bridge_id'
 			)
 		)->row();
 		

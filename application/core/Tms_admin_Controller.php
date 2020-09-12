@@ -16,7 +16,6 @@ class Tms_admin_Controller extends Api_Controller {
 		// Initialize all configs, helpers, libraries from parent
 		parent::__construct();
 
-		$this->validate_token();
 		$this->validate_access();
 		$this->after_init();
 	}

@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Otp_cash_in extends Api_Controller {
+class Otp_cash_in extends Client_Controller {
 
 	public function after_init() {
         if ($_SERVER['REQUEST_METHOD'] != 'POST' || !$this->JSON_POST()) {
@@ -13,7 +13,9 @@ class Otp_cash_in extends Api_Controller {
 	public function activation() {
         $this->load->model("api/transactions_model", "transactions");
         
-        $post           = $this->get_post();
+        $account    = $this->_account;
+
+        $post       = $this->get_post();
         
         if (!isset($post["sender_ref_id"])) {
             die();
@@ -36,11 +38,18 @@ class Otp_cash_in extends Api_Controller {
             array(
                 'transaction_sender_ref_id' => $sender_ref_id,
                 'transaction_otp_pin'       => $pin,
-                'transaction_otp_status'    => 0
+                'transaction_otp_status'    => 0,
+                'transaction_requested_by'  => $account->oauth_bridge_id
             )
         )->row();
 
         if ($row == "") {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Refference ID or PIN."
+                )
+            );
             die();
         }
 
@@ -77,7 +86,9 @@ class Otp_cash_in extends Api_Controller {
     public function resend() {
         $this->load->model("api/transactions_model", "transactions");
         
-        $post           = $this->get_post();
+        $account    = $this->_account;
+
+        $post       = $this->get_post();
         
         if (!isset($post["sender_ref_id"])) {
             die();
@@ -93,11 +104,18 @@ class Otp_cash_in extends Api_Controller {
             '',
             array(
                 'transaction_sender_ref_id' => $sender_ref_id,
-                'transaction_otp_status'    => 0
+                'transaction_otp_status'    => 0,
+                'transaction_requested_by'  => $account->oauth_bridge_id
             )
         )->row();
 
         if ($row == "") {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Refference ID."
+                )
+            );
             die();
         }
 
@@ -120,6 +138,14 @@ class Otp_cash_in extends Api_Controller {
             array(
                 'transaction_otp_pin' => $pin
             )
+        );
+
+        $email_address = $account->account_email_address;
+
+        $this->send_otp_pin(
+            "BambuPAY Resend CASH-IN OTP PIN",
+            $email_address, 
+            $pin
         );
 
         echo json_encode(

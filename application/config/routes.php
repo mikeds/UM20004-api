@@ -82,6 +82,10 @@ $route["otp/top-up/activation"]     = "api/Otp_top_up/activation";
 $route["otp/cash-in/activation"]    = "api/Otp_cash_in/activation";
 $route["otp/send-to/activation"]    = "api/Otp_send_to/activation";
 
+$route["otp/top-up/resend"]     = "api/Otp_top_up/resend";
+$route["otp/cash-in/resend"]    = "api/Otp_cash_in/resend";
+$route["otp/send-to/resend"]    = "api/Otp_send_to/resend";
+
 $route["transactions/merchant/top-up"]  = "api/Top_up";
 $route["transactions/client/send-to"]   = "api/Send_to/direct";
 $route["transactions/client/cash-in"]   = "api/Cash_in";
@@ -93,6 +97,9 @@ $route["merchants/balance"]     = "api/Merchants/balance";
 
 $route["clients/ledger"]       = "api/Clients/ledger";
 $route["merchants/ledger"]     = "api/Merchants/ledger";
+
+$route["clients/ledger/(:any)"]     = "api/Clients/ledger/$1";
+$route["merchants/ledger/(:any)"]   = "api/Merchants/ledger/$1";
 
 // $route["uploads"]                    = "api/Registration/uploads";
 

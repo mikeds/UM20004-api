@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Otp_top_up extends Api_Controller {
+class Otp_top_up extends Merchant_Controller {
 
 	public function after_init() {
         if ($_SERVER['REQUEST_METHOD'] != 'POST' || !$this->JSON_POST()) {
@@ -13,6 +13,8 @@ class Otp_top_up extends Api_Controller {
 	public function activation() {
         $this->load->model("api/transactions_model", "transactions");
         
+        $account    = $this->_account;
+
         $post           = $this->get_post();
         
         if (!isset($post["sender_ref_id"])) {
@@ -36,11 +38,29 @@ class Otp_top_up extends Api_Controller {
             array(
                 'transaction_sender_ref_id' => $sender_ref_id,
                 'transaction_otp_pin'       => $pin,
-                'transaction_otp_status'    => 0
+                'transaction_otp_status'    => 0,
+                'merchants.oauth_bridge_id' => $account->merchant_oauth_bridge_id
+            ),
+            array(),
+            array(
+                array(
+                    'table_name'    => 'merchant_accounts',
+                    'condition'     => 'merchant_accounts.oauth_bridge_id = transactions.transaction_requested_by'
+                ),
+                array(
+                    'table_name'    => 'merchants',
+                    'condition'     => 'merchants.merchant_number = merchant_accounts.merchant_number'
+                )
             )
         )->row();
 
         if ($row == "") {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Refference ID or PIN."
+                )
+            );
             die();
         }
 
@@ -75,8 +95,10 @@ class Otp_top_up extends Api_Controller {
     
     public function resend() {
         $this->load->model("api/transactions_model", "transactions");
+
+        $account    = $this->_account;
         
-        $post           = $this->get_post();
+        $post       = $this->get_post();
         
         if (!isset($post["sender_ref_id"])) {
             die();
@@ -92,11 +114,29 @@ class Otp_top_up extends Api_Controller {
             '',
             array(
                 'transaction_sender_ref_id' => $sender_ref_id,
-                'transaction_otp_status'    => 0
+                'transaction_otp_status'    => 0,
+                'merchants.oauth_bridge_id' => $account->merchant_oauth_bridge_id
+            ),
+            array(),
+            array(
+                array(
+                    'table_name'    => 'merchant_accounts',
+                    'condition'     => 'merchant_accounts.oauth_bridge_id = transactions.transaction_requested_by'
+                ),
+                array(
+                    'table_name'    => 'merchants',
+                    'condition'     => 'merchants.merchant_number = merchant_accounts.merchant_number'
+                )
             )
         )->row();
 
         if ($row == "") {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Refference ID."
+                )
+            );
             die();
         }
 
@@ -121,9 +161,17 @@ class Otp_top_up extends Api_Controller {
             )
         );
 
+        $email_address = $account->merchant_email_address;
+
+        $this->send_otp_pin(
+            "BambuPAY Resend TOP-UP OTP PIN",
+            $email_address, 
+            $pin
+        );
+
         echo json_encode(
             array(
-                'message' => "Successfully resend OTP PIN.",
+                'message' => "Successfully resend TOP-UP OTP PIN.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id
                 )

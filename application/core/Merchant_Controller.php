@@ -16,8 +16,14 @@ class Merchant_Controller extends Api_Controller {
 		// Initialize all configs, helpers, libraries from parent
 		parent::__construct();
 		
+		$this->validate_token();
 		$this->validate_access();
 		$this->after_init();
+	}
+
+	private function validate_token() {
+		$this->load->library("oauth2");
+		$this->oauth2->get_resource();
 	}
 
 	private function validate_access() {

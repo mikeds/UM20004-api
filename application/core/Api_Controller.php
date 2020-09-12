@@ -216,6 +216,7 @@ class Api_Controller extends MX_Controller {
 
 		// send email activation
 		$email_message = $this->load->view("templates/otp_pin", array(
+			"title"	=> $title,
 			"activation_pin" => $pin,
 			"date"	=> $date
 		), true);

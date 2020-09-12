@@ -1,4 +1,4 @@
-<h3>BAMBUPAY OTP PIN</h3>
+<h3><?=isset($title) ? $title : ""?></h3>
 <p>
     Date: <?=isset($date) ? $date : ""?>
 </p>

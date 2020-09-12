@@ -80,12 +80,13 @@ $route["qr-code/transactions/(:any)"]     = "public/Qr_code/transactions/$1";
 
 $route["otp/top-up/activation"]     = "api/Otp_top_up/activation";
 $route["otp/cash-in/activation"]    = "api/Otp_cash_in/activation";
+$route["otp/send-to/activation"]    = "api/Otp_send_to/activation";
 
 $route["transactions/merchant/top-up"]  = "api/Top_up";
 
 $route["transactions/client/send-to"]   = "api/Send_to/direct";
 
-$route["transactions/client/cash-in"]   = "api/Cash_in_client";
+$route["transactions/client/cash-in"]   = "api/Cash_in";
 
 $route["transactions/merchant/accept-cash-in"]   = "api/Merchant_accept/cash_in";
 

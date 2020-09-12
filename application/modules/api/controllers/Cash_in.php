@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Cash_in_client extends Client_Controller {
+class Cash_in extends Client_Controller {
 
 	public function after_init() {
         if ($_SERVER['REQUEST_METHOD'] != 'POST' || !$this->JSON_POST()) {
@@ -32,12 +32,11 @@ class Cash_in_client extends Client_Controller {
         $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;
         $sender_oauth_bridge_id    = $account->account_oauth_bridge_id;
 
-        $amount = 0;
-        $fee = 0;
-
         if (!isset($post["amount"])) {
             die();
         }
+
+        $amount = $post["amount"];
 
         if (is_decimal($amount)) {
             die();
@@ -47,7 +46,7 @@ class Cash_in_client extends Client_Controller {
             die();
         }
         
-        $amount = $post["amount"];
+        $fee = 0;
         $total_amount = $amount + $fee;
 
         $tx_row = $this->create_transaction(
@@ -64,7 +63,7 @@ class Cash_in_client extends Client_Controller {
         $email_address = $account->account_email_address;
 
         $this->send_otp_pin(
-            "CASH-IN OTP PIN",
+            "BambuPAY CASH-IN OTP PIN",
             $email_address, 
             $pin
         );

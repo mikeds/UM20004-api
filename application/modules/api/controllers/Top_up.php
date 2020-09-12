@@ -63,7 +63,7 @@ class Top_up extends Merchant_Controller {
         $email_address = $account->merchant_email_address;
 
         $this->send_otp_pin(
-            "TOP-UP OTP PIN",
+            "BambuPAY TOP-UP OTP PIN",
             $email_address, 
             $pin
         );

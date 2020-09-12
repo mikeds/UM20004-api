@@ -14,6 +14,7 @@ class Send_to extends Client_Controller {
 		$this->load->model("api/client_accounts_model", "client_accounts");
 		
         $account                = $this->_account;
+
         $transaction_type_id    = "TXTYPE_1004011"; // C2C - Client to Client
 		$post                   = $this->get_post();
 		$username				= $post['email_address'];
@@ -21,6 +22,8 @@ class Send_to extends Client_Controller {
         if (!isset($post["amount"])) {
             die();
         }
+
+        $amount = $post["amount"];
 
         if (is_decimal($amount)) {
             die();
@@ -33,27 +36,37 @@ class Send_to extends Client_Controller {
 		$row = $this->client_accounts->get_datum(
 			'',
 			array(
-				'account_username' 	=> $username
+                'account_username' 	=> $username,
+                // 'account_number !=' => $account->account_number
 			)
 		)->row();
 
 		if ($row == "") {
-			generate_error_message("E004-2");
-		}
+			die();
+        }
 
-		$admin_oauth_bridge_id		= $account->oauth_bridge_parent_id;
-        $sender_oauth_bridge_id    	= $account->account_oauth_bridge_id;
-		$receiver_oauth_bridge_id	= $row->oauth_bridge_id;
+        if ($row->account_number == $account->account_number) {
+            die();
+        }
+        
+        $admin_oauth_bridge_id		= $account->oauth_bridge_parent_id;
+        $debit_oauth_bridge_id    	= $account->account_oauth_bridge_id;
+        $credit_oauth_bridge_id	    = $row->oauth_bridge_id;
+        $balance                    = $this->decrypt_wallet_balance($account->wallet_balance);
 		
-        $amount = $post["amount"];
         $fee = 0;
+        $total_amount = $amount + $fee;
+
+        if ($balance < $total_amount) {
+            die();
+        }
 
 		$tx_row = $this->create_transaction(
             $amount, 
             $fee, 
             $transaction_type_id, 
-            $sender_oauth_bridge_id, 
-            $receiver_oauth_bridge_id
+            $debit_oauth_bridge_id, 
+            $credit_oauth_bridge_id
         );
 
         $pin            = $tx_row['pin'];
@@ -62,13 +75,14 @@ class Send_to extends Client_Controller {
         $email_address = $account->account_email_address;
 
         $this->send_otp_pin(
-            "Transfer OTP PIN",
+            "BambuPAY Transfer OTP PIN",
             $email_address, 
             $pin
         );
         
         echo json_encode(
             array(
+                'message' => "Successfully created transfer, OTP Pin sent to your email.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id
                 )

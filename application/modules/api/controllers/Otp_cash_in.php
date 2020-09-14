@@ -13,6 +13,8 @@ class Otp_cash_in extends Client_Controller {
 	public function activation() {
         $this->load->model("api/transactions_model", "transactions");
         
+        $transaction_type_id = "txtype_1003011";
+
         $account    = $this->_account;
 
         $post       = $this->get_post();
@@ -39,6 +41,7 @@ class Otp_cash_in extends Client_Controller {
                 'transaction_sender_ref_id' => $sender_ref_id,
                 'transaction_otp_pin'       => $pin,
                 'transaction_otp_status'    => 0,
+                'transaction_type_id'       => $transaction_type_id,
                 'transaction_requested_by'  => $account->oauth_bridge_id
             )
         )->row();

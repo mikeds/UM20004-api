@@ -49,7 +49,7 @@ class Login extends Tms_admin_Controller {
 				array(
 					'response' => array(
 						'username' 		=> $row->account_username,
-						'avatar' 		=> $row->account_avatar_base64,
+						// 'avatar' 		=> $row->account_avatar_base64,
 						'first_name'	=> $row->account_fname,
 						'middle_name'	=> $row->account_mname,
 						'last_name'		=> $row->account_lname,
@@ -121,7 +121,7 @@ class Login extends Tms_admin_Controller {
 					'response' => array(
 						'merchant_name'	=> "{$row->merchant_fname} {$row->merchant_mname} {$row->merchant_lname}",
 						'username' 		=> $row->account_username,
-						'avatar' 		=> $row->account_avatar_base64,
+						// 'avatar' 		=> $row->account_avatar_base64,
 						'first_name'	=> $row->account_fname,
 						'middle_name'	=> $row->account_mname,
 						'last_name'		=> $row->account_lname,

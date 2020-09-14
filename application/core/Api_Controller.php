@@ -303,11 +303,15 @@ class Api_Controller extends MX_Controller {
 		return hash_hmac($hash, $json, getenv("SYSKEY"));
 	}
 
-	public function create_transaction($amount, $fee, $transaction_type_id, $sender_oauth_bridge_id, $receiver_oauth_bridge_id) {
+	public function create_transaction($amount, $fee, $transaction_type_id, $requested_by_oauth_bridge_id, $requested_to_oauth_bridge_id, $created_by_oauth_bridge_id = null, $expiration_minutes = 60) {
 		$this->load->model("api/transactions_model", "transactions");
+		
+		if (is_null($created_by_oauth_bridge_id)) {
+			$created_by_oauth_bridge_id = $requested_by_oauth_bridge_id;
+		}
 
         // expiration timestamp
-        $minutes_to_add = 60;
+        $minutes_to_add = $expiration_minutes;
         $time = new DateTime($this->_today);
         $time->add(new DateInterval('PT' . $minutes_to_add . 'M'));
         $stamp = $time->format('Y-m-d H:i:s');
@@ -319,9 +323,9 @@ class Api_Controller extends MX_Controller {
             'transaction_fee'		        => $fee,
             'transaction_total_amount'      => $total_amount,
             'transaction_type_id'           => $transaction_type_id,
-            'transaction_requested_by'      => $sender_oauth_bridge_id,
-            'transaction_requested_to'	    => $receiver_oauth_bridge_id,
-            'transaction_created_by'        => $sender_oauth_bridge_id,
+            'transaction_requested_by'      => $requested_by_oauth_bridge_id,
+            'transaction_requested_to'	    => $requested_to_oauth_bridge_id,
+            'transaction_created_by'        => $created_by_oauth_bridge_id,
             'transaction_date_created'      => $this->_today,
             'transaction_date_expiration'   => $stamp
         );

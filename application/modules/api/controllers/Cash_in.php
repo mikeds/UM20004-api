@@ -26,11 +26,11 @@ class Cash_in extends Client_Controller {
 
 	public function otc() {
         $account                = $this->_account;
-        $transaction_type_id    = "TXTYPE_1003011"; // cash-in
+        $transaction_type_id    = "txtype_1003011"; // cash-in
         $post                   = $this->get_post();
 
         $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;
-        $sender_oauth_bridge_id    = $account->account_oauth_bridge_id;
+        $account_oauth_bridge_id   = $account->account_oauth_bridge_id;
 
         if (!isset($post["amount"])) {
             die();
@@ -53,12 +53,13 @@ class Cash_in extends Client_Controller {
             $amount, 
             $fee, 
             $transaction_type_id, 
-            $sender_oauth_bridge_id, 
+            $account_oauth_bridge_id, 
             ""
         );
 
-        $pin            = $tx_row['pin'];
+        $transaction_id = $tx_row['transaction_id'];
         $sender_ref_id  = $tx_row['sender_ref_id'];
+        $pin            = $tx_row['pin'];
 
         $email_address = $account->account_email_address;
 
@@ -72,7 +73,8 @@ class Cash_in extends Client_Controller {
             array(
                 'message' =>  "Successfully created cash-in, OTP Pin sent to your email.",
                 'response' => array(
-                    'sender_ref_id' => $sender_ref_id
+                    'sender_ref_id' => $sender_ref_id,
+                    'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}"
                 )
             )
         );

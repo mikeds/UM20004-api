@@ -15,7 +15,7 @@ class Send_to extends Client_Controller {
 		
         $account                = $this->_account;
 
-        $transaction_type_id    = "TXTYPE_1004011"; // C2C - Client to Client
+        $transaction_type_id    = "txtype_1004011"; // C2C - Client to Client
 		$post                   = $this->get_post();
 		$username				= $post['email_address'];
 
@@ -58,6 +58,12 @@ class Send_to extends Client_Controller {
         $total_amount = $amount + $fee;
 
         if ($balance < $total_amount) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "insufficient balance."
+                )
+            );
             die();
         }
 
@@ -69,8 +75,9 @@ class Send_to extends Client_Controller {
             $credit_oauth_bridge_id
         );
 
-        $pin            = $tx_row['pin'];
+        $transaction_id = $tx_row['transaction_id'];
         $sender_ref_id  = $tx_row['sender_ref_id'];
+        $pin            = $tx_row['pin'];
 
         $email_address = $account->account_email_address;
 

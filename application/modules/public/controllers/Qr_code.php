@@ -58,8 +58,6 @@ class Qr_code extends Public_Controller {
     }
 
     public function transactions($id) {
-        $this->load->model("api/client_accounts_model", "accounts");
-    
         $this->load->library('ciqrcode');
         header("Content-Type: image/png");
         $params['data'] = $id;

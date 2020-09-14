@@ -101,6 +101,9 @@ $route["merchants/ledger"]     = "api/Merchants/ledger";
 $route["clients/ledger/(:any)"]     = "api/Clients/ledger/$1";
 $route["merchants/ledger/(:any)"]   = "api/Merchants/ledger/$1";
 
+$route["transactions/merchant/scanpayqr"]   = "api/Scanpayqr_merchant/create";
+$route["transactions/client/scanpayqr"]     = "api/Scanpayqr_client/accept";
+
 // $route["uploads"]                    = "api/Registration/uploads";
 
 $route['404_override'] = 'api/Error_404';

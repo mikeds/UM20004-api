@@ -95,6 +95,7 @@ class Registration extends Tms_admin_Controller {
 				$mobile_no		= isset($post["mobile_no"]) ? $post["mobile_no"] : "";
 				$email_address	= isset($post["email_address"]) ? $post["email_address"] : "";
 				$password		= isset($post["password"]) ? $post["password"] : "";
+				$others			= isset($post["others"]) ? $post["others"] : "";
 			} else {
 				// $username		= $this->input->post("username");
 				$fname			= $this->input->post("first_name");
@@ -111,6 +112,7 @@ class Registration extends Tms_admin_Controller {
 				$mobile_no		= $this->input->post("mobile_no");
 				$email_address	= $this->input->post("email_address");
 				$password		= $this->input->post("password");
+				$others			= $this->input->post("others");
 			}
 
 			// $username = trim(strtolower($username));
@@ -130,6 +132,9 @@ class Registration extends Tms_admin_Controller {
 			if (trim($password) == "") {
 				generate_error_message("E008");
 			}
+
+			$country_id 	= is_numeric($country_id) ? $country_id : 0;
+			$province_id 	= is_numeric($province_id) ? $province_id : 0;
 
 			$account_number = $this->generate_code(
 				array(
@@ -181,6 +186,7 @@ class Registration extends Tms_admin_Controller {
 				'account_city'				=> $city,
 				'country_id'				=> $country_id,
 				'province_id'				=> $province_id,
+				'province_others'			=> $others,
 				'account_mobile_no'			=> $mobile_no,
 				'account_email_address'		=> $email_address,
 				'account_date_added'		=> $this->_today,
@@ -296,6 +302,7 @@ class Registration extends Tms_admin_Controller {
 				$mobile_no		= isset($post["mobile_no"]) ? $post["mobile_no"] : "";
 				$email_address	= isset($post["email_address"]) ? $post["email_address"] : "";
 				$password		= isset($post["password"]) ? $post["password"] : "";
+				$others			= isset($post["others"]) ? $post["others"] : "";
 			} else {
 				// $username		= $this->input->post("username");
 				$fname			= $this->input->post("first_name");
@@ -312,6 +319,7 @@ class Registration extends Tms_admin_Controller {
 				$mobile_no		= $this->input->post("mobile_no");
 				$email_address	= $this->input->post("email_address");
 				$password		= $this->input->post("password");
+				$others			= $this->input->post("others");
 			}
 
 			if ($this->validate_email_address("merchant", $email_address) || $email_address == "") {
@@ -325,6 +333,9 @@ class Registration extends Tms_admin_Controller {
 			if (trim($password) == "") {
 				generate_error_message("E008");
 			}
+
+			$country_id 	= is_numeric($country_id) ? $country_id : 0;
+			$province_id 	= is_numeric($province_id) ? $province_id : 0;
 
 			$merchant_number = $this->generate_code(
 				array(
@@ -375,6 +386,7 @@ class Registration extends Tms_admin_Controller {
 				'merchant_city'				=> $city,
 				'country_id'				=> $country_id,
 				'province_id'				=> $province_id,
+				'province_others'			=> $others,
 				'merchant_mobile_no'		=> $mobile_no,
 				// 'merchant_contact_no'		=> $contact_no,
 				'merchant_email_address'	=> $email_address,

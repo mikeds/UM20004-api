@@ -13,6 +13,8 @@ class Otp_send_to extends Client_Controller {
 	public function activation() {
         $this->load->model("api/transactions_model", "transactions");
         
+        $transaction_type_id = "txtype_1004011";
+
         $account    = $this->_account;
 
         $post       = $this->get_post();
@@ -39,6 +41,7 @@ class Otp_send_to extends Client_Controller {
                 'transaction_sender_ref_id' => $sender_ref_id,
                 'transaction_otp_pin'       => $pin,
                 'transaction_otp_status'    => 0,
+                'transaction_type_id'       => $transaction_type_id,
                 'transaction_requested_by'  => $account->oauth_bridge_id
             )
         )->row();
@@ -80,6 +83,10 @@ class Otp_send_to extends Client_Controller {
         $debit_wallet_address		= $this->get_wallet_address($row->transaction_requested_by);
         $credit_wallet_address	    = $this->get_wallet_address($row->transaction_requested_to);
         
+        if ($credit_wallet_address == "" || $debit_wallet_address == "") {
+            die();
+        }
+
         $debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
         if ($debit_new_balances) {
             // record to ledger

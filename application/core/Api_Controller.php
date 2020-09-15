@@ -327,7 +327,8 @@ class Api_Controller extends MX_Controller {
             'transaction_requested_to'	    => $requested_to_oauth_bridge_id,
             'transaction_created_by'        => $created_by_oauth_bridge_id,
             'transaction_date_created'      => $this->_today,
-            'transaction_date_expiration'   => $stamp
+			'transaction_date_expiration'   => $stamp,
+			'transaction_otp_status'		=> 1 // temporary activated
         );
 
         // generate sender ref id

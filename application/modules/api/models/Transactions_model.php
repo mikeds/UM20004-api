@@ -49,7 +49,7 @@ class Transactions_model extends CI_Model {
 		return $query;
 	}
 
-	function get_data( $select = array('*'), $data = array(), $like= array(), $inner_joints = array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
+	function get_data( $select = array('*'), $data = array(), $or_where = array(), $inner_joints = array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
 		
 		$this->db->select(ARRtoSTR($select),false);
 
@@ -76,8 +76,8 @@ class Transactions_model extends CI_Model {
 			$this->db->where($data);
 		}
 
-		if(!empty( $like )){
-		$this->db->like( $like['field'], $like['value'] );
+		if(!empty( $or_where )){
+		$this->db->or_where($or_where);
 		}
 
 		if(!empty($limit)){

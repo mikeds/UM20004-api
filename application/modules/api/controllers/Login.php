@@ -14,9 +14,15 @@ class Login extends Tms_admin_Controller {
 			$username = isset($post['username']) ? $post['username'] : "";
 			$password = isset($post['password']) ? $post['password'] : "";
 
-			$inner_joints = array(array(
+			$inner_joints = array(
+				array(
 					'table_name' 	=> 'oauth_clients',
 					'condition'		=> 'client_accounts.oauth_bridge_id = oauth_clients.client_id',
+					'type'			=> 'left'
+				),
+				array(
+					'table_name' 	=> 'countries',
+					'condition'		=> 'countries.country_id = client_accounts.country_id',
 					'type'			=> 'left'
 				)
 			);
@@ -54,7 +60,7 @@ class Login extends Tms_admin_Controller {
 						'middle_name'	=> $row->account_mname,
 						'last_name'		=> $row->account_lname,
 						'email_address'	=> $row->account_email_address,
-						'mobile_no'		=> $row->account_mobile_no,
+						'mobile_no'		=> (empty($row->country_code) ? "63" : $row->country_code) . $row->account_mobile_no,
 						'secret_code'	=> $row->client_id,
 						'secret_key'	=> $row->client_secret,
 						'avatar_image'	=> base_url() . "avatar/client-accounts/" . md5($row->account_number),
@@ -88,6 +94,11 @@ class Login extends Tms_admin_Controller {
 				array(
 					'table_name' 	=> 'oauth_clients',
 					'condition'		=> 'merchant_accounts.oauth_bridge_id = oauth_clients.client_id',
+					'type'			=> 'left'
+				),
+				array(
+					'table_name' 	=> 'countries',
+					'condition'		=> 'countries.country_id = merchants.country_id',
 					'type'			=> 'left'
 				)
 			);
@@ -126,7 +137,7 @@ class Login extends Tms_admin_Controller {
 						'middle_name'	=> $row->account_mname,
 						'last_name'		=> $row->account_lname,
 						'email_address'	=> $row->merchant_email_address,
-						'mobile_no'		=> $row->merchant_mobile_no,
+						'mobile_no'		=> (empty($row->country_code) ? "63" : $row->country_code) . $row->merchant_mobile_no,
 						'secret_code'	=> $row->client_id,
 						'secret_key'	=> $row->client_secret,
 						'avatar_image'	=> base_url() . "avatar/merchant-accounts/" . md5($row->account_number),

@@ -98,8 +98,18 @@ $route["merchants/balance"]     = "api/Merchants/balance";
 $route["clients/ledger"]       = "api/Clients/ledger";
 $route["merchants/ledger"]     = "api/Merchants/ledger";
 
+
+$route["clients/ledger"]     = "api/Clients/ledger";
+$route["merchants/ledger"]   = "api/Merchants/ledger";
+
 $route["clients/ledger/(:any)"]     = "api/Clients/ledger/$1";
 $route["merchants/ledger/(:any)"]   = "api/Merchants/ledger/$1";
+
+$route["clients/transactions"]     = "api/Clients/transactions";
+$route["merchants/transactions"]   = "api/Merchants/transactions";
+
+$route["clients/transactions/(:any)"]     = "api/Clients/transactions/$1";
+$route["merchants/transactions/(:any)"]   = "api/Merchants/transactions/$1";
 
 $route["transactions/merchant/scanpayqr"]   = "api/Scanpayqr_merchant/create";
 $route["transactions/client/scanpayqr"]     = "api/Scanpayqr_client/accept";

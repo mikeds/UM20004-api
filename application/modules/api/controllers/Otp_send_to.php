@@ -114,6 +114,7 @@ class Otp_send_to extends Client_Controller {
         $this->transactions->update(
             $row->transaction_id,
             array(
+                'transaction_status' 		=> 1,
                 'transaction_otp_status'    => 1,
                 'transaction_date_approved' => $this->_today
             )

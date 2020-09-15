@@ -25,6 +25,110 @@ class Clients extends Client_Controller {
         );
     }
 
+
+    public function transactions($tx_id = "") {
+        if ($_SERVER['REQUEST_METHOD'] != 'GET') {
+			$this->output->set_status_header(401);
+			die();
+        }
+
+        $this->load->model("api/transactions_model", "transactions");
+
+        $account    = $this->_account;
+
+        $account_oauth_bridge_id = $account->account_oauth_bridge_id;
+
+        $where = array(
+			'transaction_requested_by'	=> $account_oauth_bridge_id
+		);
+
+        if (!empty($tx_id)) {
+            $row = $this->transactions->get_datum(
+                '',
+                array(
+                    'transaction_id' => $tx_id
+                )
+            )->row();
+
+            if ($row != "") {
+                $where = array_merge(
+                    $where,
+                    array(
+                        'transaction_date_created <='   => $row->transaction_date_created,
+                        'transaction_id !='             => $row->tx_id
+                    )
+                );
+            }
+        }
+
+        $inner_joints = array(
+            array(
+                'table_name'    => 'transaction_types',
+                'condition'     => 'transaction_types.transaction_type_id = transactions.transaction_type_id'
+            )
+        );
+
+        $select = array(
+            'transaction_id',
+            'CONCAT("'. base_url() . "qr-code/transactions/" .'", transaction_sender_ref_id) as qr_code',
+            'transaction_sender_ref_id as "sender_ref_id"',
+            'transaction_type_name as "transaction_type"',
+            'transaction_type_code as "transaction_code"',
+            'transaction_amount as "amount"',
+            'transaction_fee as "fee"',
+            'transaction_date_created as "date_added"',
+            'IF(transaction_date_expiration > "'. $this->_today .'", "cancelled", IF(transaction_status = 1, "approved", "pending")) as transaction_status',
+            'IF(transaction_otp_status = 0, "confirmed", "uncomfirmed") as otp_status'
+        );
+        
+        $data = $this->transactions->get_data(
+			$select,
+			$where,
+			array(),
+			$inner_joints,
+			array(
+				'filter'	=> 'transaction_date_created',
+				'sort'		=> 'DESC'
+            ),
+            0,
+            $this->_limit
+        );
+
+        $last_id = "";
+
+        $data_last = $this->transactions->get_data(
+			array(
+                '*'
+            ),
+		    array(
+                'transaction_requested_by'	=> $account_oauth_bridge_id
+            ),
+			array(),
+			$inner_joints,
+			array(
+				'filter'	=> 'transaction_date_created',
+				'sort'		=> 'ASC'
+            ),
+            0, // offset
+            1 // limit
+        );
+        
+        if (isset($data_last[0]['transaction_id'])) {
+            $last_id = $data_last[0]['transaction_id'];
+        }
+
+        // $transaction_data = $this->filter_transcation($data);
+
+        echo json_encode(
+            array(
+                'response' => array(
+                    'last_id'   => $last_id,
+                    'data'      => $data
+                )
+            )
+        );
+    }
+
     public function ledger($ledger_datum_id = "") {
         if ($_SERVER['REQUEST_METHOD'] != 'GET') {
 			$this->output->set_status_header(401);

@@ -68,6 +68,10 @@ class Merchant_Controller extends Api_Controller {
 		$this->_account = $row;
 	}
 
+	public function filter_transcation($data) {
+		
+	}
+
 	public function filter_ledger($data) {
 		$results = array();
 

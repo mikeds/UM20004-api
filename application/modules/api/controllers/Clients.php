@@ -55,7 +55,7 @@ class Clients extends Client_Controller {
                     $where,
                     array(
                         'transaction_date_created <='   => $row->transaction_date_created,
-                        'transaction_id !='             => $row->tx_id
+                        'transaction_id !='             => $row->transaction_id
                     )
                 );
             }

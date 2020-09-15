@@ -82,4 +82,70 @@ class Client_Controller extends Api_Controller {
 
 		return $results;
 	}
+
+	public function filter_client_tx($data) {
+		$account = $this->_account;
+
+		$account_oauth_bridge_id = $account->account_oauth_bridge_id;
+
+		$this->load->model("api/transactions_model", "transactions");
+
+		$results = array();
+		
+		foreach($data as $datum) {
+			$balance_type = "";
+			$tx_status = "";
+
+			$group_id 	= $datum['transaction_type_group_id'];
+			$status		= $datum['transaction_status'];
+			$expiration = $datum['transaction_date_expiration'];
+
+			if ($group_id == 3 || $group_id == 5) {
+				if ($group_id == 5 && $datum['transaction_requested_to'] == $account_oauth_bridge_id) {
+					$balance_type = "credit";
+				} else if ($group_id == 5 && $datum['transaction_requested_by'] == $account_oauth_bridge_id) {
+					$balance_type = "debit";
+				} else {
+					$balance_type = "credit";
+				}
+			} else {
+				$balance_type = "debit";
+			}
+
+			if ($status == 1) {
+				$tx_status = "approved";
+			} else if ($status == 2) {
+				$tx_status = "cancelled";
+			} else {
+				$tx_status = "pending";
+			}
+
+			if ($status == 0) {
+				if (strtotime($expiration) < strtotime($this->_today)) {
+					$tx_status = "cancelled";
+
+					$this->transactions->update(
+						$datum['transaction_id'],
+						array(
+							'transaction_status' => 2
+						)
+					);
+				}
+			}
+
+			$results[] = array(
+				'tx_id' 			=> $datum['transaction_id'],
+				'sender_ref_id' 	=> $datum['transaction_sender_ref_id'],
+				'amount' 			=> $datum['transaction_amount'],
+				'fee' 				=> $datum['transaction_fee'],
+				'tx_type' 			=> $datum['transaction_type_name'],
+				'date_created' 		=> $datum['transaction_date_created'],
+				'tx_status'			=> $tx_status,
+				'balance_type'		=> $balance_type,
+				'qr_code'			=> $datum['qr_code']
+			);
+		}
+
+		return $results;
+	}
 }

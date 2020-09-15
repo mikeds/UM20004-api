@@ -25,21 +25,10 @@ class Merchants extends Merchant_Controller {
         );
     }
 
-    public function transactions($tx_id = "") {
-        if ($_SERVER['REQUEST_METHOD'] != 'GET') {
-			$this->output->set_status_header(401);
-			die();
-        }
-
-        $this->load->model("api/transactions_model", "transactions");
-
-        $account    = $this->_account;
-
-        $merchant_oauth_bridge_id = $account->merchant_oauth_bridge_id;
-        
+    private function get_requested_transactions_merchant($requested = "by", $merchant_oauth_bridge_id, $tx_id = "") {
         $where = array(
-			'merchants.oauth_bridge_id' => $merchant_oauth_bridge_id
-		);
+            'merchants.oauth_bridge_id'     => $merchant_oauth_bridge_id
+        );
 
         if (!empty($tx_id)) {
             $row = $this->transactions->get_datum(
@@ -67,7 +56,8 @@ class Merchants extends Merchant_Controller {
             ),
             array(
                 'table_name'    => 'merchant_accounts',
-                'condition'     => 'merchant_accounts.oauth_bridge_id = transactions.transaction_requested_by'
+                'condition'     => 'merchant_accounts.oauth_bridge_id = transactions.transaction_requested_' . $requested,
+                'position'      => 'left'
             ),
             array(
                 'table_name'    => 'merchants',
@@ -98,34 +88,114 @@ class Merchants extends Merchant_Controller {
 				'sort'		=> 'DESC'
             ),
             0,
-            $this->_limit
+            50
         );
+
+        return $data;
+    }
+
+    public function transactions($tx_id = "") {
+        if ($_SERVER['REQUEST_METHOD'] != 'GET') {
+			$this->output->set_status_header(401);
+			die();
+        }
+
+        $account = $this->_account;
+        $merchant_oauth_bridge_id = $account->merchant_oauth_bridge_id;
+ 
+        $this->load->model("api/transactions_model", "transactions");
+
+        $select = array(
+            'transaction_id',
+            'CONCAT("'. base_url() . "qr-code/transactions/" .'", transaction_sender_ref_id) as qr_code',
+            'transaction_sender_ref_id',
+            'transaction_amount',
+            'transaction_fee',
+            'transaction_type_name',
+            'transaction_type_group_id',
+            'transaction_status',
+            'transaction_date_expiration',
+            'transaction_date_created'
+        );
+
+        $query_1 = "(m1.oauth_bridge_id = '{$merchant_oauth_bridge_id}')";
+        $query_2 = "(m2.oauth_bridge_id = '{$merchant_oauth_bridge_id}')";
+
+        if (!empty($tx_id)) {
+            $row = $this->transactions->get_datum(
+                '',
+                array(
+                    'transaction_id' => $tx_id
+                )
+            )->row();
+
+            if ($row != "") {
+                $query_1 = "(m1.oauth_bridge_id = '{$merchant_oauth_bridge_id}' and transaction_date_created <= '{$row->transaction_date_created}' and transaction_id != '$row->transaction_id')";
+                $query_2 = "(m2.oauth_bridge_id = '{$merchant_oauth_bridge_id}' and transaction_date_created <= '{$row->transaction_date_created}' and transaction_id != '$row->transaction_id')";
+            }
+        }
+
+        $order_by = "ORDER BY transaction_date_created DESC";
+        $limit = "LIMIT $this->_limit";
+
+        $select = ARRtoSTR($select);
+
+$sql = <<<SQL
+SELECT $select FROM `transactions` as tx 
+inner join transaction_types
+on transaction_types.transaction_type_id = tx.transaction_type_id
+left join merchant_accounts as ma1 
+on tx.transaction_requested_by = ma1.oauth_bridge_id
+left join merchant_accounts as ma2
+on tx.transaction_requested_to = ma2.oauth_bridge_id
+left join merchants as m1 
+on m1.merchant_number = ma1.merchant_number
+left join merchants as m2 
+on m2.merchant_number = ma2.merchant_number
+where 
+$query_1
+or 
+$query_2
+$order_by
+$limit
+SQL;
+
+        $query = $this->db->query($sql);
+        $results = $query->result_array();
+
+        $data = $this->filter_merchant_tx($results);
 
         $last_id = "";
 
-        $data_last = $this->transactions->get_data(
-			array(
-                '*'
-            ),
-		    array(
-                'merchants.oauth_bridge_id' => $merchant_oauth_bridge_id
-            ),
-			array(),
-			$inner_joints,
-			array(
-				'filter'	=> 'transaction_date_created',
-				'sort'		=> 'ASC'
-            ),
-            0, // offset
-            1 // limit
-        );
-        
-        if (isset($data_last[0]['transaction_id'])) {
-            $last_id = $data_last[0]['transaction_id'];
+$sql = <<<SQL
+SELECT $select FROM `transactions` as tx 
+inner join transaction_types
+on transaction_types.transaction_type_id = tx.transaction_type_id
+left join merchant_accounts as ma1 
+on tx.transaction_requested_by = ma1.oauth_bridge_id
+left join merchant_accounts as ma2
+on tx.transaction_requested_to = ma2.oauth_bridge_id
+left join merchants as m1 
+on m1.merchant_number = ma1.merchant_number
+left join merchants as m2 
+on m2.merchant_number = ma2.merchant_number
+where 
+$query_1
+or 
+$query_2
+ORDER BY transaction_date_created ASC
+LIMIT 1
+SQL;
+
+        $query = $this->db->query($sql);
+        $results = $query->result_array();
+
+        if (!empty($results)) {
+            if (isset($results[0]['transaction_id'])) {
+                $last_id  = $results[0]['transaction_id'];
+            }
         }
-
-        // $transaction_data = $this->filter_transcation($data);
-
+        
         echo json_encode(
             array(
                 'response' => array(

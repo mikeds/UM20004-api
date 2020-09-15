@@ -68,8 +68,60 @@ class Merchant_Controller extends Api_Controller {
 		$this->_account = $row;
 	}
 
-	public function filter_transcation($data) {
+	public function filter_merchant_tx($data) {
+		$this->load->model("api/transactions_model", "transactions");
+
+		$results = array();
 		
+		foreach($data as $datum) {
+			$balance_type = "";
+			$tx_status = "";
+
+			$group_id 	= $datum['transaction_type_group_id'];
+			$status		= $datum['transaction_status'];
+			$expiration = $datum['transaction_date_expiration'];
+
+			if ($group_id == 1 || $group_id == 6) {
+				$balance_type = "credit";
+			} else {
+				$balance_type = "debit";
+			}
+
+			if ($status == 1) {
+				$tx_status = "approved";
+			} else if ($status == 2) {
+				$tx_status = "cancelled";
+			} else {
+				$tx_status = "pending";
+			}
+
+			if ($status == 0) {
+				if (strtotime($expiration) < strtotime($this->_today)) {
+					$tx_status = "cancelled";
+
+					$this->transactions->update(
+						$datum['transaction_id'],
+						array(
+							'transaction_status' => 2
+						)
+					);
+				}
+			}
+
+			$results[] = array(
+				'tx_id' 			=> $datum['transaction_id'],
+				'sender_ref_id' 	=> $datum['transaction_sender_ref_id'],
+				'amount' 			=> $datum['transaction_amount'],
+				'fee' 				=> $datum['transaction_fee'],
+				'tx_type' 			=> $datum['transaction_type_name'],
+				'date_created' 		=> $datum['transaction_date_created'],
+				'tx_status'			=> $tx_status,
+				'balance_type'		=> $balance_type,
+				'qr_code'			=> $datum['qr_code']
+			);
+		}
+
+		return $results;
 	}
 
 	public function filter_ledger($data) {

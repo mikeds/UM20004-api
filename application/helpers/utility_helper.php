@@ -12,6 +12,12 @@
 
 // ------------------------------------------------------------------------
 
+function date_sort($a, $b) {
+	$t1 = strtotime($a["date_added"]);
+    $t2 = strtotime($b["date_added"]);
+    return $t2 - $t1;
+}
+
 function is_decimal( $val ) {
     return is_numeric( $val ) && floor( $val ) != $val;
 }

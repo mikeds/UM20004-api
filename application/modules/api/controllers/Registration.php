@@ -133,7 +133,7 @@ class Registration extends Tms_admin_Controller {
 				generate_error_message("E008");
 			}
 
-			$country_id 	= is_numeric($country_id) ? $country_id : 0;
+			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
 			$province_id 	= is_numeric($province_id) ? $province_id : 0;
 
 			$account_number = $this->generate_code(
@@ -334,7 +334,7 @@ class Registration extends Tms_admin_Controller {
 				generate_error_message("E008");
 			}
 
-			$country_id 	= is_numeric($country_id) ? $country_id : 0;
+			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
 			$province_id 	= is_numeric($province_id) ? $province_id : 0;
 
 			$merchant_number = $this->generate_code(

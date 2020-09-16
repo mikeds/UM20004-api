@@ -112,10 +112,14 @@ class Merchants extends Merchant_Controller {
             'transaction_amount',
             'transaction_fee',
             'transaction_type_name',
+            'transaction_type_code',
             'transaction_type_group_id',
             'transaction_status',
             'transaction_date_expiration',
-            'transaction_date_created'
+            'transaction_date_created',
+            'tx.transaction_requested_by',
+            'tx.transaction_requested_to',
+            'tx.transaction_created_by'
         );
 
         $query_1 = "(m1.oauth_bridge_id = '{$merchant_oauth_bridge_id}')";

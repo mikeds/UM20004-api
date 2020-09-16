@@ -100,7 +100,7 @@ class Scanpayqr_client extends Client_Controller {
 
         // create ledger
         $debit_amount	= $total_amount;
-        $credit_amount 	= $total_amount;
+        $credit_amount 	= $amount;
         $fee_amount		= $fee;
 
         $debit_total_amount 	= 0 - $debit_amount; // make it negative

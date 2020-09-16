@@ -108,11 +108,43 @@ class Merchant_Controller extends Api_Controller {
 				}
 			}
 
+			$from_account_info 		= $this->get_oauth_account_info($datum['transaction_requested_by']);
+			$to_account_info 		= $this->get_oauth_account_info($datum['transaction_requested_to']);
+			$created_account_info 	= $this->get_oauth_account_info($datum['transaction_created_by']);
+
+			$from 	= "ADMIN";
+			$to 	= "ADMIN";
+			$created_by	= "ADMIN";
+
+			if ($from_account_info) {
+				$from = trim("{$from_account_info['account_fname']} {$from_account_info['account_mname']} {$from_account_info['account_lname']}");
+			}
+
+			if ($to_account_info) {
+				$to = trim("{$to_account_info['account_fname']} {$to_account_info['account_mname']} {$to_account_info['account_lname']}");
+			}
+
+			if ($created_account_info) {
+				$created_by = trim("{$created_account_info['account_fname']} {$created_account_info['account_mname']} {$created_account_info['account_lname']}");
+			}
+
+			if ($balance_type == 'credit') {
+				$tx_from = $to;
+				$tx_to = $from;
+			} else {
+				$tx_from = $from;
+				$tx_to = $to;
+			}
+
 			$results[] = array(
 				'tx_id' 			=> $datum['transaction_id'],
 				'sender_ref_id' 	=> $datum['transaction_sender_ref_id'],
+				'tx_created_by'		=> $created_by,
+				'tx_from'			=> $tx_from,
+				'tx_to'				=> $tx_to,
 				'amount' 			=> $datum['transaction_amount'],
 				'fee' 				=> $datum['transaction_fee'],
+				'tx_type_code'		=> $datum['transaction_type_code'],
 				'tx_type' 			=> $datum['transaction_type_name'],
 				'date_created' 		=> $datum['transaction_date_created'],
 				'tx_status'			=> $tx_status,

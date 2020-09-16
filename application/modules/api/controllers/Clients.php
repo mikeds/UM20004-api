@@ -45,12 +45,14 @@ class Clients extends Client_Controller {
             'transaction_amount',
             'transaction_fee',
             'transaction_type_name',
+            'transaction_type_code',
             'transaction_type_group_id',
             'transaction_status',
             'transaction_date_expiration',
             'transaction_date_created',
             'transaction_requested_by',
-            'transaction_requested_to'
+            'transaction_requested_to',
+            'transaction_created_by'
         );
 
         $query_1 = "(tx.transaction_requested_by = '{$account_oauth_bridge_id}')";

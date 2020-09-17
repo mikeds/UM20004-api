@@ -111,8 +111,12 @@ $route["merchants/transactions"]   = "api/Merchants/transactions";
 $route["clients/transactions/(:any)"]     = "api/Clients/transactions/$1";
 $route["merchants/transactions/(:any)"]   = "api/Merchants/transactions/$1";
 
-$route["transactions/merchant/scanpayqr"]   = "api/Scanpayqr_merchant/create";
-$route["transactions/client/scanpayqr"]     = "api/Scanpayqr_client/accept";
+$route["transactions/merchant/scanpayqr/create"]   = "api/Scanpayqr_merchant/create";
+$route["transactions/client/scanpayqr/accept"]     = "api/Scanpayqr_client/accept";
+
+$route["transactions/client/createpayqr/create"]     = "api/Createpayqr_client/create";
+$route["transactions/merchant/createpayqr/accept"]   = "api/Createpayqr_merchant/accept";
+
 
 // $route["uploads"]                    = "api/Registration/uploads";
 

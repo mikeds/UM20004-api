@@ -1,25 +1,28 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Scanpayqr_client extends Client_Controller {
+class Createpayqr_merchant extends Merchant_Controller {
 
 	public function after_init() {
         if ($_SERVER['REQUEST_METHOD'] != 'POST' || !$this->JSON_POST()) {
 			$this->output->set_status_header(401);
 			die();
-        }
-        
-        $this->load->model("api/transactions_model", "transactions");
+		}
 	}
 
 	public function accept() {
-        $account                = $this->_account;
-        $transaction_type_id    = "txtype_scanpayqr1"; // scanpayqr
-        $post                   = $this->get_post();
+        $this->load->model("api/transactions_model", "transactions");
 
-        $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;
-        $client_oauth_bridge_id    = $account->oauth_bridge_id;
-        $client_balanace           = $this->decrypt_wallet_balance($account->wallet_balance);
+		$account                = $this->_account;
+        $transaction_type_id    = "txtype_createpayqr1";
+		$post                   = $this->get_post();
+        
+        $admin_oauth_bridge_id      = $account->oauth_bridge_parent_id;
+		$account_oauth_bridge_id    = $account->account_oauth_bridge_id;
+		$merchant_oauth_bridge_id	= $account->merchant_oauth_bridge_id;
+		
+		$amount = 0;
+        $fee = 0;
 
         if (!isset($post["sender_ref_id"])) {
             die();
@@ -36,21 +39,6 @@ class Scanpayqr_client extends Client_Controller {
             array(
                 'transaction_sender_ref_id' => $sender_ref_id,
                 'transaction_type_id'       => $transaction_type_id
-            ),
-            array(),
-            array(
-                array(
-                    'table_name'    => 'merchant_accounts',
-                    'condition'     => 'merchant_accounts.oauth_bridge_id = transactions.transaction_requested_by'
-                ),
-                array(
-                    'table_name'    => 'merchants',
-                    'condition'     => 'merchants.merchant_number = merchant_accounts.merchant_number'
-                )
-            ),
-            array(
-                '*',
-                'merchants.oauth_bridge_id as merchant_oauth_bridge_id'
             )
         )->row();
 
@@ -75,12 +63,6 @@ class Scanpayqr_client extends Client_Controller {
             );
             die();
         }
-        
-        // merchant
-        $transaction_requested_by = $row->merchant_oauth_bridge_id;
-
-        // client
-        $transaction_requested_to = $client_oauth_bridge_id;
 
         $transaction_id = $row->transaction_id;
         $amount         = $row->transaction_amount;
@@ -88,15 +70,7 @@ class Scanpayqr_client extends Client_Controller {
 
         $total_amount   = $amount + $fee;
 
-        if ($client_balanace < $total_amount) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "insufficient balance."
-                )
-            );
-            die();
-        }
+        $client_oauth_bridge_id = $row->transaction_requested_to;
 
         // create ledger
         $debit_amount	= $total_amount;
@@ -105,22 +79,22 @@ class Scanpayqr_client extends Client_Controller {
 
         $debit_total_amount 	= 0 - $debit_amount; // make it negative
         $credit_total_amount	= $credit_amount;
-
-        $credit_wallet_address	    = $this->get_wallet_address($transaction_requested_by);
-        $debit_wallet_address		= $this->get_wallet_address($transaction_requested_to);
+        
+        $credit_wallet_address	    = $this->get_wallet_address($merchant_oauth_bridge_id);
+        $debit_wallet_address		= $this->get_wallet_address($client_oauth_bridge_id);
 
         if ($credit_wallet_address == "" || $debit_wallet_address == "") {
             die();
         }
-        
+
         $debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
         if ($debit_new_balances) {
             // record to ledger
             $this->new_ledger_datum(
-                "scanpayqr_debit", 
+                "createpayqr_debit", 
                 $transaction_id, 
-                $credit_wallet_address, // request from credit wallet
-                $debit_wallet_address, // requested to debit wallet
+                $credit_wallet_address, // credit to wallet
+                $debit_wallet_address, // debit from wallet
                 $debit_new_balances
             );
         }
@@ -129,7 +103,7 @@ class Scanpayqr_client extends Client_Controller {
         if ($credit_new_balances) {
             // record to ledger
             $this->new_ledger_datum(
-                "scanpayqr_credit", 
+                "createpayqr_credit", 
                 $transaction_id, 
                 $debit_wallet_address, // debit from wallet address
                 $credit_wallet_address, // credit to wallet address
@@ -141,16 +115,18 @@ class Scanpayqr_client extends Client_Controller {
             $row->transaction_id,
             array(
                 'transaction_status'        => 1,
-                'transaction_requested_to'  => $transaction_requested_to,
+                'transaction_requested_by'  => $account_oauth_bridge_id,
+                'transaction_approved_by'   => $account_oauth_bridge_id,
                 'transaction_date_approved' => $this->_today
             )
         );
 
         echo json_encode(
             array(
-                'message' => "Successfully accepted ScanPayQR.",
+                'message' => "Successfully accepted CreatePayQR.",
                 'response' => array(
-                    'sender_ref_id' => $sender_ref_id
+                    'sender_ref_id' => $sender_ref_id,
+                    'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}"
                 )
             )
         );

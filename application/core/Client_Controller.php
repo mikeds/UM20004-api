@@ -101,12 +101,18 @@ class Client_Controller extends Api_Controller {
 			$expiration = $datum['transaction_date_expiration'];
 
 			if ($group_id == 3 || $group_id == 5) {
-				if ($group_id == 5 && $datum['transaction_requested_to'] == $account_oauth_bridge_id) {
+				if ($group_id == 3) {
 					$balance_type = "credit";
-				} else if ($group_id == 5 && $datum['transaction_requested_by'] == $account_oauth_bridge_id) {
-					$balance_type = "debit";
-				} else {
-					$balance_type = "credit";
+				}
+
+				if ($group_id == 5) {
+					if ($group_id == 5 && $datum['transaction_requested_to'] == $account_oauth_bridge_id) {
+						$balance_type = "credit";
+					} else if ($group_id == 5 && $datum['transaction_requested_by'] == $account_oauth_bridge_id) {
+						$balance_type = "debit";
+					} else {
+						$balance_type = "credit";
+					}
 				}
 			} else {
 				$balance_type = "debit";

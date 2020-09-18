@@ -8,7 +8,11 @@ class Accounts_model extends CI_Model {
 	private
 		$_id = "account_number";
 
-	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array()) {
+	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array(), $select = array()) {
+		if (!empty($select)) {
+			$this->db->select(ARRtoSTR($select));
+		}
+
 		$this->db->from($this->_table);
 		if (!empty($inner_joints)) {
 			foreach($inner_joints as $join) {

@@ -117,6 +117,8 @@ $route["transactions/client/scanpayqr/accept"]     = "api/Scanpayqr_client/accep
 $route["transactions/client/createpayqr/create"]     = "api/Createpayqr_client/create";
 $route["transactions/merchant/createpayqr/accept"]   = "api/Createpayqr_merchant/accept";
 
+$route["transactions/client/quickpayqr/scan/(:any)"]    = "api/Quickpayqr_client/scan/$1";
+$route["transactions/client/quickpayqr/accept"]         = "api/Quickpayqr_client/accept";
 
 // $route["uploads"]                    = "api/Registration/uploads";
 

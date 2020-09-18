@@ -81,7 +81,7 @@ class Merchant_Controller extends Api_Controller {
 			$status		= $datum['transaction_status'];
 			$expiration = $datum['transaction_date_expiration'];
 
-			if ($group_id == 1 || $group_id == 6 || $group_id == 7) {
+			if ($group_id == 1 || $group_id == 6 || $group_id == 7 || $group_id == 8) {
 				$balance_type = "credit";
 			} else {
 				$balance_type = "debit";

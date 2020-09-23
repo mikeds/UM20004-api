@@ -129,12 +129,22 @@ class Registration extends Tms_admin_Controller {
 				generate_error_message("E007-2");
 			}
 
+			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
+			$province_id 	= is_numeric($province_id) ? $province_id : 0;
+			
+			if ($this->validate_mobile_no("client", $country_id, $mobile_no)) {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Mobile no. already used."
+					)
+				);
+				die();
+			}
+
 			if (trim($password) == "") {
 				generate_error_message("E008");
 			}
-
-			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
-			$province_id 	= is_numeric($province_id) ? $province_id : 0;
 
 			$account_number = $this->generate_code(
 				array(
@@ -249,7 +259,7 @@ class Registration extends Tms_admin_Controller {
 			echo json_encode(
 				array(
 					'error' => false, 
-					'message' => 'Succefully registred!'
+					'message' => 'Succefully registered!'
 				)
 			);
 
@@ -330,12 +340,22 @@ class Registration extends Tms_admin_Controller {
 				generate_error_message("E006-2");
 			}
 
+			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
+			$province_id 	= is_numeric($province_id) ? $province_id : 0;
+
+			if ($this->validate_mobile_no("merchant", $country_id, $mobile_no)) {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Mobile no. already used."
+					)
+				);
+				die();
+			}
+
 			if (trim($password) == "") {
 				generate_error_message("E008");
 			}
-
-			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
-			$province_id 	= is_numeric($province_id) ? $province_id : 0;
 
 			$merchant_number = $this->generate_code(
 				array(
@@ -469,7 +489,7 @@ class Registration extends Tms_admin_Controller {
 			echo json_encode(
 				array(
 					'error' => false, 
-					'message' => 'Succefully registred!'
+					'message' => 'Succefully registered!'
 				)
 			);
 

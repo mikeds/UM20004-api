@@ -653,6 +653,72 @@ class Api_Controller extends MX_Controller {
 		return $flag;
 	}
 
+	public function validate_mobile_no($type, $country_id, $username, $id = "") {
+		$flag = false;
+
+		$this->load->model('api/client_accounts_model', 'client_accounts');
+		$this->load->model('api/merchant_accounts_model', 'merchant_accounts');
+
+		$client_row = $this->client_accounts->get_datum(
+			'',
+			array(
+				'account_mobile_no' => $username,
+				'country_id'		=> $country_id
+			)
+		)->row();
+
+		if ($client_row != "") {
+			$acc_id = $client_row->account_number;
+
+			if ($type == "client" && $id != "") {
+				if ($acc_id == $id) {
+					$flag = false;
+				} else {
+					$flag = true;
+					goto end;
+				}
+			} else {
+				$flag = true;
+				goto end;
+			}
+		}
+
+		$merchant_account_row = $this->merchant_accounts->get_datum(
+			'',
+			array(
+				'merchant_mobile_no' 	=> $username,
+				'country_id'			=> $country_id
+			),
+			array(),
+			array(
+				array(
+					'table_name' 	=> 'merchant_accounts',
+					'condition'		=> 'merchant_accounts.merchant_number = merchants.merchant_number'
+				)
+			)
+		)->row();
+
+		if ($merchant_account_row != "") {
+			$acc_id = $merchant_account_row->account_number;
+
+			if ($type == "merchant" && $id != "") {
+				if ($acc_id == $id) {
+					$flag = false;
+				} else {
+					$flag = true;
+					goto end;
+				}
+			} else {
+				$flag = true;
+				goto end;
+			}
+		}
+
+		end:
+
+		return $flag;
+	}
+
 	public function upload_files($folder_name, $files, $title = "", $is_data = false, $file_size_limit = 20, $allowed_types = "") {
 		$upload_path = "{$this->_upload_path}/uploads/{$folder_name}";
 

@@ -13,7 +13,7 @@ class Otp_send_to extends Client_Controller {
 	public function activation() {
         $this->load->model("api/transactions_model", "transactions");
         
-        $transaction_type_id = "txtype_1004011";
+        $transaction_type_id = "txtype_transfer1"; // transfer
 
         $account    = $this->_account;
 

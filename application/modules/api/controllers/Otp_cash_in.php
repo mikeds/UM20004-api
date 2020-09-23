@@ -13,7 +13,7 @@ class Otp_cash_in extends Client_Controller {
 	public function activation() {
         $this->load->model("api/transactions_model", "transactions");
         
-        $transaction_type_id = "txtype_1003011";
+        $transaction_type_id = "txtype_cashin1"; // cash-in
 
         $account    = $this->_account;
 

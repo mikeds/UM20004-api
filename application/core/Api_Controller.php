@@ -33,6 +33,22 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function filter_mobile_number($mobile_number, $country_code = "63") {
+		if (substr($mobile_number, 0, 1) == "+") {
+			$mobile_number = substr($mobile_number, 1);
+		}
+
+		if (strlen($mobile_number) > 3) {
+			if (substr($mobile_number, 0, 2) == "09") {
+				return $country_code . substr($mobile_number, 1);
+			} else if (substr($mobile_number, 0, 1) == "9") {
+				return $country_code . $mobile_number;
+			}
+		}
+		
+		return $mobile_number;
+	}
+
 	public function get_oauth_account_info($oauth_bridge_id) {
 		$this->load->model("api/accounts_model", "accounts");
 		$this->load->model("api/tms_admin_accounts_model", "tms_admin_accounts");

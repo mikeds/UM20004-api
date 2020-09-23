@@ -26,7 +26,7 @@ class Cash_in extends Client_Controller {
 
 	public function otc() {
         $account                = $this->_account;
-        $transaction_type_id    = "txtype_1003011"; // cash-in
+        $transaction_type_id    = "txtype_cashin1"; // cash-in
         $post                   = $this->get_post();
 
         $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;

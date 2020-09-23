@@ -84,7 +84,12 @@ class Merchant_accept extends Merchant_Controller {
         $total_amount 	= $amount + $fee;
 
         if ($merchant_balance < $total_amount) {
-            // insufienct balance
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "insufficient balance."
+                )
+            );
             die();
         }
 

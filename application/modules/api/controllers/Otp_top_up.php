@@ -13,7 +13,7 @@ class Otp_top_up extends Merchant_Controller {
 	public function activation() {
         $this->load->model("api/transactions_model", "transactions");
         
-        $transaction_type_id    = "txtype_1002011";
+        $transaction_type_id    = "txtype_topup1"; // top-up
 
         $account    = $this->_account;
 

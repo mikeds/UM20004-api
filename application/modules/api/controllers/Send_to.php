@@ -15,9 +15,10 @@ class Send_to extends Client_Controller {
 		
         $account                = $this->_account;
 
-        $transaction_type_id    = "txtype_1004011"; // C2C - Client to Client
+        $transaction_type_id    = "txtype_transfer1"; // C2C - Client to Client
 		$post                   = $this->get_post();
-		$username				= $post['email_address'];
+        $username				= $post['username'];
+        $message                = isset($post['message']) ? $post['message'] : "";
 
         if (!isset($post["amount"])) {
             die();
@@ -31,18 +32,46 @@ class Send_to extends Client_Controller {
 
         if (!is_numeric($amount)) {
             die();
-		}
-
-		$row = $this->client_accounts->get_datum(
+        }
+        
+		$row_email = $this->client_accounts->get_datum(
 			'',
 			array(
-                'account_username' 	=> $username,
+                'account_email_address' 	=> $username,
                 // 'account_number !=' => $account->account_number
 			)
-		)->row();
+        )->row();
+        
+        $mobile_no = $this->filter_mobile_number($username);
+
+		$row_mobile = $this->client_accounts->get_datum(
+			'',
+			array(
+                'CONCAT(country_code, account_mobile_no) =' 	=> $mobile_no
+                // 'account_number !=' => $account->account_number
+            ),
+            array(),
+            array(
+                array(
+                    'table_name'    => 'countries',
+                    'condition'     => 'countries.country_id = client_accounts.country_id',
+                    'position'      => 'left'
+                )
+            )
+        )->row();
+
+        $row = $row_email != "" ? $row_email : $row_mobile;
 
 		if ($row == "") {
 			die();
+        }
+        
+        if ($row->account_status != 1) {
+            die();
+        }
+
+        if ($row->account_email_status != 1) {
+            die();
         }
 
         if ($row->account_number == $account->account_number) {
@@ -72,8 +101,13 @@ class Send_to extends Client_Controller {
             $fee, 
             $transaction_type_id, 
             $debit_oauth_bridge_id, 
-            $credit_oauth_bridge_id
+            $credit_oauth_bridge_id,
+            null,
+            60,
+            $message
         );
+
+        // if no OTP -- for testing only
 
         $transaction_id = $tx_row['transaction_id'];
         $sender_ref_id  = $tx_row['sender_ref_id'];

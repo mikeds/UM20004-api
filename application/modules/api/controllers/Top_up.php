@@ -26,7 +26,7 @@ class Top_up extends Merchant_Controller {
 
 	public function otc() {
         $account                = $this->_account;
-        $transaction_type_id    = "txtype_1002011";
+        $transaction_type_id    = "txtype_topup1";
         $post                   = $this->get_post();
 
         $account_oauth_bridge_id    = $account->account_oauth_bridge_id;

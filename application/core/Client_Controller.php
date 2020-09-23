@@ -175,6 +175,7 @@ class Client_Controller extends Api_Controller {
 				'tx_to'				=> $tx_to,
 				'amount' 			=> $datum['transaction_amount'],
 				'fee' 				=> $datum['transaction_fee'],
+				'tx_message'		=> $datum['transaction_message'],
 				'tx_type_code'		=> $datum['transaction_type_code'],
 				'tx_type' 			=> $datum['transaction_type_name'],
 				'date_created' 		=> $datum['transaction_date_created'],

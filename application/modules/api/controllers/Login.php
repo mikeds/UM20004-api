@@ -27,15 +27,27 @@ class Login extends Tms_admin_Controller {
 				)
 			);
 
-			$row = $this->accounts->get_datum(
+			$row_email = $this->accounts->get_datum(
 				'',
 				array(
-					'account_username' 	=> $username,
-					'account_password' 	=> $password
+					'account_email_address' 	=> $username
 				),
 				array(),
 				$inner_joints
 			)->row();
+			
+			$mobile_no = $this->filter_mobile_number($username);
+
+			$row_mobile = $this->accounts->get_datum(
+				'',
+				array(
+					'CONCAT(country_code, account_mobile_no) =' 	=> $mobile_no
+				),
+				array(),
+				$inner_joints
+			)->row();
+	
+			$row = $row_email != "" ? $row_email : $row_mobile;
 
 			if ($row == "") {
 				generate_error_message("E004-2");

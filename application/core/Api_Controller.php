@@ -33,6 +33,22 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function filter_mobile_number($mobile_number, $country_code = "63") {
+		if (substr($mobile_number, 0, 1) == "+") {
+			$mobile_number = substr($mobile_number, 1);
+		}
+
+		if (strlen($mobile_number) > 3) {
+			if (substr($mobile_number, 0, 2) == "09") {
+				return $country_code . substr($mobile_number, 1);
+			} else if (substr($mobile_number, 0, 1) == "9") {
+				return $country_code . $mobile_number;
+			}
+		}
+		
+		return $mobile_number;
+	}
+
 	public function get_oauth_account_info($oauth_bridge_id) {
 		$this->load->model("api/accounts_model", "accounts");
 		$this->load->model("api/tms_admin_accounts_model", "tms_admin_accounts");
@@ -303,7 +319,17 @@ class Api_Controller extends MX_Controller {
 		return hash_hmac($hash, $json, getenv("SYSKEY"));
 	}
 
-	public function create_transaction($amount, $fee, $transaction_type_id, $requested_by_oauth_bridge_id, $requested_to_oauth_bridge_id, $created_by_oauth_bridge_id = null, $expiration_minutes = 60) {
+	public function create_transaction(
+		$amount, 
+		$fee, 
+		$transaction_type_id, 
+		$requested_by_oauth_bridge_id, 
+		$requested_to_oauth_bridge_id, 
+		$created_by_oauth_bridge_id = null, 
+		$expiration_minutes = 60, 
+		$message = ""
+	) {
+
 		$this->load->model("api/transactions_model", "transactions");
 		
 		if (is_null($created_by_oauth_bridge_id)) {
@@ -319,6 +345,7 @@ class Api_Controller extends MX_Controller {
         $total_amount = $amount + $fee;
 
         $data_insert = array(
+			'transaction_message'			=> $message,
             'transaction_amount' 		    => $amount,
             'transaction_fee'		        => $fee,
             'transaction_total_amount'      => $total_amount,
@@ -618,6 +645,72 @@ class Api_Controller extends MX_Controller {
 
 		if ($merchant_row != "") {
 			$acc_id = $merchant_row->account_number;
+
+			if ($type == "merchant" && $id != "") {
+				if ($acc_id == $id) {
+					$flag = false;
+				} else {
+					$flag = true;
+					goto end;
+				}
+			} else {
+				$flag = true;
+				goto end;
+			}
+		}
+
+		end:
+
+		return $flag;
+	}
+
+	public function validate_mobile_no($type, $country_id, $username, $id = "") {
+		$flag = false;
+
+		$this->load->model('api/client_accounts_model', 'client_accounts');
+		$this->load->model('api/merchant_accounts_model', 'merchant_accounts');
+
+		$client_row = $this->client_accounts->get_datum(
+			'',
+			array(
+				'account_mobile_no' => $username,
+				'country_id'		=> $country_id
+			)
+		)->row();
+
+		if ($client_row != "") {
+			$acc_id = $client_row->account_number;
+
+			if ($type == "client" && $id != "") {
+				if ($acc_id == $id) {
+					$flag = false;
+				} else {
+					$flag = true;
+					goto end;
+				}
+			} else {
+				$flag = true;
+				goto end;
+			}
+		}
+
+		$merchant_account_row = $this->merchant_accounts->get_datum(
+			'',
+			array(
+				'merchant_mobile_no' 	=> $username,
+				'country_id'			=> $country_id
+			),
+			array(),
+			array(
+				array(
+					'table_name' 	=> 'merchant_accounts',
+					'condition'		=> 'merchant_accounts.merchant_number = merchants.merchant_number'
+				)
+			)
+		)->row();
+
+		if ($merchant_account_row != "") {
+			$acc_id = $merchant_account_row->account_number;
 
 			if ($type == "merchant" && $id != "") {
 				if ($acc_id == $id) {

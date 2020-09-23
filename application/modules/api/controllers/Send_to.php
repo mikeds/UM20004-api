@@ -17,7 +17,8 @@ class Send_to extends Client_Controller {
 
         $transaction_type_id    = "txtype_transfer1"; // C2C - Client to Client
 		$post                   = $this->get_post();
-		$username				= $post['username'];
+        $username				= $post['username'];
+        $message                = isset($post['message']) ? $post['message'] : "";
 
         if (!isset($post["amount"])) {
             die();
@@ -100,7 +101,10 @@ class Send_to extends Client_Controller {
             $fee, 
             $transaction_type_id, 
             $debit_oauth_bridge_id, 
-            $credit_oauth_bridge_id
+            $credit_oauth_bridge_id,
+            null,
+            60,
+            $message
         );
 
         // if no OTP -- for testing only

@@ -319,7 +319,17 @@ class Api_Controller extends MX_Controller {
 		return hash_hmac($hash, $json, getenv("SYSKEY"));
 	}
 
-	public function create_transaction($amount, $fee, $transaction_type_id, $requested_by_oauth_bridge_id, $requested_to_oauth_bridge_id, $created_by_oauth_bridge_id = null, $expiration_minutes = 60) {
+	public function create_transaction(
+		$amount, 
+		$fee, 
+		$transaction_type_id, 
+		$requested_by_oauth_bridge_id, 
+		$requested_to_oauth_bridge_id, 
+		$created_by_oauth_bridge_id = null, 
+		$expiration_minutes = 60, 
+		$message = ""
+	) {
+
 		$this->load->model("api/transactions_model", "transactions");
 		
 		if (is_null($created_by_oauth_bridge_id)) {
@@ -335,6 +345,7 @@ class Api_Controller extends MX_Controller {
         $total_amount = $amount + $fee;
 
         $data_insert = array(
+			'transaction_message'			=> $message,
             'transaction_amount' 		    => $amount,
             'transaction_fee'		        => $fee,
             'transaction_total_amount'      => $total_amount,

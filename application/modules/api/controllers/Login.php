@@ -63,6 +63,12 @@ class Login extends Tms_admin_Controller {
 
 			$qr_code = md5($row->oauth_bridge_id);
 
+			$avatar_image_url = '';
+			
+			if ($row->account_avatar_base64 != "") {
+				$avatar_image_url = base_url() . "avatar/client-accounts/" . md5($row->account_number);
+			}
+
 			echo json_encode(
 				array(
 					'response' => array(
@@ -75,7 +81,7 @@ class Login extends Tms_admin_Controller {
 						'mobile_no'		=> (empty($row->country_code) ? "63" : $row->country_code) . $row->account_mobile_no,
 						'secret_code'	=> $row->client_id,
 						'secret_key'	=> $row->client_secret,
-						'avatar_image'	=> base_url() . "avatar/client-accounts/" . md5($row->account_number),
+						'avatar_image'	=> $avatar_image_url,
 						'qr_code'		=> base_url() . "qr-code/client-accounts/{$qr_code}",
 						'account_status' 	=> $row->account_status == 1 ? "activated" : "deactivated",
 						'email_status'		=> $row->account_email_status == 1 ? "activated" : "not_activated"
@@ -139,6 +145,12 @@ class Login extends Tms_admin_Controller {
 
 			$qr_code = md5($row->x_oauth_bridge_id);
 
+			$avatar_image_url = '';
+			
+			if ($row->account_avatar_base64 != "") {
+				$avatar_image_url = base_url() . "avatar/merchant-accounts/" . md5($row->account_number);
+			}
+
 			echo json_encode(
 				array(
 					'response' => array(
@@ -152,7 +164,7 @@ class Login extends Tms_admin_Controller {
 						'mobile_no'		=> (empty($row->country_code) ? "63" : $row->country_code) . $row->merchant_mobile_no,
 						'secret_code'	=> $row->client_id,
 						'secret_key'	=> $row->client_secret,
-						'avatar_image'	=> base_url() . "avatar/merchant-accounts/" . md5($row->account_number),
+						'avatar_image'	=> $avatar_image_url,
 						'qr_code'		=> base_url() . "qr-code/merchant-accounts/{$qr_code}",
 						'account_status' 	=> $row->merchant_status == 1 ? "verified" : "unverified",
 						'email_status'		=> $row->merchant_email_status == 1 ? "activated" : "not_activated"

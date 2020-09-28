@@ -703,8 +703,8 @@ class Api_Controller extends MX_Controller {
 			array(),
 			array(
 				array(
-					'table_name' 	=> 'merchant_accounts',
-					'condition'		=> 'merchant_accounts.merchant_number = merchants.merchant_number'
+					'table_name' 	=> 'merchants',
+					'condition'		=> 'merchants.merchant_number = merchant_accounts.merchant_number'
 				)
 			)
 		)->row();

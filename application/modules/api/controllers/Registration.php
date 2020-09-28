@@ -164,6 +164,16 @@ class Registration extends Tms_admin_Controller {
 				die();
 			}
 
+			if ($mobile_no == "") {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Mobile no. is requred."
+					)
+				);
+				die();
+			}
+
 			// $username = trim(strtolower($username));
 
 			if ($email_address == "") {
@@ -182,7 +192,7 @@ class Registration extends Tms_admin_Controller {
 			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
 			$province_id 	= is_numeric($province_id) ? $province_id : 0;
 			
-			if ($this->validate_mobile_no("client", $country_id, $mobile_no)) {
+			if ($this->validate_mobile_no("client", $country_id, $mobile_no) && $mobile_no != "") {
 				echo json_encode(
 					array(
 						'error'             => true,
@@ -431,6 +441,16 @@ class Registration extends Tms_admin_Controller {
 				die();
 			}
 
+			if ($mobile_no == "") {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Mobile no. is requred."
+					)
+				);
+				die();
+			}
+
 			if ($this->validate_email_address("merchant", $email_address) || $email_address == "") {
 				generate_error_message("E007-2");
 			}
@@ -443,7 +463,7 @@ class Registration extends Tms_admin_Controller {
 			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
 			$province_id 	= is_numeric($province_id) ? $province_id : 0;
 
-			if ($this->validate_mobile_no("merchant", $country_id, $mobile_no)) {
+			if ($this->validate_mobile_no("merchant", $country_id, $mobile_no)  && $mobile_no != "") {
 				echo json_encode(
 					array(
 						'error'             => true,

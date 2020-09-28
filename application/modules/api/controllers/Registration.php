@@ -57,7 +57,7 @@ class Registration extends Tms_admin_Controller {
 
 		$this->load->model("api/client_accounts_model", "client_accounts");
 
-		if (($this->JSON_POST() && $_SERVER['REQUEST_METHOD'] == 'POST') || ($_FILES && $_POST)) {
+		if ($_POST) {
 			/*
 			{
 				"username": "username",
@@ -121,9 +121,9 @@ class Registration extends Tms_admin_Controller {
 				generate_error_message("E006-3");
 			}
 
-			if ($this->validate_username("client", $email_address)) {
-				generate_error_message("E006-2");
-			}
+			// if ($this->validate_username("client", $email_address)) {
+			// 	generate_error_message("E006-2");
+			// }
 
 			if ($this->validate_email_address("client", $email_address)) {
 				generate_error_message("E007-2");
@@ -275,7 +275,7 @@ class Registration extends Tms_admin_Controller {
 
 		$this->load->model("api/merchants_model", "merchants");
 
-		if (($this->JSON_POST() && $_SERVER['REQUEST_METHOD'] == 'POST') || ($_FILES && $_POST)) {
+		if ($_POST) {
 			/*
 			{
 				"first_name" : "Merchant 2",
@@ -336,9 +336,9 @@ class Registration extends Tms_admin_Controller {
 				generate_error_message("E007-2");
 			}
 
-			if ($this->validate_username("merchant", $email_address) || $email_address == "") {
-				generate_error_message("E006-2");
-			}
+			// if ($this->validate_username("merchant", $email_address) || $email_address == "") {
+			// 	generate_error_message("E006-2");
+			// }
 
 			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
 			$province_id 	= is_numeric($province_id) ? $province_id : 0;

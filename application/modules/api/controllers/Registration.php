@@ -99,20 +99,69 @@ class Registration extends Tms_admin_Controller {
 			} else {
 				// $username		= $this->input->post("username");
 				$fname			= $this->input->post("first_name");
+				$fname			= is_null($fname) ? "" : $fname;
+				
 				$mname			= $this->input->post("middle_name");
+				$mname			= is_null($mname) ? "" : $mname;
+
 				$lname			= $this->input->post("last_name");
+				$lname			= is_null($lname) ? "" : $lname;
+
 				$gender			= $this->input->post("gender");
+				$gender			= is_null($gender) ? 1 : $gender;
+
 				$dob			= $this->input->post("dob");
+				$dob			= is_null($dob) ? "" : $dob;
+
 				$house_no		= $this->input->post("house_no");
+				$house_no		= is_null($house_no) ? "" : $house_no;
+				
 				$street			= $this->input->post("street");
+				$street			= is_null($street) ? "" : $street;
+
 				$brgy			= $this->input->post("brgy");
+				$brgy			= is_null($brgy) ? "" : $brgy;
+
 				$city			= $this->input->post("city");
+				$city			= is_null($city) ? "" : $city;
+
 				$country_id		= $this->input->post("country_id");
+				$country_id		= is_null($country_id) ? 169 : $country_id;
+
 				$province_id	= $this->input->post("province_id");
+				$province_id	= is_null($province_id) ? 0 : $province_id;
+
 				$mobile_no		= $this->input->post("mobile_no");
+				$mobile_no		= is_null($mobile_no) ? "" : $mobile_no;
+
 				$email_address	= $this->input->post("email_address");
+				$email_address	= is_null($email_address) ? "" : $email_address;
+					
 				$password		= $this->input->post("password");
+				$password		= is_null($password) ? "" : $password;
+
 				$others			= $this->input->post("others");
+				$others			= is_null($others) ? "" : $others;
+			}
+
+			if ($fname == "" || $lname == "") {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "First Name and Last Name are required."
+					)
+				);
+				die();
+			}
+
+			if ($dob == "") {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Date of Birth is required."
+					)
+				);
+				die();
 			}
 
 			// $username = trim(strtolower($username));
@@ -129,6 +178,7 @@ class Registration extends Tms_admin_Controller {
 				generate_error_message("E007-2");
 			}
 
+			$gender 		= $gender == 2 ? 2 : 1;
 			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
 			$province_id 	= is_numeric($province_id) ? $province_id : 0;
 			
@@ -316,20 +366,69 @@ class Registration extends Tms_admin_Controller {
 			} else {
 				// $username		= $this->input->post("username");
 				$fname			= $this->input->post("first_name");
+				$fname			= is_null($fname) ? "" : $fname;
+
 				$mname			= $this->input->post("middle_name");
+				$mname			= is_null($mname) ? "" : $mname;
+
 				$lname			= $this->input->post("last_name");
+				$lname			= is_null($lname) ? "" : $lname;
+
 				$gender			= $this->input->post("gender");
+				$gender			= is_null($gender) ? 1 : $gender;
+
 				$dob			= $this->input->post("dob");
+				$dob			= is_null($dob) ? "" : $dob;
+
 				$house_no		= $this->input->post("house_no");
+				$house_no		= is_null($house_no) ? "" : $house_no;
+
 				$street			= $this->input->post("street");
+				$street			= is_null($street) ? "" : $street;
+
 				$brgy			= $this->input->post("brgy");
+				$brgy			= is_null($brgy) ? "" : $brgy;
+
 				$city			= $this->input->post("city");
+				$city			= is_null($city) ? "" : $city;
+
 				$country_id		= $this->input->post("country_id");
+				$country_id		= is_null($country_id) ? 169 : $country_id;
+
 				$province_id	= $this->input->post("province_id");
+				$province_id	= is_null($province_id) ? 0 : $province_id;
+
 				$mobile_no		= $this->input->post("mobile_no");
+				$mobile_no		= is_null($mobile_no) ? "" : $mobile_no;
+
 				$email_address	= $this->input->post("email_address");
+				$email_address	= is_null($email_address) ? "" : $email_address;
+
 				$password		= $this->input->post("password");
+				$password		= is_null($password) ? "" : $password;
+
 				$others			= $this->input->post("others");
+				$others			= is_null($others) ? "" : $others;
+			}
+
+			if ($fname == "" || $lname == "") {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "First Name and Last Name are required."
+					)
+				);
+				die();
+			}
+
+			if ($dob == "") {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Date of Birth is required."
+					)
+				);
+				die();
 			}
 
 			if ($this->validate_email_address("merchant", $email_address) || $email_address == "") {
@@ -340,6 +439,7 @@ class Registration extends Tms_admin_Controller {
 			// 	generate_error_message("E006-2");
 			// }
 
+			$gender 		= $gender == 2 ? 2 : 1;
 			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
 			$province_id 	= is_numeric($province_id) ? $province_id : 0;
 

@@ -66,7 +66,7 @@ class Merchant_accept extends Merchant_Controller {
             echo json_encode(
                 array(
                     'error'             => true,
-                    'error_description' => "Invalid or already accepted Sender Ref ID."
+                    'error_description' => "Invalid or expired Sender Ref ID."
                 )
             );
             die();

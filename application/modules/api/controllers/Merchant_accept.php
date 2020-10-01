@@ -63,12 +63,24 @@ class Merchant_accept extends Merchant_Controller {
         )->row();
 
         if ($row == "") {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid or already accepted Sender Ref ID."
+                )
+            );
             die();
         }
 
         $expiration_date = $row->transaction_date_expiration;
 
         if (strtotime($expiration_date) < strtotime($this->_today)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Cash-in request is expired."
+                )
+            );
             die();
         }
 

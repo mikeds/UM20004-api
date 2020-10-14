@@ -159,20 +159,23 @@ class Client_Controller extends Api_Controller {
 				$created_by = trim("{$created_account_info['account_fname']} {$created_account_info['account_mname']} {$created_account_info['account_lname']}");
 			}
 
-			if ($balance_type == 'credit') {
-				$tx_from = $to;
-				$tx_to = $from;
-			} else {
-				$tx_from = $from;
-				$tx_to = $to;
-			}
+			$account_no_by = $created_account_info['account_number'];
+
+			// if ($balance_type == 'credit') {
+			// 	$tx_from = $to;
+			// 	$tx_to = $from;
+			// } else {
+			// 	$tx_from = $from;
+			// 	$tx_to = $to;
+			// }
 
 			$results[] = array(
 				'tx_id' 			=> $datum['transaction_id'],
 				'sender_ref_id' 	=> $datum['transaction_sender_ref_id'],
+				'tx_account_no_by'	=> $account_no_by,
 				'tx_created_by'		=> $created_by,
-				'tx_from'			=> $tx_from,
-				'tx_to'				=> $tx_to,
+				'tx_from'			=> $from,
+				'tx_to'				=> $to,
 				'amount' 			=> $datum['transaction_amount'],
 				'fee' 				=> $datum['transaction_fee'],
 				'tx_message'		=> $datum['transaction_message'],

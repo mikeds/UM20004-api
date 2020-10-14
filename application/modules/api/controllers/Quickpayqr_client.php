@@ -195,7 +195,8 @@ class Quickpayqr_client extends Client_Controller {
                 'message' => "Successfully transfer to merchant via QuickPayQR.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
-                    'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}"
+					'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
+					'timestamp'     => $this->_today
                 )
             )
         );

@@ -74,7 +74,8 @@ class Cash_in extends Client_Controller {
                 'message' =>  "Successfully created cash-in, OTP Pin sent to your email.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
-                    'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}"
+                    'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'timestamp'     => $this->_today
                 )
             )
         );

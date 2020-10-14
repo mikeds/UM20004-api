@@ -28,6 +28,7 @@ class Merchant_accept extends Merchant_Controller {
 
         $account                        = $this->_account;
         $transaction_type_group_id      = 3; // all cash in request
+        $transaction_type_user_to       = 2; // all merchant
         $post                           = $this->get_post();
 
         $admin_oauth_bridge_id          = $account->oauth_bridge_parent_id;
@@ -46,6 +47,7 @@ class Merchant_accept extends Merchant_Controller {
             array(
                 'transaction_sender_ref_id' => $sender_ref_id,
                 'transaction_type_group_id' => $transaction_type_group_id,
+                'transaction_type_user_to'  => $transaction_type_user_to,
                 'transaction_otp_status'    => 1,
                 'transaction_status'        => 0
             ),

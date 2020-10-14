@@ -150,7 +150,8 @@ class Scanpayqr_client extends Client_Controller {
             array(
                 'message' => "Successfully accepted ScanPayQR.",
                 'response' => array(
-                    'sender_ref_id' => $sender_ref_id
+                    'sender_ref_id' => $sender_ref_id,
+                    'timestamp'     => $this->_today
                 )
             )
         );

@@ -172,7 +172,8 @@ class Send_to extends Client_Controller {
             array(
                 'message' => "Successfully created transfer, OTP Pin sent to your email.",
                 'response' => array(
-                    'sender_ref_id' => $sender_ref_id
+                    'sender_ref_id' => $sender_ref_id,
+                    'timestamp'     => $this->_today
                 )
             )
         );

@@ -155,7 +155,8 @@ class Merchant_accept extends Merchant_Controller {
                 'message'   => "Successfully accepted cash-in",
                 'response'  => array(
                     'transaction_id'=> $row->transaction_id,
-                    'sender_ref_id' => $row->transaction_sender_ref_id
+                    'sender_ref_id' => $row->transaction_sender_ref_id,
+                    'timestamp'     => $this->_today
                 )
             )
         );

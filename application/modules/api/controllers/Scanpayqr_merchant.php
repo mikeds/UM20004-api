@@ -53,7 +53,8 @@ class Scanpayqr_merchant extends Merchant_Controller {
                 'message' => "Successfully created ScanPayQR.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
-                    'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}"
+                    'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'timestamp'     => $this->_today
                 )
             )
         );

@@ -117,6 +117,10 @@ class Merchant_accept extends Merchant_Controller {
         $debit_wallet_address		= $this->get_wallet_address($merchant_oauth_bridge_id);
         $credit_wallet_address	    = $this->get_wallet_address($row->oauth_bridge_id);
         
+        if ($credit_wallet_address == "" || $debit_wallet_address == "") {
+            die();
+        }
+
         $debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
         if ($debit_new_balances) {
             // record to ledger

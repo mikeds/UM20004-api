@@ -38,6 +38,8 @@ class Send_to extends Client_Controller {
 			'',
 			array(
                 'account_email_address' 	=> $username,
+                'account_status'            => 1,
+                'account_email_status'      => 1
                 // 'account_number !=' => $account->account_number
 			)
         )->row();
@@ -47,7 +49,9 @@ class Send_to extends Client_Controller {
 		$row_mobile = $this->client_accounts->get_datum(
 			'',
 			array(
-                'CONCAT(country_code, account_mobile_no) =' 	=> $mobile_no
+                'CONCAT(country_code, account_mobile_no) =' 	=> $mobile_no,
+                'account_status'                                => 1,
+                'account_email_status'                          => 1
                 // 'account_number !=' => $account->account_number
             ),
             array(),
@@ -63,6 +67,12 @@ class Send_to extends Client_Controller {
         $row = $row_email != "" ? $row_email : $row_mobile;
 
 		if ($row == "") {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid mobile or email address."
+                )
+            );
 			die();
         }
         

@@ -25,6 +25,8 @@ class Cash_in extends Client_Controller {
     }
 
 	public function otc() {
+        $this->load->model("api/transaction_fees_model", "tx_fees");
+
         $account                = $this->_account;
         $transaction_type_id    = "txtype_cashin1"; // cash-in
         $post                   = $this->get_post();
@@ -45,9 +47,24 @@ class Cash_in extends Client_Controller {
         if (!is_numeric($amount)) {
             die();
         }
-        
+
         $fee = 0;
         $total_amount = $amount + $fee;
+
+        // get transaction fee
+        $row = $this->tx_fees->get_datum(
+            '',
+            array(
+                'transaction_type_id'       => $transaction_type_id,
+                'transaction_fee_from <='   => $amount,
+                'transaction_fee_to >='     => $amount,
+                'oauth_bridge_parent_id'    => $admin_oauth_bridge_id
+            )
+        )->row();
+
+        if ($row != "") {
+            $fee = $row->transaction_fee_amount;
+        }
 
         $tx_row = $this->create_transaction(
             $amount, 

@@ -122,6 +122,15 @@ $route["transactions/client/quickpayqr/accept"]         = "api/Quickpayqr_client
 
 // $route["uploads"]                    = "api/Registration/uploads";
 
+$route["token/sms"]             = "api/Token/sms";
+
+$route["sms/send"]              = "public/Sms/send";
+$route["sms/notification"]      = "public/Sms/notification";
+
+$route["callback/globelabs"]    = "api/Callback/globelabs";
+
+$route["test/income-shares"]    = "api/Home/test_income_shares";
+
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;
 

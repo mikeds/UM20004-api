@@ -36,6 +36,8 @@ class Merchant_accept extends Merchant_Controller {
         $account_oauth_bridge_id        = $account->account_oauth_bridge_id;
         $merchant_balance               = $this->decrypt_wallet_balance($account->wallet_balance);
 
+        $merchant_no                    = $account->merchant_number;
+
         if (!isset($post["sender_ref_id"])) {
             die();
         }
@@ -144,6 +146,13 @@ class Merchant_accept extends Merchant_Controller {
                 $credit_new_balances
             );
         }
+
+        // do income sharing
+        $this->distribute_income_shares(
+			$transaction_id,
+			$merchant_no,
+			$fee_amount
+		);
 
         $this->transactions->update(
             $transaction_id,

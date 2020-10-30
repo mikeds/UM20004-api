@@ -30,4 +30,17 @@ class Callback extends Api_Controller {
 		// unauthorized access
 		$this->output->set_status_header(401);
 	}
+
+	public function globelabs() {
+		if ($_GET) {
+			if (isset($_GET['code'])) {
+				$code = $_GET['code'];
+
+				
+			}
+		}
+
+		// unauthorized access
+		$this->output->set_status_header(401);
+	}
 }

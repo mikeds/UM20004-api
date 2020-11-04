@@ -19,7 +19,9 @@ class Createpayqr_merchant extends Merchant_Controller {
         
         $admin_oauth_bridge_id      = $account->oauth_bridge_parent_id;
 		$account_oauth_bridge_id    = $account->account_oauth_bridge_id;
-		$merchant_oauth_bridge_id	= $account->merchant_oauth_bridge_id;
+        $merchant_oauth_bridge_id	= $account->merchant_oauth_bridge_id;
+        
+        $merchant_no                = $account->merchant_number;
 		
 		$amount = 0;
         $fee = 0;
@@ -110,6 +112,13 @@ class Createpayqr_merchant extends Merchant_Controller {
                 $credit_new_balances
             );
         }
+
+        // do income sharing
+        $this->distribute_income_shares(
+			$transaction_id,
+			$merchant_no,
+			$fee_amount
+		);
 
         $this->transactions->update(
             $row->transaction_id,

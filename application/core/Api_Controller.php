@@ -39,6 +39,12 @@ class Api_Controller extends MX_Controller {
 		$this->load->model("api/merchant_accounts_model", "merchant_accounts");
 		$this->load->model("api/income_scheme_merchants_model", "income_scheme_merchants");
 
+		$admin_oauth_bridge_id 	= "";
+		$transaction_type_id 	= "txtype_income_shares";
+
+		$accumulated_fee = 0;
+		$flag = false;
+
 		/*
 			- get merchant scheme group
 			- get all merchant in scheme group
@@ -64,6 +70,8 @@ class Api_Controller extends MX_Controller {
 		)->row();
 
 		if ($row == "") {
+			// if merchant not found redirect to admin tx
+			// goto admin_income_tx;
 			return;
 		}
 
@@ -104,11 +112,6 @@ class Api_Controller extends MX_Controller {
 			$message = "",
 			$tx_parent_id = ""
 		*/
-
-		$transaction_type_id = "txtype_income_shares";
-
-		$accumulated_fee = 0;
-		$flag = false;
 
 		foreach($items as $item) {
 			$amount = 0;
@@ -208,7 +211,15 @@ class Api_Controller extends MX_Controller {
 			}
 		}
 
+
+		// ADMIN INCOME TX START HERE
+		// admin_income_tx:
+
 		if ($fee >= $accumulated_fee) {
+			// if ($tx_parent_id != "" && $admin_oauth_bridge_id == "") {
+				
+			// }
+
 			$amount = $fee - $accumulated_fee;
 			
 			$debit_wallet_address		= $this->get_wallet_address($admin_oauth_bridge_id);

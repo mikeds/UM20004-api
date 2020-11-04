@@ -32,7 +32,7 @@ class Lookup_client extends Client_Controller {
 		$this->load->model("api/transaction_fees_model", "tx_fees");
 
 		if (isset($_GET['tx_type_id']) && isset($_GET['amount'])) {
-			$admin_oauth_bridge_id = $this->_account->oauth_bridge_id;
+			$admin_oauth_bridge_id = $this->_account->oauth_bridge_parent_id;
 
 			$tx_type_id = $_GET['tx_type_id'];
 			$amount		= $_GET['amount'];

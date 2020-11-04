@@ -134,6 +134,9 @@ $route["test/income-shares"]    = "api/Home/test_income_shares";
 $route["lookup/tx-list"]        = "api/Lookup/tx_list";
 $route["lookup/tx-fee"]         = "api/Lookup/tx_fee";
 
+$route["lookup/client/tx-list"]        = "api/Lookup_client/tx_list";
+$route["lookup/client/tx-fee"]         = "api/Lookup_client/tx_fee";
+
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;
 

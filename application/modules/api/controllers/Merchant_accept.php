@@ -113,6 +113,8 @@ class Merchant_accept extends Merchant_Controller {
         $credit_amount 	= $amount;
         $fee_amount		= $fee;
 
+        $total_amount   = $amount + $fee;
+
         $debit_total_amount 	= 0 - $debit_amount; // make it negative
         $credit_total_amount	= $credit_amount;
 
@@ -167,9 +169,12 @@ class Merchant_accept extends Merchant_Controller {
             array(
                 'message'   => "Successfully accepted cash-in",
                 'response'  => array(
-                    'transaction_id'=> $row->transaction_id,
-                    'sender_ref_id' => $row->transaction_sender_ref_id,
-                    'timestamp'     => $this->_today
+                    'tx_amount'         => $amount,
+                    'tx_fee'            => $fee,
+                    'tx_total_amount'   => $total_amount,
+                    'transaction_id'    => $row->transaction_id,
+                    'sender_ref_id'     => $row->transaction_sender_ref_id,
+                    'timestamp'         => $this->_today
                 )
             )
         );

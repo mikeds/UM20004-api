@@ -48,6 +48,12 @@ class Createpayqr_client extends Client_Controller {
             die();
         }
 
+        $fee = $this->get_fee(
+            $amount,
+            $transaction_type_id,
+            $admin_oauth_bridge_id
+        );
+
         $tx_row = $this->create_transaction(
             $amount, 
             $fee, 

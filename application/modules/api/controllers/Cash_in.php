@@ -51,20 +51,11 @@ class Cash_in extends Client_Controller {
         $fee = 0;
         $total_amount = $amount + $fee;
 
-        // get transaction fee
-        $row = $this->tx_fees->get_datum(
-            '',
-            array(
-                'transaction_type_id'       => $transaction_type_id,
-                'transaction_fee_from <='   => $amount,
-                'transaction_fee_to >='     => $amount,
-                'oauth_bridge_parent_id'    => $admin_oauth_bridge_id
-            )
-        )->row();
-
-        if ($row != "") {
-            $fee = $row->transaction_fee_amount;
-        }
+        $fee = $this->get_fee(
+            $amount,
+            $transaction_type_id,
+            $admin_oauth_bridge_id
+        );
 
         $tx_row = $this->create_transaction(
             $amount, 

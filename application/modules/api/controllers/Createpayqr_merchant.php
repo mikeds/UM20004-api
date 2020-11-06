@@ -70,14 +70,14 @@ class Createpayqr_merchant extends Merchant_Controller {
         $amount         = $row->transaction_amount;
         $fee            = $row->transaction_fee;
 
-        $total_amount   = $amount + $fee;
-
         $client_oauth_bridge_id = $row->transaction_requested_to;
 
         // create ledger
-        $debit_amount	= $total_amount;
+        $debit_amount	= $amount + $fee;
         $credit_amount 	= $amount;
         $fee_amount		= $fee;
+
+        $total_amount   = $amount + $fee;
 
         $debit_total_amount 	= 0 - $debit_amount; // make it negative
         $credit_total_amount	= $credit_amount;

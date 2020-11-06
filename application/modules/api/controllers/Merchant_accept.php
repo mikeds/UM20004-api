@@ -109,7 +109,7 @@ class Merchant_accept extends Merchant_Controller {
             die();
         }
 
-        $debit_amount	= $amount;
+        $debit_amount	= $amount + $fee;
         $credit_amount 	= $amount;
         $fee_amount		= $fee;
 

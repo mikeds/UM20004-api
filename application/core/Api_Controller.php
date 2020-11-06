@@ -33,6 +33,29 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function get_fee($amount, $transaction_type_id, $admin_oauth_bridge_id) {
+		$this->load->model("api/transaction_fees_model", "tx_fees");
+
+		$fee = 0;
+
+		// get transaction fee
+		$row = $this->tx_fees->get_datum(
+			'',
+			array(
+				'transaction_type_id'       => $transaction_type_id,
+				'transaction_fee_from <='   => $amount,
+				'transaction_fee_to >='     => $amount,
+				'oauth_bridge_parent_id'    => $admin_oauth_bridge_id
+			)
+		)->row();
+
+		if ($row != "") {
+			$fee = $row->transaction_fee_amount;
+		}
+
+		return $fee;
+	}
+
 	public function distribute_income_shares($tx_parent_id, $merchant_no, $fee) {
 		$this->load->model("api/transactions_model", "transactions");
 		$this->load->model("api/merchants_model", "merchants");
@@ -113,6 +136,8 @@ class Api_Controller extends MX_Controller {
 			$tx_parent_id = ""
 		*/
 
+		$duration = 0;
+
 		foreach($items as $item) {
 			$amount = 0;
 			$type	= $item['scheme_merchant_type'];
@@ -182,6 +207,9 @@ class Api_Controller extends MX_Controller {
 			if ($credit_wallet_address == "" || $debit_wallet_address == "") {
 				continue;
 			}
+			
+			$duration++;
+			$new_date = date("Y-m-d H:i:s", strtotime("+$duration sec"));
 
 			$tx_row = $this->create_transaction(
 				$amount, 
@@ -192,7 +220,8 @@ class Api_Controller extends MX_Controller {
 				$admin_oauth_bridge_id,
 				60,
 				"Income Shares",
-				$tx_parent_id
+				$tx_parent_id,
+				$new_date
 			);
 
 			$tx_id 					= $tx_row['transaction_id'];
@@ -234,6 +263,9 @@ class Api_Controller extends MX_Controller {
 				return;
 			}
 
+			$duration++;
+			$new_date = date("Y-m-d H:i:s", strtotime("+$duration sec"));
+
 			// remaining fee goes to admin
 			$tx_row = $this->create_transaction(
 				$amount, 
@@ -244,7 +276,8 @@ class Api_Controller extends MX_Controller {
 				$admin_oauth_bridge_id,
 				60,
 				"Income Shares",
-				$tx_parent_id
+				$tx_parent_id,
+				$new_date
 			);
 
 			$tx_id 					= $tx_row['transaction_id'];
@@ -559,8 +592,13 @@ class Api_Controller extends MX_Controller {
 		$created_by_oauth_bridge_id = null, 
 		$expiration_minutes = 60, 
 		$message = "",
-		$tx_parent_id = ""
+		$tx_parent_id = "",
+		$date = ""
 	) {
+
+		if ($date == "") {
+			$date = $this->_today;
+		}
 
 		$this->load->model("api/transactions_model", "transactions");
 		
@@ -585,7 +623,7 @@ class Api_Controller extends MX_Controller {
             'transaction_requested_by'      => $requested_by_oauth_bridge_id,
             'transaction_requested_to'	    => $requested_to_oauth_bridge_id,
             'transaction_created_by'        => $created_by_oauth_bridge_id,
-            'transaction_date_created'      => $this->_today,
+            'transaction_date_created'      => $date,
 			'transaction_date_expiration'   => $stamp,
 			'transaction_otp_status'		=> 1 // temporary activated
         );

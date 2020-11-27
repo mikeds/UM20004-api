@@ -79,7 +79,7 @@ class Api_Controller extends MX_Controller {
 
 		$expiration_date = create_expiration_datetime($this->_today, $expiration_time);
 
-		$message		= "OTP: {$code}";
+		$message		= "OTP: {$code}. Expiration Date: {$expiration_date}";
 
 		$curl = curl_init();
 
@@ -135,7 +135,11 @@ class Api_Controller extends MX_Controller {
 
 		echo json_encode(
 			array(
-				'message' => "Successfully sent SMS OTP."
+				'message' => "Successfully sent SMS OTP.",
+				'response'	=> array(
+					'expiration_date' => $expiration_date
+				),
+				'timestamp'	=> $this->_today
 			)
 		);
 		die();

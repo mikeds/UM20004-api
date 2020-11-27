@@ -132,7 +132,8 @@ $route["lookup/client/tx-fee"]         = "api/Lookup_client/tx_fee";
 
 $route["otp/client/request"]    = "api/Client_otp/request";
 $route["otp/client/submit"]     = "api/Client_otp/submit";
-$route["otp/client/token"]      = "api/Client_otp/token";
+
+$route["otp/token"]             = "api/Token/otp";
 
 /*
 // for testing

@@ -18,40 +18,115 @@ class Token extends Api_Controller {
 		$this->oauth2->get_token();
 	}
 
-	public function sms() {
-		$base_url 	= "https://developer.globelabs.com.ph/oauth/access_token";
+	public function otp() {
+		if ($_SERVER['REQUEST_METHOD'] == 'POST' || $this->JSON_POST()) {
+			$this->load->model("api/globe_access_tokens", "globe_access_token");
+			$this->load->model("api/client_accounts_model", "client_accounts");
 
-		$code  		= $this->_code;
-		$app_id     = $this->_app_id;
-		$app_secret = $this->_app_secret;
-		
-		$auth_url	= $base_url . "?app_id={$app_id}&app_secret={$app_secret}&code={$code}";
+			$post       = $this->get_post();
 
-        $curl = curl_init();
+			if (!isset($post['code'])) {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Please provide code from globeapi callback."
+					)
+				);
+				die();
+			}
 
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => $auth_url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_HTTPHEADER => array(
-                "Content-Type: application/json"
-            ),
-        ));
+			$base_url 	= GLOBEBASEURL . "oauth/access_token";
 
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-		curl_close($curl);
+			$code  		= $post['code'];
+			$app_id     = GLOBEAPPID;
+			$app_secret = GLOBEAPPSECRET;
+			
+			$auth_url	= $base_url . "?app_id={$app_id}&app_secret={$app_secret}&code={$code}";
 
-		if (isset($response['access_token'])) {
-			$access_token = $response['access_token'];
+			$curl = curl_init();
 
-			print_r($response);
+			curl_setopt_array($curl, array(
+				CURLOPT_URL => $auth_url,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_ENCODING => "",
+				CURLOPT_MAXREDIRS => 10,
+				CURLOPT_TIMEOUT => 30,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => "POST",
+				CURLOPT_HTTPHEADER => array(
+					"Content-Type: application/json"
+				),
+			));
 
-			return;
+			$response = curl_exec($curl);
+			$err = curl_error($curl);
+			curl_close($curl);
+
+			if ($err) {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Unable to generate token. Curl Error #: {$err}",
+						'redirect_url'		=> GLOBEBASEURL . "dialog/oauth/" . GLOBEAPPID
+					)
+				);
+				die();
+			}
+
+			$decoded = json_decode($response);
+
+			if (!isset($decoded->access_token)) {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Invalid code.",
+						'redirect_url'		=> GLOBEBASEURL . "dialog/oauth/" . GLOBEAPPID
+					)
+				);
+				die();
+			}
+
+			$access_token 		= $decoded->access_token;
+			$subscriber_number	= $decoded->subscriber_number;
+
+			// find subscriber_number then get auth_bridge_id
+			$row = $this->client_accounts->get_datum(
+				'',
+				array(
+					'account_mobile_no' => $subscriber_number
+				)
+			)->row();
+
+			if ($row == "") {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Cannot find mobile no. on database.",
+					)
+				);
+				die();
+			}
+
+			$oauth_bridge_id = $row->oauth_bridge_id;
+
+			$this->globe_access_token->insert(
+				array(
+					'token_code'			=> $access_token,
+					'token_auth_bridge_id'	=> $oauth_bridge_id,
+					'token_date_added'		=> $this->_today
+				)
+			);
+
+			echo json_encode(
+				array(
+					'message'	=> "Successfully generated GLOBE API token.",
+					'response' => array(
+						'access_token' 		=> $access_token,
+						'subscriber_number'	=> $subscriber_number
+					)
+				)
+			);
+			die();
 		}
 
 		// unauthorized access

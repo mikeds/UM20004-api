@@ -33,9 +33,29 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
-	public function set_sms_otp($auth_bridge_id, $mobile_no) {
+	public function set_sms_otp($mobile_no) {
+		$this->load->model("api/client_accounts_model", "client_accounts");
 		$this->load->model("api/otp_model", "otp");
 		$this->load->model("api/globe_access_tokens", "globe_access_token");
+
+		$client_row = $this->client_accounts->get_datum(
+			'',
+			array(
+				'account_mobile_no' => $mobile_no
+			)
+		)->row();
+
+		if ($client_row == "") {
+			echo json_encode(
+				array(
+					'error'             => true,
+					'error_description' => "Mobile no. not register on database."
+				)
+			);
+			die();
+		}
+
+		$auth_bridge_id = $client_row->oauth_bridge_id;
 
 		$row_access_token = $this->globe_access_token->get_datum(
 			'',

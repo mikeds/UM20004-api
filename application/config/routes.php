@@ -130,14 +130,15 @@ $route["lookup/tx-fee"]         = "api/Lookup/tx_fee";
 $route["lookup/client/tx-list"]        = "api/Lookup_client/tx_list";
 $route["lookup/client/tx-fee"]         = "api/Lookup_client/tx_fee";
 
-$route["otp/client/request"]    = "api/Client_otp/request";
-$route["otp/client/submit"]     = "api/Client_otp/submit";
-
-$route["otp/token"]             = "api/Token/otp";
+$route["otp/request"]    = "api/Otp_sms/request";
+$route["otp/submit"]     = "api/Otp_sms/submit";
+$route["otp/token"]      = "api/Token/otp";
 
 /*
 // for testing
 $route["token/sms"]             = "api/Token/sms";
+$route["otp/client/request"]    = "api/Client_otp/request";
+$route["otp/client/submit"]     = "api/Client_otp/submit";
 
 $route["sms/send"]              = "public/Sms/send";
 $route["sms/notification"]      = "public/Sms/notification";

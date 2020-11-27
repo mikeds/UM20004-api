@@ -19,13 +19,14 @@ class Token extends Api_Controller {
 	}
 
 	public function otp() {
-		if ($_SERVER['REQUEST_METHOD'] == 'POST' || $this->JSON_POST()) {
+		$this->load->library("oauth2");
+		$this->oauth2->get_resource();
+
+		if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 			$this->load->model("api/globe_access_tokens", "globe_access_token");
 			$this->load->model("api/client_accounts_model", "client_accounts");
 
-			$post       = $this->get_post();
-
-			if (!isset($post['code'])) {
+			if (!isset($_GET['code'])) {
 				echo json_encode(
 					array(
 						'error'             => true,
@@ -37,7 +38,7 @@ class Token extends Api_Controller {
 
 			$base_url 	= GLOBEBASEURL . "oauth/access_token";
 
-			$code  		= $post['code'];
+			$code  		= $_GET['code'];
 			$app_id     = GLOBEAPPID;
 			$app_secret = GLOBEAPPSECRET;
 			

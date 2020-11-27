@@ -22,7 +22,6 @@ class Callback extends Api_Controller {
 						)
 					)
 				);
-				
 				return;
 			}
 		}
@@ -35,8 +34,16 @@ class Callback extends Api_Controller {
 		if ($_GET) {
 			if (isset($_GET['code'])) {
 				$code = $_GET['code'];
-
 				
+
+				echo json_encode(
+					array(
+						'response' => array(
+							'code' => $code
+						)
+					)
+				);
+				return;
 			}
 		}
 

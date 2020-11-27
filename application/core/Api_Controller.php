@@ -33,6 +33,114 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
+	public function set_sms_otp($auth_bridge_id, $mobile_no) {
+		$this->load->model("api/otp_model", "otp");
+		$this->load->model("api/globe_access_tokens", "globe_access_token");
+
+		$row_access_token = $this->globe_access_token->get_datum(
+			'',
+			array(
+				'token_auth_bridge_id' => $auth_bridge_id
+			)
+		)->row();
+
+		if ($row_access_token == "") {
+			echo json_encode(
+				array(
+					'error'             => true,
+					'error_description' => "Unable to access OTP SMS.",
+					'redirect_url'		=> GLOBEBASEURL . "dialog/oauth/" . GLOBEAPPID
+				)
+			);
+			die();
+		}
+
+		$access_token	= $row_access_token->token_code;
+
+		$expiration_time = 3;
+
+		if (isset($_GET['expiration_time'])) {
+			if (is_numeric($_GET['expiration_time'])) {
+				$expiration_time = $_GET['expiration_time'];
+			}
+		}
+
+		$code = generate_code(4);
+		$code = strtolower($code);
+
+		$otp_number = $this->generate_code(
+			array(
+				"otp",
+				$code,
+				$this->_today
+			),
+			"crc32"
+		);
+
+		$expiration_date = create_expiration_datetime($this->_today, $expiration_time);
+
+		$message		= "OTP: {$code}";
+
+		$curl = curl_init();
+
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => "https://devapi.globelabs.com.ph/smsmessaging/v1/outbound/".GLOBESHORTCODE."/requests?access_token=".$access_token ,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => "",
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => "POST",
+			CURLOPT_POSTFIELDS => "{\"outboundSMSMessageRequest\": { \"clientCorrelator\": \"".GLOBECLIENTCORRELATOR."\", \"senderAddress\": \"".GLOBESHORTCODE."\", \"outboundSMSTextMessage\": {\"message\": \"".$message."\"}, \"address\": \"".$mobile_no."\" } }",
+			CURLOPT_HTTPHEADER => array(
+				"Content-Type: application/json"
+			),
+		));
+
+		$response = curl_exec($curl);
+		$err = curl_error($curl);
+		curl_close($curl);
+
+		if ($err) {
+			echo json_encode(
+				array(
+					'error'             => true,
+					'error_description' => "Unable to send OTP. Curl Error #: {$err}"
+				)
+			);
+			die();
+		} else {
+			$decoded = json_decode($response);
+			
+			if (isset($decoded->error)) {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => $decoded->error
+					)
+				);
+				die();
+			}
+		}
+
+		$this->otp->insert(
+			array(
+				'otp_number'			=> $otp_number,
+				'otp_code'				=> $code,
+				'otp_date_expiration'	=> $expiration_date,
+				'otp_date_created'		=> $this->_today,
+				'otp_auth_bridge_id'	=> $auth_bridge_id
+			)
+		);
+
+		echo json_encode(
+			array(
+				'message' => "Successfully sent SMS OTP."
+			)
+		);
+		die();
+	}
+
 	public function get_fee($amount, $transaction_type_id, $admin_oauth_bridge_id) {
 		$this->load->model("api/transaction_fees_model", "tx_fees");
 

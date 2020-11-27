@@ -21,7 +21,7 @@ class Sms extends Public_Controller {
         $address            = $this->_address;
         $clientCorrelator   = $this->_clientCorrelator;
 
-        $message            = "PHP SMS Test - Token";
+        $message            = "Your BambuPAY registration token is: 2a3b";
 
         $curl = curl_init();
 

@@ -120,13 +120,6 @@ $route["transactions/merchant/createpayqr/accept"]   = "api/Createpayqr_merchant
 $route["transactions/client/quickpayqr/scan/(:any)"]    = "api/Quickpayqr_client/scan/$1";
 $route["transactions/client/quickpayqr/accept"]         = "api/Quickpayqr_client/accept";
 
-// $route["uploads"]                    = "api/Registration/uploads";
-
-$route["token/sms"]             = "api/Token/sms";
-
-$route["sms/send"]              = "public/Sms/send";
-$route["sms/notification"]      = "public/Sms/notification";
-
 $route["callback/globelabs"]    = "api/Callback/globelabs";
 
 $route["test/income-shares"]    = "api/Home/test_income_shares";
@@ -136,6 +129,20 @@ $route["lookup/tx-fee"]         = "api/Lookup/tx_fee";
 
 $route["lookup/client/tx-list"]        = "api/Lookup_client/tx_list";
 $route["lookup/client/tx-fee"]         = "api/Lookup_client/tx_fee";
+
+$route["otp/client/request"]    = "api/Client_otp/request";
+$route["otp/client/submit"]     = "api/Client_otp/submit";
+$route["otp/client/token"]      = "api/Client_otp/token";
+
+/*
+// for testing
+$route["token/sms"]             = "api/Token/sms";
+
+$route["sms/send"]              = "public/Sms/send";
+$route["sms/notification"]      = "public/Sms/notification";
+
+$route["uploads"]               = "api/Registration/uploads";
+*/
 
 $route['404_override'] = 'api/Error_404';
 $route['translate_uri_dashes'] = FALSE;

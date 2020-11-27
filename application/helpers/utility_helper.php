@@ -12,6 +12,13 @@
 
 // ------------------------------------------------------------------------
 
+function create_expiration_datetime($datetime, $minutes = 3) {
+	// create expiration date
+	$time = new DateTime($datetime);
+	$time->add(new DateInterval('PT' . $minutes . 'M'));
+	return $time->format('Y-m-d H:i:s');
+}
+
 function date_sort($a, $b) {
 	$t1 = strtotime($a["date_added"]);
     $t2 = strtotime($b["date_added"]);

@@ -110,13 +110,31 @@ class Token extends Api_Controller {
 
 			$oauth_bridge_id = $row->oauth_bridge_id;
 
-			$this->globe_access_token->insert(
+			$row_token = $this->oauth_bridge_id->get_datum(
+				'',
 				array(
-					'token_code'			=> $access_token,
 					'token_auth_bridge_id'	=> $oauth_bridge_id,
-					'token_date_added'		=> $this->_today
 				)
-			);
+			)->row();
+
+			if ($row_token == "") {
+				$this->globe_access_token->insert(
+					array(
+						'token_code'			=> $access_token,
+						'token_auth_bridge_id'	=> $oauth_bridge_id,
+						'token_date_added'		=> $this->_today
+					)
+				);
+			} else {
+				$this->globe_access_token->update(
+					$row_token->token_id,
+					array(
+						'token_code'			=> $access_token,
+						'token_auth_bridge_id'	=> $oauth_bridge_id,
+						'token_date_added'		=> $this->_today
+					)
+				);
+			}
 
 			echo json_encode(
 				array(

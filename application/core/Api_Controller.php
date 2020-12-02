@@ -125,7 +125,8 @@ class Api_Controller extends MX_Controller {
 			echo json_encode(
 				array(
 					'error'             => true,
-					'error_description' => "Unable to send OTP. Curl Error #: {$err}"
+					'error_description' => "Unable to send OTP. Curl Error #: {$err}",
+					'redirect_url'		=> GLOBEBASEURL . "dialog/oauth/" . GLOBEAPPID
 				)
 			);
 			die();
@@ -136,7 +137,8 @@ class Api_Controller extends MX_Controller {
 				echo json_encode(
 					array(
 						'error'             => true,
-						'error_description' => $decoded->error
+						'error_description' => $decoded->error,
+						'redirect_url'		=> GLOBEBASEURL . "dialog/oauth/" . GLOBEAPPID
 					)
 				);
 				die();

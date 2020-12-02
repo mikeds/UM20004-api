@@ -110,7 +110,7 @@ class Token extends Api_Controller {
 
 			$oauth_bridge_id = $row->oauth_bridge_id;
 
-			$row_token = $this->oauth_bridge_id->get_datum(
+			$row_token = $this->globe_access_token->get_datum(
 				'',
 				array(
 					'token_auth_bridge_id'	=> $oauth_bridge_id,

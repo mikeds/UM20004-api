@@ -33,7 +33,38 @@ class Api_Controller extends MX_Controller {
 		$this->after_init();
 	}
 
-	public function set_sms_otp($mobile_no) {
+	public function send_sms_otp($mobile_no, $module = "grant_access") {
+		$expiration_time = 3;
+
+		if (isset($_GET['expiration_time'])) {
+			if (is_numeric($_GET['expiration_time'])) {
+				$expiration_time = $_GET['expiration_time'];
+			}
+		}
+
+		$expiration_date 	= create_expiration_datetime($this->_today, $expiration_time);
+
+		if ($module == "reg") {
+			$this->otp_registration($mobile_no, $expiration_date);
+		} else if ($module == "login") {
+			// $this->otp_registration($mobile_no, $expiration_time);
+		} else {
+			$this->otp_grant_access($mobile_no, $expiration_date);
+		}
+
+		echo json_encode(
+			array(
+				'message' => "Successfully sent SMS OTP.",
+				'response'	=> array(
+					'expiration_date' => $expiration_date
+				),
+				'timestamp'	=> $this->_today
+			)
+		);
+		die();
+	}
+
+	private function otp_grant_access($mobile_no, $expiration_date) {
 		$this->load->model("api/client_accounts_model", "client_accounts");
 		$this->load->model("api/otp_model", "otp");
 		$this->load->model("api/globe_access_tokens", "globe_access_token");
@@ -55,12 +86,10 @@ class Api_Controller extends MX_Controller {
 			die();
 		}
 
-		$auth_bridge_id = $client_row->oauth_bridge_id;
-
 		$row_access_token = $this->globe_access_token->get_datum(
 			'',
 			array(
-				'token_auth_bridge_id' => $auth_bridge_id
+				'token_mobile_no' => $mobile_no
 			)
 		)->row();
 
@@ -77,14 +106,6 @@ class Api_Controller extends MX_Controller {
 
 		$access_token	= $row_access_token->token_code;
 
-		$expiration_time = 3;
-
-		if (isset($_GET['expiration_time'])) {
-			if (is_numeric($_GET['expiration_time'])) {
-				$expiration_time = $_GET['expiration_time'];
-			}
-		}
-
 		$code = generate_code(4);
 		$code = strtolower($code);
 
@@ -97,9 +118,83 @@ class Api_Controller extends MX_Controller {
 			"crc32"
 		);
 
-		$expiration_date = create_expiration_datetime($this->_today, $expiration_time);
+		$message			= "OTP: {$code}. Expiration Date: {$expiration_date}";
 
-		$message		= "OTP: {$code}. Expiration Date: {$expiration_date}";
+		$this->send_sms($mobile_no, $message, $access_token);
+
+		$this->otp->insert(
+			array(
+				'otp_number'			=> $otp_number,
+				'otp_code'				=> $code,
+				'otp_mobile_no'			=> $mobile_no,
+				'otp_date_expiration'	=> $expiration_date,
+				'otp_date_created'		=> $this->_today,
+				'otp_auth_bridge_id'	=> $auth_bridge_id
+			)
+		);
+	}
+
+	private function otp_registration($mobile_no, $expiration_date) {
+		$this->load->model("api/client_pre_registration_model", "client_pre_registration");
+		$this->load->model("api/client_accounts_model", "client_accounts");
+		$this->load->model("api/globe_access_tokens", "globe_access_token");
+		$this->load->model("api/otp_model", "otp");
+
+		$row_otp = 	$this->otp->get_datum(
+						'',
+						array(
+							'account_mobile_no' => $mobile_no
+						),
+						array(),
+						array(
+							array(
+								'table_name'	=> 'client_pre_registration',
+								'condition'		=> 'client_pre_registration.account_otp_number = otp_number'
+							)
+						)
+					)->row();
+
+		if ($row_otp == "") {
+			echo json_encode(
+				array(
+					'error'             => true,
+					'error_description' => "Failed OTP, Mobile no. not found on pre-registration."
+				)
+			);
+			die();
+		}
+
+		$code 		= generate_code(4);
+		$code 		= strtolower($code);
+
+		$this->otp->update(
+			$row_otp->otp_number,
+			array(
+				'otp_code'				=> $code,
+				// 'otp_status'			=> 0,
+				'otp_date_expiration'	=> $expiration_date
+			)
+		);
+
+		$message	= "OTP: {$code}. Expiration Date: {$expiration_date}";
+		
+		$access_token = "";
+
+		$row = $this->globe_access_token->get_datum(
+			'',
+			array(
+				'token_mobile_no' => $mobile_no
+			)
+		)->row();
+
+		if ($row != "") {
+			$access_token = $row->token_code;
+		}
+
+		$this->send_sms($mobile_no, $message, $access_token);
+	}
+
+	public function send_sms($mobile_no, $message, $access_token) {
 
 		$curl = curl_init();
 
@@ -145,26 +240,6 @@ class Api_Controller extends MX_Controller {
 			}
 		}
 
-		$this->otp->insert(
-			array(
-				'otp_number'			=> $otp_number,
-				'otp_code'				=> $code,
-				'otp_date_expiration'	=> $expiration_date,
-				'otp_date_created'		=> $this->_today,
-				'otp_auth_bridge_id'	=> $auth_bridge_id
-			)
-		);
-
-		echo json_encode(
-			array(
-				'message' => "Successfully sent SMS OTP.",
-				'response'	=> array(
-					'expiration_date' => $expiration_date
-				),
-				'timestamp'	=> $this->_today
-			)
-		);
-		die();
 	}
 
 	public function get_fee($amount, $transaction_type_id, $admin_oauth_bridge_id) {

@@ -55,7 +55,9 @@ class Registration extends Tms_admin_Controller {
 	public function client() {
 		$admin_oauth_bridge_id = $this->_account->oauth_bridge_id;
 
+		$this->load->model("api/client_pre_registration_model", "client_pre_registration");
 		$this->load->model("api/client_accounts_model", "client_accounts");
+		$this->load->model("api/otp_model", "otp");
 
 		if ($_POST) {
 			/*
@@ -168,7 +170,7 @@ class Registration extends Tms_admin_Controller {
 				echo json_encode(
 					array(
 						'error'             => true,
-						'error_description' => "Mobile no. is requred."
+						'error_description' => "Mobile no. is required."
 					)
 				);
 				die();
@@ -177,7 +179,13 @@ class Registration extends Tms_admin_Controller {
 			// $username = trim(strtolower($username));
 
 			if ($email_address == "") {
-				generate_error_message("E006-3");
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Email Address is required."
+					)
+				);
+				die();
 			}
 
 			// if ($this->validate_username("client", $email_address)) {
@@ -185,65 +193,103 @@ class Registration extends Tms_admin_Controller {
 			// }
 
 			if ($this->validate_email_address("client", $email_address)) {
-				generate_error_message("E007-2");
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Email Address is already used."
+					)
+				);
+				die();
 			}
 
 			$gender 		= $gender == 2 ? 2 : 1;
 			$country_id 	= is_numeric($country_id) ? $country_id : 169; // default PH
 			$province_id 	= is_numeric($province_id) ? $province_id : 0;
-			
-			if ($this->validate_mobile_no("client", $country_id, $mobile_no) && $mobile_no != "") {
+
+			if (strlen($mobile_no) != 10) {
 				echo json_encode(
 					array(
 						'error'             => true,
-						'error_description' => "Mobile no. already used."
+						'error_description' => "Mobile No. Invalid format. eg. 9xxxxxxxxx (10 digits not included the first zero or six three)."
+					)
+				);
+				die();
+			}
+			
+			if ($this->validate_mobile_no("client", $country_id, $mobile_no)) {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Mobile no. is already used."
 					)
 				);
 				die();
 			}
 
 			if (trim($password) == "") {
-				generate_error_message("E008");
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Password is required."
+					)
+				);
+				die();
 			}
 
 			$account_number = $this->generate_code(
 				array(
-					"client",
+					"client_pre_registrati",
 					$admin_oauth_bridge_id,
 					$this->_today
 				),
 				"crc32"
 			);
 
-			$bridge_id = $this->generate_code(
+			// $bridge_id = $this->generate_code(
+			// 	array(
+			// 		'account_number' 		=> $account_number,
+			// 		'account_date_added'	=> $this->_today,
+			// 		'admin_oauth_bridge_id'	=> $admin_oauth_bridge_id
+			// 	)
+			// );
+
+			// // do insert bridge id
+			// $this->bridges->insert(
+			// 	array(
+			// 		'oauth_bridge_id' 			=> $bridge_id,
+			// 		'oauth_bridge_parent_id'	=> $admin_oauth_bridge_id,
+			// 		'oauth_bridge_date_added'	=> $this->_today
+			// 	)
+			// );
+
+			$code = generate_code(4);
+			$code = strtolower($code);
+
+			$otp_number = $this->generate_code(
 				array(
-					'account_number' 		=> $account_number,
-					'account_date_added'	=> $this->_today,
-					'admin_oauth_bridge_id'	=> $admin_oauth_bridge_id
-				)
+					"otp",
+					$code,
+					$this->_today
+				),
+				"crc32"
 			);
 
-			// do insert bridge id
-			$this->bridges->insert(
+			$expiration_time 	= 3;
+			$expiration_date 	= create_expiration_datetime($this->_today, $expiration_time);
+
+			$this->otp->insert(
 				array(
-					'oauth_bridge_id' 			=> $bridge_id,
-					'oauth_bridge_parent_id'	=> $admin_oauth_bridge_id,
-					'oauth_bridge_date_added'	=> $this->_today
+					'otp_number'			=> $otp_number,
+					'otp_code'				=> $code,
+					'otp_mobile_no'			=> $mobile_no,
+					'otp_status'			=> 0,
+					// 'otp_date_expiration'	=> $expiration_date,
+					'otp_date_created'		=> $this->_today
 				)
 			);
-
-			// generate pin
-			$pin 	= generate_code(4, 2);
-
-			// expiration timestamp
-			$minutes_to_add = 5;
-			$time = new DateTime($this->_today);
-			$time->add(new DateInterval('PT' . $minutes_to_add . 'M'));
-			$stamp = $time->format('Y-m-d H:i:s');
 
 			$insert_data = array(
 				'account_number'			=> $account_number,
-				'account_username'			=> $email_address,
 				'account_password'			=> $password,
 				'account_fname'				=> $fname,
 				'account_mname'				=> $mname,
@@ -251,7 +297,7 @@ class Registration extends Tms_admin_Controller {
 				'account_gender'			=> $gender,
 				'account_dob'				=> $dob,
 				'account_address'			=> $house_no,
-				'account_street'			=> $street,
+				'account_street'			=> $street, 
 				'account_brgy'				=> $brgy,
 				'account_city'				=> $city,
 				'country_id'				=> $country_id,
@@ -261,12 +307,33 @@ class Registration extends Tms_admin_Controller {
 				'account_email_address'		=> $email_address,
 				'account_date_added'		=> $this->_today,
 				'account_status'			=> 0, 
-				'oauth_bridge_id'			=> $bridge_id,
-				'account_email_activation_pin'			=> $pin,
-				'account_email_activation_expiration'	=> $stamp
+				'account_otp_number'		=> $otp_number
 			);
 
-			$this->client_accounts->insert(
+			// check if number is exist and mobile is exist then delete
+			$row_mobile = $this->client_pre_registration->get_datum(
+				'',
+				array(
+					'account_mobile_no' => $mobile_no
+				)
+			)->row();
+			
+			if ($row_mobile != "") {
+				$this->client_pre_registration->delete($row_mobile->account_number);
+			}
+
+			$row_email = $this->client_pre_registration->get_datum(
+				'',
+				array(
+					'account_email_address' => $email_address
+				)
+			)->row();
+			
+			if ($row_email != "") {
+				$this->client_pre_registration->delete($row_email->account_number);
+			}
+
+			$this->client_pre_registration->insert(
 				$insert_data
 			);
 
@@ -297,7 +364,7 @@ class Registration extends Tms_admin_Controller {
 										$base64_image = $first_data['base64_image'];
 		
 										// update merchant
-										$this->client_accounts->update(
+										$this->client_pre_registration->update(
 											$account_number,
 											array(
 												'account_avatar_base64' => $base64_image
@@ -311,14 +378,8 @@ class Registration extends Tms_admin_Controller {
 				}
 			}
 
-			$this->send_email_activation(
-				$email_address, 
-				$pin
-			);
-
 			echo json_encode(
 				array(
-					'error' => false, 
 					'message' => 'Succefully registered!'
 				)
 			);

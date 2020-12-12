@@ -53,9 +53,9 @@ class Login extends Tms_admin_Controller {
 				generate_error_message("E004-2");
 			}
 
-			if ($row->account_email_status != 1) {
-				generate_error_message("E005-3");
-			}
+			// if ($row->account_email_status != 1) {
+			// 	generate_error_message("E005-3");
+			// }
 
 			if ($row->account_status != 1) {
 				generate_error_message("E005-4");

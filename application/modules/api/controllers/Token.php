@@ -87,33 +87,13 @@ class Token extends Api_Controller {
 				die();
 			}
 
-			$access_token 		= $decoded->access_token;
-			$subscriber_number	= $decoded->subscriber_number;
-
-			// find subscriber_number then get auth_bridge_id
-			$row = $this->client_accounts->get_datum(
-				'',
-				array(
-					'account_mobile_no' => $subscriber_number
-				)
-			)->row();
-
-			if ($row == "") {
-				echo json_encode(
-					array(
-						'error'             => true,
-						'error_description' => "Cannot find mobile no. on database.",
-					)
-				);
-				die();
-			}
-
-			$oauth_bridge_id = $row->oauth_bridge_id;
+			$access_token 	= $decoded->access_token;
+			$mobile_no		= $decoded->subscriber_number;
 
 			$row_token = $this->globe_access_token->get_datum(
 				'',
 				array(
-					'token_auth_bridge_id'	=> $oauth_bridge_id,
+					'token_mobile_no'	=> $mobile_no,
 				)
 			)->row();
 
@@ -121,7 +101,7 @@ class Token extends Api_Controller {
 				$this->globe_access_token->insert(
 					array(
 						'token_code'			=> $access_token,
-						'token_auth_bridge_id'	=> $oauth_bridge_id,
+						'token_mobile_no'		=> $mobile_no,
 						'token_date_added'		=> $this->_today
 					)
 				);
@@ -130,7 +110,6 @@ class Token extends Api_Controller {
 					$row_token->token_id,
 					array(
 						'token_code'			=> $access_token,
-						'token_auth_bridge_id'	=> $oauth_bridge_id,
 						'token_date_added'		=> $this->_today
 					)
 				);
@@ -141,7 +120,7 @@ class Token extends Api_Controller {
 					'message'	=> "Successfully generated GLOBE API token.",
 					'response' => array(
 						'access_token' 		=> $access_token,
-						'subscriber_number'	=> $subscriber_number
+						'subscriber_number'	=> $mobile_no
 					)
 				)
 			);

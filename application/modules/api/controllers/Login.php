@@ -7,6 +7,7 @@ class Login extends Tms_admin_Controller {
 
 	public function client() {
 		$this->load->model("api/client_accounts_model", "accounts");
+		$this->load->model("api/otp_model", "otp");
 
 		if ($this->JSON_POST() && $_SERVER['REQUEST_METHOD'] == 'POST') {
 			$post = $this->get_post();
@@ -50,15 +51,27 @@ class Login extends Tms_admin_Controller {
 			$row = $row_email != "" ? $row_email : $row_mobile;
 
 			if ($row == "") {
-				generate_error_message("E004-2");
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Invalid Login."
+					)
+				);
+				die();
 			}
 
-			if ($row->account_email_status != 1) {
-				generate_error_message("E005-3");
-			}
+			// if ($row->account_email_status != 1) {
+			// 	generate_error_message("E005-3");
+			// }
 
 			if ($row->account_status != 1) {
-				generate_error_message("E005-4");
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Account is deactivated. Please contact the administrator for more info."
+					)
+				);
+				die();
 			}
 
 			$qr_code = md5($row->oauth_bridge_id);
@@ -68,6 +81,41 @@ class Login extends Tms_admin_Controller {
 			if ($row->account_avatar_base64 != "") {
 				$avatar_image_url = base_url() . "avatar/client-accounts/" . md5($row->account_number);
 			}
+
+			// generate otp code
+			$code = generate_code(4);
+			$code = strtolower($code);
+
+			$otp_number = $this->generate_code(
+				array(
+					"otp",
+					$code,
+					$this->_today
+				),
+				"crc32"
+			);
+
+			$expiration_time 	= 3;
+			$expiration_date 	= create_expiration_datetime($this->_today, $expiration_time);
+
+			$this->otp->insert(
+				array(
+					'otp_number'			=> $otp_number,
+					'otp_code'				=> $code,
+					'otp_mobile_no'			=> $row->account_mobile_no,
+					'otp_status'			=> 0,
+					'otp_date_expiration'	=> $expiration_date,
+					'otp_date_created'		=> $this->_today
+				)
+			);
+
+			// update account otp
+			$this->accounts->update(
+				$row->account_number,
+				array(
+					'account_otp_number' => $otp_number
+				)
+			);
 
 			echo json_encode(
 				array(

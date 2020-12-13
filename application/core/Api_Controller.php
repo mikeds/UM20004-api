@@ -47,7 +47,7 @@ class Api_Controller extends MX_Controller {
 		if ($module == "reg") {
 			$this->otp_registration($mobile_no, $expiration_date);
 		} else if ($module == "login") {
-			// $this->otp_registration($mobile_no, $expiration_time);
+			$this->otp_login($mobile_no, $expiration_date);
 		} else {
 			$this->otp_grant_access($mobile_no, $expiration_date);
 		}
@@ -128,8 +128,7 @@ class Api_Controller extends MX_Controller {
 				'otp_code'				=> $code,
 				'otp_mobile_no'			=> $mobile_no,
 				'otp_date_expiration'	=> $expiration_date,
-				'otp_date_created'		=> $this->_today,
-				'otp_auth_bridge_id'	=> $auth_bridge_id
+				'otp_date_created'		=> $this->_today
 			)
 		);
 	}
@@ -159,6 +158,65 @@ class Api_Controller extends MX_Controller {
 				array(
 					'error'             => true,
 					'error_description' => "Failed OTP, Mobile no. not found on pre-registration."
+				)
+			);
+			die();
+		}
+
+		$code 		= generate_code(4);
+		$code 		= strtolower($code);
+
+		$this->otp->update(
+			$row_otp->otp_number,
+			array(
+				'otp_code'				=> $code,
+				// 'otp_status'			=> 0,
+				'otp_date_expiration'	=> $expiration_date
+			)
+		);
+
+		$message	= "OTP: {$code}. Expiration Date: {$expiration_date}";
+		
+		$access_token = "";
+
+		$row = $this->globe_access_token->get_datum(
+			'',
+			array(
+				'token_mobile_no' => $mobile_no
+			)
+		)->row();
+
+		if ($row != "") {
+			$access_token = $row->token_code;
+		}
+
+		$this->send_sms($mobile_no, $message, $access_token);
+	}
+
+	private function otp_login($mobile_no, $expiration_date) {
+		$this->load->model("api/client_accounts_model", "client_accounts");
+		$this->load->model("api/globe_access_tokens", "globe_access_token");
+		$this->load->model("api/otp_model", "otp");
+
+		$row_otp = 	$this->otp->get_datum(
+			'',
+			array(
+				'account_mobile_no' => $mobile_no
+			),
+			array(),
+			array(
+				array(
+					'table_name'	=> 'client_accounts',
+					'condition'		=> 'client_accounts.account_otp_number = otp_number'
+				)
+			)
+		)->row();
+
+		if ($row_otp == "") {
+			echo json_encode(
+				array(
+					'error'             => true,
+					'error_description' => "Failed OTP, Mobile no. not found on client accounts."
 				)
 			);
 			die();

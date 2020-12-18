@@ -135,6 +135,7 @@ $route["otp/submit"]     = "api/Otp_sms/submit";
 $route["otp/token"]      = "api/Token/otp";
 
 $route["paynamics/auth"] = "public/Paynamics/auth";
+$route["paynamics/sale"] = "public/Paynamics/sale";
 
 /*
 // for testing

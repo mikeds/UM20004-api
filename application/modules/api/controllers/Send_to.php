@@ -51,7 +51,7 @@ class Send_to extends Client_Controller {
 			array(
                 'CONCAT(country_code, account_mobile_no) =' 	=> $mobile_no,
                 'account_status'                                => 1,
-                'account_email_status'                          => 1
+                // 'account_email_status'                          => 1
                 // 'account_number !=' => $account->account_number
             ),
             array(),

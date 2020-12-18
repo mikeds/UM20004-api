@@ -21,25 +21,53 @@ class Send_to extends Client_Controller {
         $message                = isset($post['message']) ? $post['message'] : "";
 
         if (!isset($post["amount"])) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Please provide amount."
+                )
+            );
             die();
         }
 
         $amount = $post["amount"];
 
         if (is_decimal($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "No decimal value."
+                )
+            );
             die();
         }
 
         if (!is_numeric($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Not numeric value."
+                )
+            );
             die();
         }
         
+        if ($amount < 0) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Amount."
+                )
+            );
+            die();
+        }
+
 		$row_email = $this->client_accounts->get_datum(
 			'',
 			array(
                 'account_email_address' 	=> $username,
                 'account_status'            => 1,
-                'account_email_status'      => 1
+                // 'account_email_status'      => 1
                 // 'account_number !=' => $account->account_number
 			)
         )->row();
@@ -75,16 +103,14 @@ class Send_to extends Client_Controller {
             );
 			die();
         }
-        
-        if ($row->account_status != 1) {
-            die();
-        }
-
-        if ($row->account_email_status != 1) {
-            die();
-        }
 
         if ($row->account_number == $account->account_number) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Cannot send to your self."
+                )
+            );
             die();
         }
         

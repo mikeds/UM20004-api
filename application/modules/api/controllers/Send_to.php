@@ -206,7 +206,7 @@ class Send_to extends Client_Controller {
         
         echo json_encode(
             array(
-                'message' => "Successfully created transfer, OTP Pin sent to your email.",
+                'message' => "Successfully created transfered!",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
                     'timestamp'     => $this->_today

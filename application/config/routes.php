@@ -88,7 +88,9 @@ $route["otp/send-to/resend"]    = "api/Otp_send_to/resend";
 
 $route["transactions/merchant/top-up"]  = "api/Top_up";
 $route["transactions/client/send-to"]   = "api/Send_to/direct";
+
 $route["transactions/client/cash-in"]   = "api/Cash_in";
+$route["transactions/client/cash-in-test"]   = "api/Cash_in/paynamics_test";
 
 $route["transactions/merchant/accept-cash-in"]   = "api/Merchant_accept/cash_in";
 

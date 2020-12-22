@@ -122,6 +122,12 @@ class Merchant_accept extends Merchant_Controller {
         $credit_wallet_address	    = $this->get_wallet_address($row->oauth_bridge_id);
         
         if ($credit_wallet_address == "" || $debit_wallet_address == "") {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Cannot find wallet, Please contact system administrator."
+                )
+            );
             die();
         }
 

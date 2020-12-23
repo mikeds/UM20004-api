@@ -132,12 +132,18 @@ $route["lookup/tx-fee"]         = "api/Lookup/tx_fee";
 $route["lookup/client/tx-list"]        = "api/Lookup_client/tx_list";
 $route["lookup/client/tx-fee"]         = "api/Lookup_client/tx_fee";
 
+$route["lookup/client/ubp/banks"] = "api/Lookup_client/instapay_banks";
+
 $route["otp/request"]    = "api/Otp_sms/request";
 $route["otp/submit"]     = "api/Otp_sms/submit";
 $route["otp/token"]      = "api/Token/otp";
 
+$route["ubp/token"]      = "api/Token/ubp";
+
 $route["paynamics/auth"] = "public/Paynamics/auth";
 $route["paynamics/sale"] = "public/Paynamics/sale";
+
+$route["transactions/client/cash-out"] = "api/Cash_out_client";
 
 /*
 // for testing

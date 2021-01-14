@@ -25,7 +25,7 @@ class Otp_sms extends Api_Controller {
 			$mobile_no 		= $post['mobile_no'];
 			$module			= isset($post['module']) ? $post['module'] : "";
             
-			$this->send_sms_otp($mobile_no, $module);
+			$this->send_sms_otp($mobile_no, $module);			
 		}
 
 		// unauthorized access

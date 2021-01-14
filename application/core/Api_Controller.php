@@ -131,6 +131,27 @@ class Api_Controller extends MX_Controller {
 				'otp_date_created'		=> $this->_today
 			)
 		);
+
+		$row_client = $this->client_accounts->get_datum(
+			'',
+			array(
+				'account_mobile_no' => $mobile_no
+			)
+		)->row();
+
+		if ($row_client != "") {
+			if ($row_client->account_email_address != "") {
+				$send_to_email = $row_client->account_email_address;
+
+				$this->send_email_activation(
+					$send_to_email, 
+					$code, 
+					$expiration_date, 
+					"Bambupay OTP Code", 
+					$message
+				);
+			}
+		}
 	}
 
 	private function otp_registration($mobile_no, $expiration_date) {
@@ -250,6 +271,27 @@ class Api_Controller extends MX_Controller {
 		}
 
 		$this->send_sms($mobile_no, $message, $access_token);
+
+		$row_client = $this->client_accounts->get_datum(
+			'',
+			array(
+				'account_mobile_no' => $mobile_no
+			)
+		)->row();
+		
+		if ($row_client != "") {
+			if ($row_client->account_email_address != "") {
+				$send_to_email = $row_client->account_email_address;
+
+				$this->send_email_activation(
+					$send_to_email, 
+					$code, 
+					$expiration_date, 
+					"Bambupay OTP Code", 
+					$message
+				);
+			}
+		}
 	}
 
 	public function send_sms($mobile_no, $message, $access_token) {
@@ -796,26 +838,26 @@ class Api_Controller extends MX_Controller {
 		return $row->wallet_address;
 	}
 
-	public function send_email_activation($send_to_email, $pin, $expiration_date = "") {
-		if ($expiration_date != "") {
-			if ($expiration_date > $this->_today) {
-				generate_error_message("E010-2");
-			}
-		}
+	public function send_email_activation($send_to_email, $pin, $expiration_date = "", $email_title = "", $email_message = "") {
+		// if ($expiration_date != "") {
+		// 	if ($expiration_date > $this->_today) {
+				
+		// 	}
+		// }
 
 		$date	= strtotime($this->_today);
 		$date 	= date("F j, Y, g:i a", $date);
 
 		// send email activation
-		$email_message = $this->load->view("templates/email_activation", array(
-			"activation_pin" => $pin,
-			"date"	=> $date
-		), true);
+		// $email_message = $this->load->view("templates/email_activation", array(
+		// 	"activation_pin" => $pin,
+		// 	"date"	=> $date
+		// ), true);
 
 		send_email(
 			getenv("SMTPUSER"),
 			$send_to_email,
-			"Email Activation PIN",
+			$email_title,
 			$email_message
 		);
 	}

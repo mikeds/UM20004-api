@@ -332,6 +332,8 @@ class Cash_in extends Client_Controller {
                 )
             )
         );
+
+        die();
     }
 
     private function paynamics_request($parameters_raw) {

@@ -145,6 +145,10 @@ $route["paynamics/sale"] = "public/Paynamics/sale";
 
 $route["transactions/client/cash-out"] = "api/Cash_out_client";
 
+$route["callback/paynamics/notification"]   = "api/Callback/paynamics_notification";
+$route["callback/paynamics/response"]       = "api/Callback/paynamics_response";
+$route["callback/paynamics/cancel"]         = "api/Callback/paynamics_cancel";
+
 /*
 // for testing
 $route["token/sms"]             = "api/Token/sms";

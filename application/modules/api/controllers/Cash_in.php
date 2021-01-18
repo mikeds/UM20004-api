@@ -15,15 +15,246 @@ class Cash_in extends Client_Controller {
 
         $type = isset($post["type"]) ? $post["type"] : "";
 
-        if ($type == 'otc') {
+        if ($type == "otc") {
             $this->otc();
             return;
-        } else if ($type == 'paynamics') {
-            $this->paynamics();
-            return;
+        } else if ($type == "cc") {
+            $this->cc();
+        } else if ($type == "gcash") {
+            
+        } else if ($type == "grab") {
+            
+        } else if ($type == "paymaya") {
+            
         }
 
+        // else if ($type == 'paynamics') {
+        //     $this->paynamics();
+        //     return;
+        // }
+
         $this->output->set_status_header(401);
+    }
+
+    private function cc() {
+        $this->load->model("api/transaction_fees_model", "tx_fees");
+
+        $account                = $this->_account;
+        $transaction_type_id    = "txtype_cashin4"; // cash-in
+        $transaction_desc       = "BambuPAY cash-in via CC";
+        $post                   = $this->get_post();
+
+        $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;
+        $account_oauth_bridge_id   = $account->account_oauth_bridge_id;
+
+        if (!isset($post["amount"])) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Amount."
+                )
+            );
+            die();
+        }
+
+        $amount = $post["amount"];
+
+        if (is_decimal($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "No decimal value."
+                )
+            );
+            die();
+        }
+
+        if (!is_numeric($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Not numeric value."
+                )
+            );
+            die();
+        }
+
+        $fee = 0;
+        $total_amount = $amount + $fee;
+
+        // $fee = $this->get_fee(
+        //     $amount,
+        //     $transaction_type_id,
+        //     $admin_oauth_bridge_id
+        // );
+
+        $tx_row = $this->create_transaction(
+            $amount, 
+            $fee, 
+            $transaction_type_id, 
+            $account_oauth_bridge_id, 
+            ""
+        );
+
+        $fee            = number_format($fee, 2, '.', '');
+        $amount         = number_format($amount, 2, '.', '');
+        $total_amount   = number_format($total_amount, 2, '.', '');
+
+        $transaction_id = $tx_row['transaction_id'];
+        $sender_ref_id  = $tx_row['sender_ref_id'];
+
+        $request_id         = $sender_ref_id;
+        $notification_url   = base_url() . "callback/paynamics/notification";
+        $response_url       = base_url() . "callback/paynamics/response";
+        $cancel_url         = base_url() . "callback/paynamics/cancel";
+        $pmethod            = "creditcard";
+        $pchannel           = "creditcard";
+        $payment_action     = "direct_otc";
+        $collection_method  = "single_pay";
+        $amount             = $total_amount;
+        $currency           = "PHP";
+        $descriptor_note    = "HOME";
+        $payment_notification_status    = "1";
+        $payment_notification_channel   = "";
+
+        $fname  = "Leo";
+        $lname  = "Trinidad";
+        $mname  = "Ff";
+        $email  = "marknel.pineda23@gmail.com";
+        $phone  = "";
+        $mobile = "";
+        $dob    = "";
+
+        $merchantid = PAYNAMICSMID;
+        $mkey       = PAYNAMICSMKEY;
+
+        $raw_trx = 
+        $merchantid . 
+        $request_id . 
+        $notification_url .
+        $response_url . 
+        $cancel_url . 
+        $pmethod . 
+        $payment_action . 
+        $collection_method .
+        $amount . 
+        $currency . 
+        $descriptor_note . 
+        $payment_notification_status . 
+        $payment_notification_channel . 
+        $mkey;
+
+        $raw_customer_info =
+        $fname . 
+        $lname . 
+        $mname . 
+        $email . 
+        $phone . 
+        $mobile . 
+        $dob . 
+        $mkey;
+
+        $signature_trx          = hash("sha512", $raw_trx);
+        $signature_customer     = hash("sha512", $raw_customer_info);
+
+        $transaction = array(
+            "request_id"        => $request_id,
+            "notification_url"  => $notification_url,
+            "response_url"      => $response_url,
+            "cancel_url"        => $cancel_url,
+            "pmethod"           => $pmethod,
+            "pchannel"          => $pchannel,
+            "payment_action"    => $payment_action,
+            "schedule"          => "",
+            "collection_method" => $collection_method,
+            "deferred_period"   => "",
+            "deferred_time"     => "",
+            "dp_balance_info"   => "",
+            "amount"            => $amount,
+            "currency"          => $currency,
+            "descriptor_note"   => $descriptor_note,
+            "mlogo_url"         => "",
+            "pay_reference"     => "",
+            "payment_notification_status"   => $payment_notification_status,
+            "payment_notification_channel"  => $payment_notification_channel,
+            "expiry_limit"      => "10/23/2021 15:51:42",
+            "secure3d"          => "try3d",
+            "trxtype"           => "sale",
+            "signature"         => $signature_trx
+        );
+
+        $customer_info = array(
+            "fname"     => $fname,
+            "lname"     => $lname,
+            "mname"     => $mname,
+            "email"     => $email,
+            "phone"     => "",
+            "mobile"    => "",
+            "dob"       => "",
+            "signature" => $signature_customer
+        );
+
+        $billing_info = array(
+            "billing_address1"  => "asdasf, Hulo",
+            "billing_address2"  => "Hulo",
+            "billing_city"      => "Malabon",
+            "billing_state"     => "Abra",
+            "billing_country"   => "PH",
+            "billing_zip"       => "1470"
+        );
+
+        $order_details = array(
+            "orders" => array(
+                array(
+                    "itemname"      => $transaction_desc,
+                    "quantity"      => "1",
+                    "unitprice"     => $amount,
+                    "totalprice"    => $amount
+                ),
+                array(
+                    "itemname"      => "fee",
+                    "quantity"      => "1",
+                    "unitprice"     => $fee,
+                    "totalprice"    => $fee
+                )
+            ),
+            "subtotalprice"     => $amount,
+            "shippingprice"     => "0.00",
+            "discountamount"    => "0.00",
+            "totalorderamount"  => $total_amount
+        );
+
+        $parameters_raw = array(
+            "transaction"   => $transaction,
+            "customer_info" => $customer_info,
+            "billing_info"  => $billing_info,
+            "order_details" => $order_details
+        );
+        
+        $response_raw = $this->paynamics_request($parameters_raw);
+
+        if (!isset($response_raw->cc_info)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => isset($response_raw->response_advise) ? $response_raw->response_advise : "Something is error on payment gateway."
+                )
+            );
+            die();
+        }
+
+        echo json_encode(
+            array(
+                'message' =>  "Successfully request cash-in via cc!",
+                'response' => array(
+                    'sender_ref_id'     => $sender_ref_id,
+                    'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'timestamp'         => $this->_today,
+                    'gateway_message'   => isset($response_raw->response_message) ? $response_raw->response_message : "",            
+                    'redirect'          => $response_raw->cc_info
+                )
+            )
+        );
     }
 
 	private function otc() {
@@ -93,7 +324,7 @@ class Cash_in extends Client_Controller {
 
         echo json_encode(
             array(
-                'message' =>  "Successfully created cash-in!",
+                'message' =>  "Successfully created cash-in via OTC!",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
                     'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
@@ -103,219 +334,33 @@ class Cash_in extends Client_Controller {
         );
     }
 
-    private function paynamics() {
-        $this->load->model("api/transaction_fees_model", "tx_fees");
+    private function paynamics_request($parameters_raw) {
+        $parameters_json = json_encode($parameters_raw);
 
-        $account                = $this->_account;
-        $transaction_type_id    = "txtype_cashin3"; // cash-in
-        $post                   = $this->get_post();
+        $curl = curl_init();
 
-        $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;
-        $account_oauth_bridge_id   = $account->account_oauth_bridge_id;
-
-        if (!isset($post["card_holder"])) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Please fill-up Card Holder."
-                )
-            );
-            die();
-        }
-
-        if (!isset($post["card_number"])) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Please fill-up Card No."
-                )
-            );
-            die();
-        }
-
-        if (!isset($post["ccv"])) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Please fill-up ccv."
-                )
-            );
-            die();
-        }
-
-        if (!isset($post["card_month"])) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Please fill-up card month eg. (05)."
-                )
-            );
-            die();
-        }
-
-        if (!isset($post["card_year"])) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Please fill-up card year eg. (21)."
-                )
-            );
-            die();
-        }
-
-        if (!isset($post["amount"])) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Invalid Amount."
-                )
-            );
-            die();
-        }
-
-        $amount = $post["amount"];
-
-        if (is_decimal($amount)) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "No decimal value."
-                )
-            );
-            die();
-        }
-
-        if (!is_numeric($amount)) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Not numeric value."
-                )
-            );
-            die();
-        }
-
-        $card_holder    = $post["card_holder"];
-        $card_number    = $post["card_number"];
-        $card_month     = $post["card_month"];
-        $card_year      = $post["card_month"];
-        $ccv            = $post["ccv"];
-
-        if ($card_holder == "" || $card_number == "" || $card_month == "" || $card_year == "" || $ccv == "") {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Card information is incomplete."
-                )
-            );
-            die();
-        }
-
-        if (!$this->check_cc($card_number)) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Invalid card number"
-                )
-            );
-            die();
-        }
-
-        $fee = 0;
-        $total_amount = $amount + $fee;
-
-        // $fee = $this->get_fee(
-        //     $amount,
-        //     $transaction_type_id,
-        //     $admin_oauth_bridge_id
-        // );
-
-        // get admin first account
-
-        $tx_row = $this->create_transaction(
-            $amount, 
-            $fee, 
-            $transaction_type_id, 
-            $account_oauth_bridge_id, 
-            $admin_oauth_bridge_id
-        );
-
-        $transaction_id = $tx_row['transaction_id'];
-        $sender_ref_id  = $tx_row['sender_ref_id'];
-
-        $email_address = $account->account_email_address;
+        curl_setopt_array($curl, array(
+          CURLOPT_URL => PAYNAMICSENDPOINT,
+          CURLOPT_RETURNTRANSFER => true,
+          CURLOPT_ENCODING => '',
+          CURLOPT_MAXREDIRS => 10,
+          CURLOPT_TIMEOUT => 0,
+          CURLOPT_FOLLOWLOCATION => true,
+          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+          CURLOPT_CUSTOMREQUEST => 'POST',
+          CURLOPT_POSTFIELDS => $parameters_json,
+          CURLOPT_HTTPHEADER => array(
+            ': ',
+            'Content-Type: application/json',
+            'Authorization: Basic ' . PAYNAMICSBASICAUTH
+          ),
+        ));
         
-        $debit_amount	= $amount + $fee;
-        $credit_amount 	= $amount;
-        $fee_amount		= $fee;
-
-        $debit_total_amount 	= 0 - $debit_amount; // make it negative
-        $credit_total_amount	= $credit_amount;
-
-        // find wallet
-        $debit_wallet_address		= $this->get_wallet_address($admin_oauth_bridge_id);
-        $credit_wallet_address	    = $this->get_wallet_address($account_oauth_bridge_id);
+        $response = curl_exec($curl);
         
-        if ($credit_wallet_address == "" || $debit_wallet_address == "") {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Cannot find wallet, Please contact system administrator."
-                )
-            );
-            die();
-        }
+        curl_close($curl);
 
-        $debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
-        if ($debit_new_balances) {
-            // record to ledger
-            $this->new_ledger_datum(
-                "cash_in_debit", 
-                $transaction_id, 
-                $credit_wallet_address, // request from credit wallet
-                $debit_wallet_address, // requested to debit wallet
-                $debit_new_balances
-            );
-        }
-
-        $credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
-        if ($credit_new_balances) {
-            // record to ledger
-            $this->new_ledger_datum(
-                "cash_in_credit", 
-                $transaction_id, 
-                $debit_wallet_address, // debit from wallet address
-                $credit_wallet_address, // credit to wallet address
-                $credit_new_balances
-            );
-        }
-
-        // // do income sharing
-        // $this->distribute_income_shares(
-		// 	$transaction_id,
-		// 	$merchant_no,
-		// 	$fee_amount
-        // );
-        
-        $this->transactions->update(
-            $transaction_id,
-            array(
-                'transaction_status' 		=> 1,
-                'transaction_date_approved'	=> $this->_today,
-                'transaction_requested_to'  => $account_oauth_bridge_id
-            )
-        );
-
-        echo json_encode(
-            array(
-                'message' =>  "Successfully cash-in!",
-                'response' => array(
-                    'sender_ref_id' => $sender_ref_id,
-                    'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
-                    'timestamp'     => $this->_today
-                )
-            )
-        );
+        return json_decode($response);
     }
 
     private function check_cc($cc, $extra_check = false){
@@ -336,84 +381,5 @@ class Cash_in extends Client_Controller {
             $result = (validatecard($cc))?1:0;
         }
         return ($result>0)?$names[sizeof($matches)-2]:false;
-    }
-
-    public function paynamics_test() {
-        $_mid = "000000281020C4BCFC0B"; //<-- your merchant id
-        $_requestid = substr(uniqid(), 0, 13);
-        $_ipaddress = "192.168.10.1";
-        $_noturl = ""; // url where response is posted
-        $_resurl = ""; //url of merchant landing page
-        $_cancelurl = ""; //url of merchant landing page
-        $_fname = "Juan";
-        $_mname = "dela";
-        $_lname = "Cruz";
-        $_addr1 = "Dela Costa St.";
-        $_addr2 = "Salecedo Village";
-        $_city = "makati";
-        $_state = "MM";
-        $_country = "PH";
-        $_zip = "1200";
-        $_sec3d = "-";//enabled
-        $_email = "dummyemail.uno@gmail.com";
-        $_phone = "3308772";
-        $_mobile = "09171111111";
-        $_clientip = $_SERVER['REMOTE_ADDR'];
-        $_amount = "1.00";
-        $_currency = "PHP";
-        $forSign = $_mid . $_requestid . $_ipaddress . $_noturl . $_resurl .  $_fname . $_lname . $_mname . $_addr1 . $_addr2 . $_city . $_state . $_country . $_zip . $_email . $_phone . $_clientip . $_amount . $_currency . $_sec3d;
-        $cert = "DA0C390693F0D23D03B3CF233277919C"; //<-- your merchant key
-  
-        $_sign = hash("sha512", $forSign.$cert);
- 
-        try {
-            $endpoint_1 = "https://testpti.payserv.net/Paygate/ccservice.asmx?WSDL";
-            $endpoint_2 = "https://testpti.payserv.net/webpayment/Default.aspx";
-
-            $ini = ini_set("soap.wsdl_cache_enable", "0");
-            $client = new SoapClient($endpoint_1);
-
-            $params = array(
-                "mid"        => $_mid,
-                "request_id"        => $_requestid,
-                "ip_address"        => $_ipaddress,
-                "notification_url"  => $_noturl,
-                "response_url"      => $_resurl,
-                "fname"             => $_fname,
-                "lname"             => $_lname,
-                "mname"             => $_mname,
-                "address1"          => $_addr1,
-                "address2"          => $_addr2,
-                "city"              => $_city,
-                "state"             => $_state,
-                "country"           => $_country,
-                "postal"            => $_zip,
-                "email"             => $_email,
-                "phone"             => $_phone,
-                "client_ip"         => $client_ip,
-                "card_type"         => $card_type,
-                "card_holder"       => $card_holder,
-                "card_number"       => $card_number,
-                "cvv"               => $cvv,
-                "exp_month"         => $expiration_month,
-                "exp_year"          => $expiration_year,
-                "amount"            => $_amount,
-                "currency"          => $_currency,
-                "bin"               => $bin,
-                "csn"               => $csn,
-                "mobile"            => $_mobile,
-                "secure3d"          => $_sec3d,
-                "signature"         => $signature
-            );
-
-            $result = $client->sale($params);
-            $client->__getLastResponseHeaders();
-            $client->__getLastResponse();
-
-            print_r($result);
-
-        } catch(Exception $ex) {
-            echo $ex->getMessage();
-        }
     }
 }

@@ -20,6 +20,7 @@ class Cash_in extends Client_Controller {
             return;
         } else if ($type == "cc") {
             $this->cc();
+            return;
         } else if ($type == "gcash") {
             
         } else if ($type == "grab") {

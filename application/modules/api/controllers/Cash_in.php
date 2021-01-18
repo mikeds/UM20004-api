@@ -28,7 +28,8 @@ class Cash_in extends Client_Controller {
             $this->gcash();
             return;
         } else if ($type == "paymaya") {
-            
+            $this->paymaya();
+            return;
         }
 
         // else if ($type == 'paynamics') {
@@ -37,6 +38,163 @@ class Cash_in extends Client_Controller {
         // }
 
         $this->output->set_status_header(401);
+    }
+
+    # PAYNAMICS PAYMAYA
+    private function paymaya() {
+        $this->load->model("api/transaction_fees_model", "tx_fees");
+
+        $account                = $this->_account;
+        $transaction_type_id    = "txtype_cashin7"; // cash-in
+        $transaction_desc       = "BambuPAY cash-in via PAYMAYA";
+        $post                   = $this->get_post();
+
+        $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;
+        $account_oauth_bridge_id   = $account->account_oauth_bridge_id;
+
+        if (!isset($post["amount"])) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Amount."
+                )
+            );
+            die();
+        }
+
+        $amount = $post["amount"];
+
+        if (is_decimal($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "No decimal value."
+                )
+            );
+            die();
+        }
+
+        if (!is_numeric($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Not numeric value."
+                )
+            );
+            die();
+        }
+
+        $fee = 0;
+        $total_amount = $amount + $fee;
+
+        // $fee = $this->get_fee(
+        //     $amount,
+        //     $transaction_type_id,
+        //     $admin_oauth_bridge_id
+        // );
+
+        $tx_row = $this->create_transaction(
+            $amount, 
+            $fee, 
+            $transaction_type_id, 
+            $account_oauth_bridge_id, 
+            ""
+        );
+
+        $fee            = number_format($fee, 2, '.', '');
+        $amount         = number_format($amount, 2, '.', '');
+        $total_amount   = number_format($total_amount, 2, '.', '');
+
+        $transaction_id = $tx_row['transaction_id'];
+        $sender_ref_id  = $tx_row['sender_ref_id'];
+
+        $request_id         = $sender_ref_id;
+        $pmethod            = "wallet";
+        $pchannel           = "paymaya_ph";
+        $payment_action     = "url_link";
+        $collection_method  = "single_pay";
+        $amount             = $total_amount;
+        $currency           = "PHP";
+        $payment_notification_status    = "1";
+        $payment_notification_channel   = "1";
+
+        $fname  = "Marknel";
+        $lname  = "Pineda";
+        $mname  = "Villamor";
+        $email  = "marknel.pineda23@gmail.com";
+        $phone  = "";
+        $mobile = "";
+        $dob    = "";
+
+        $transaction = $this->set_paynamics_transaction(
+            $request_id, 
+            $pmethod, 
+            $pchannel,
+            $payment_action, 
+            $collection_method, 
+            $amount, 
+            $currency, 
+            $payment_notification_status,
+            $payment_notification_channel
+        );
+
+        $customer_info = $this->set_paynamics_customer_info(
+            $fname, 
+            $lname, 
+            $mname, 
+            $email
+        );
+
+        // order details
+        $order_details =  $this->set_paynamics_order_details(
+            array(
+                array(
+                    "itemname"      => $transaction_desc,
+                    "quantity"      => "1",
+                    "unitprice"     => $amount,
+                    "totalprice"    => $amount
+                ),
+                array(
+                    "itemname"      => "fee",
+                    "quantity"      => "1",
+                    "unitprice"     => $fee,
+                    "totalprice"    => $fee
+                )
+            ),
+            $amount, 
+            $total_amount
+        );
+
+        $parameters_raw = array(
+            "transaction"   => $transaction,
+            "customer_info" => $customer_info,
+            "order_details" => $order_details
+        );
+        
+        $response_raw = $this->paynamics_request($parameters_raw);
+
+        if (!isset($response_raw->payment_action_info)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => isset($response_raw->response_advise) ? $response_raw->response_advise : "Something is error on payment gateway."
+                )
+            );
+            die();
+        }
+
+        echo json_encode(
+            array(
+                'message' =>  "Successfully request cash-in via PAYMAYA!",
+                'response' => array(
+                    'sender_ref_id'     => $sender_ref_id,
+                    'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'timestamp'         => $this->_today,
+                    'gateway_message'   => isset($response_raw->response_message) ? $response_raw->response_message : "",            
+                    'redirect'          => $response_raw->payment_action_info
+                )
+            )
+        );
     }
 
     # PAYNAMICS GCASH
@@ -511,7 +669,7 @@ class Cash_in extends Client_Controller {
 
         echo json_encode(
             array(
-                'message' =>  "Successfully request cash-in via cc!",
+                'message' =>  "Successfully request cash-in via CC!",
                 'response' => array(
                     'sender_ref_id'     => $sender_ref_id,
                     'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",

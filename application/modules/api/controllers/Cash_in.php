@@ -22,9 +22,10 @@ class Cash_in extends Client_Controller {
             $this->cc();
             return;
         } else if ($type == "gcash") {
-            
-        } else if ($type == "grab") {
-            
+  
+        } else if ($type == "grabpay") {
+            $this->grabpay();
+            return;
         } else if ($type == "paymaya") {
             
         }
@@ -35,6 +36,180 @@ class Cash_in extends Client_Controller {
         // }
 
         $this->output->set_status_header(401);
+    }
+
+    private function grabpay() {
+        $this->load->model("api/transaction_fees_model", "tx_fees");
+
+        $account                = $this->_account;
+        $transaction_type_id    = "txtype_cashin5"; // cash-in
+        $transaction_desc       = "BambuPAY cash-in via GCASH";
+        $post                   = $this->get_post();
+
+        $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;
+        $account_oauth_bridge_id   = $account->account_oauth_bridge_id;
+
+        if (!isset($post["amount"])) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Amount."
+                )
+            );
+            die();
+        }
+
+        $amount = $post["amount"];
+
+        if (is_decimal($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "No decimal value."
+                )
+            );
+            die();
+        }
+
+        if (!is_numeric($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Not numeric value."
+                )
+            );
+            die();
+        }
+
+        $fee = 0;
+        $total_amount = $amount + $fee;
+
+        // $fee = $this->get_fee(
+        //     $amount,
+        //     $transaction_type_id,
+        //     $admin_oauth_bridge_id
+        // );
+
+        $tx_row = $this->create_transaction(
+            $amount, 
+            $fee, 
+            $transaction_type_id, 
+            $account_oauth_bridge_id, 
+            ""
+        );
+
+        $fee            = number_format($fee, 2, '.', '');
+        $amount         = number_format($amount, 2, '.', '');
+        $total_amount   = number_format($total_amount, 2, '.', '');
+
+        $transaction_id = $tx_row['transaction_id'];
+        $sender_ref_id  = $tx_row['sender_ref_id'];
+
+        $request_id         = $sender_ref_id;
+        $notification_url   = base_url() . "callback/paynamics/notification";
+        $response_url       = base_url() . "callback/paynamics/response";
+        $cancel_url         = base_url() . "callback/paynamics/cancel";
+        $pmethod            = "wallet";
+        $pchannel           = "grabpay_ph";
+        $payment_action     = "url_link";
+        $collection_method  = "single_pay";
+        $amount             = $total_amount;
+        $currency           = "PHP";
+        $descriptor_note    = "HOME";
+        $payment_notification_status    = "1";
+        $payment_notification_channel   = "1";
+
+        $fname  = "Marknel";
+        $lname  = "Pineda";
+        $mname  = "Villamor";
+        $email  = "marknel.pineda23@gmail.com";
+        $phone  = "";
+        $mobile = "";
+        $dob    = "";
+
+        $transaction = $this->set_paynamics_transaction(
+            $request_id, 
+            $notification_url, 
+            $response_url, 
+            $cancel_url, 
+            $pmethod, 
+            $pchannel,
+            $payment_action, 
+            $collection_method, 
+            $amount, 
+            $currency, 
+            $descriptor_note, 
+            $payment_notification_status,
+            $payment_notification_channel
+        );
+
+        $customer_info = $this->set_paynamics_customer_info(
+            $fname, 
+            $lname, 
+            $mname, 
+            $email
+        );
+
+        $billing_info = array(
+            "billing_address1"  => "asdasf, Hulo",
+            "billing_address2"  => "Hulo",
+            "billing_city"      => "Malabon",
+            "billing_state"     => "Abra",
+            "billing_country"   => "PH",
+            "billing_zip"       => "1470"
+        );
+
+        // order details
+        $order_details =  $this->set_paynamics_order_details(
+            array(
+                array(
+                    "itemname"      => $transaction_desc,
+                    "quantity"      => "1",
+                    "unitprice"     => $amount,
+                    "totalprice"    => $amount
+                ),
+                array(
+                    "itemname"      => "fee",
+                    "quantity"      => "1",
+                    "unitprice"     => $fee,
+                    "totalprice"    => $fee
+                )
+            ),
+            $amount, 
+            $total_amount
+        );
+
+        $parameters_raw = array(
+            "transaction"   => $transaction,
+            "customer_info" => $customer_info,
+            "billing_info"  => $billing_info,
+            "order_details" => $order_details
+        );
+        
+        $response_raw = $this->paynamics_request($parameters_raw);
+
+        if (!isset($response_raw->payment_action_info)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => isset($response_raw->response_advise) ? $response_raw->response_advise : "Something is error on payment gateway."
+                )
+            );
+            die();
+        }
+
+        echo json_encode(
+            array(
+                'message' =>  "Successfully request cash-in via cc!",
+                'response' => array(
+                    'sender_ref_id'     => $sender_ref_id,
+                    'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'timestamp'         => $this->_today,
+                    'gateway_message'   => isset($response_raw->response_message) ? $response_raw->response_message : "",            
+                    'redirect'          => $response_raw->payment_action_info
+                )
+            )
+        );
     }
 
     private function cc() {
@@ -126,73 +301,27 @@ class Cash_in extends Client_Controller {
         $mobile = "";
         $dob    = "";
 
-        $merchantid = PAYNAMICSMID;
-        $mkey       = PAYNAMICSMKEY;
-
-        $raw_trx = 
-        $merchantid . 
-        $request_id . 
-        $notification_url .
-        $response_url . 
-        $cancel_url . 
-        $pmethod . 
-        $payment_action . 
-        $collection_method .
-        $amount . 
-        $currency . 
-        $descriptor_note . 
-        $payment_notification_status . 
-        $payment_notification_channel . 
-        $mkey;
-
-        $raw_customer_info =
-        $fname . 
-        $lname . 
-        $mname . 
-        $email . 
-        $phone . 
-        $mobile . 
-        $dob . 
-        $mkey;
-
-        $signature_trx          = hash("sha512", $raw_trx);
-        $signature_customer     = hash("sha512", $raw_customer_info);
-
-        $transaction = array(
-            "request_id"        => $request_id,
-            "notification_url"  => $notification_url,
-            "response_url"      => $response_url,
-            "cancel_url"        => $cancel_url,
-            "pmethod"           => $pmethod,
-            "pchannel"          => $pchannel,
-            "payment_action"    => $payment_action,
-            "schedule"          => "",
-            "collection_method" => $collection_method,
-            "deferred_period"   => "",
-            "deferred_time"     => "",
-            "dp_balance_info"   => "",
-            "amount"            => $amount,
-            "currency"          => $currency,
-            "descriptor_note"   => $descriptor_note,
-            "mlogo_url"         => "",
-            "pay_reference"     => "",
-            "payment_notification_status"   => $payment_notification_status,
-            "payment_notification_channel"  => $payment_notification_channel,
-            "expiry_limit"      => "10/23/2021 15:51:42",
-            "secure3d"          => "try3d",
-            "trxtype"           => "sale",
-            "signature"         => $signature_trx
+        $transaction = $this->set_paynamics_transaction(
+            $request_id, 
+            $notification_url, 
+            $response_url, 
+            $cancel_url, 
+            $pmethod, 
+            $pchannel,
+            $payment_action, 
+            $collection_method, 
+            $amount, 
+            $currency, 
+            $descriptor_note, 
+            $payment_notification_status,
+            $payment_notification_channel
         );
 
-        $customer_info = array(
-            "fname"     => $fname,
-            "lname"     => $lname,
-            "mname"     => $mname,
-            "email"     => $email,
-            "phone"     => "",
-            "mobile"    => "",
-            "dob"       => "",
-            "signature" => $signature_customer
+        $customer_info = $this->set_paynamics_customer_info(
+            $fname, 
+            $lname, 
+            $mname, 
+            $email
         );
 
         $billing_info = array(
@@ -204,8 +333,9 @@ class Cash_in extends Client_Controller {
             "billing_zip"       => "1470"
         );
 
-        $order_details = array(
-            "orders" => array(
+        // order details
+        $order_details =  $this->set_paynamics_order_details(
+            array(
                 array(
                     "itemname"      => $transaction_desc,
                     "quantity"      => "1",
@@ -219,10 +349,8 @@ class Cash_in extends Client_Controller {
                     "totalprice"    => $fee
                 )
             ),
-            "subtotalprice"     => $amount,
-            "shippingprice"     => "0.00",
-            "discountamount"    => "0.00",
-            "totalorderamount"  => $total_amount
+            $amount, 
+            $total_amount
         );
 
         $parameters_raw = array(
@@ -333,8 +461,6 @@ class Cash_in extends Client_Controller {
                 )
             )
         );
-
-        die();
     }
 
     private function paynamics_request($parameters_raw) {
@@ -364,6 +490,104 @@ class Cash_in extends Client_Controller {
         curl_close($curl);
 
         return json_decode($response);
+    }
+
+    private function set_paynamics_transaction($request_id, $notification_url, $response_url, $cancel_url, $pmethod, $pchannel, $payment_action, $collection_method, $amount, $currency, $descriptor_note, $payment_notification_status, $payment_notification_channel) {
+        $merchantid = PAYNAMICSMID;
+        $mkey       = PAYNAMICSMKEY;
+
+        $raw_trx = 
+        $merchantid . 
+        $request_id . 
+        $notification_url .
+        $response_url . 
+        $cancel_url . 
+        $pmethod . 
+        $payment_action . 
+        $collection_method .
+        $amount . 
+        $currency . 
+        $descriptor_note . 
+        $payment_notification_status . 
+        $payment_notification_channel . 
+        $mkey;
+
+        $signature_trx          = hash("sha512", $raw_trx);
+
+        // expiration timestamp
+        $minutes_to_add = 30;
+        $time = new DateTime($this->_today);
+        $time->add(new DateInterval('PT' . 30 . 'M'));
+        $expiry_limit = $time->format('m/d/Y H:i:s');
+
+        $transaction = array(
+            "request_id"        => $request_id,
+            "notification_url"  => $notification_url,
+            "response_url"      => $response_url,
+            "cancel_url"        => $cancel_url,
+            "pmethod"           => $pmethod,
+            "pchannel"          => $pchannel,
+            "payment_action"    => $payment_action,
+            "schedule"          => "",
+            "collection_method" => $collection_method,
+            "deferred_period"   => "",
+            "deferred_time"     => "",
+            "dp_balance_info"   => "",
+            "amount"            => $amount,
+            "currency"          => $currency,
+            "descriptor_note"   => $descriptor_note,
+            "mlogo_url"         => "",
+            "pay_reference"     => "",
+            "payment_notification_status"   => $payment_notification_status,
+            "payment_notification_channel"  => $payment_notification_channel,
+            "expiry_limit"      => $expiry_limit,
+            "secure3d"          => "try3d",
+            "trxtype"           => "sale",
+            "signature"         => $signature_trx
+        );
+
+        return $transaction;
+    }
+
+    private function set_paynamics_customer_info($fname, $lname, $mname, $email, $phone = "", $mobile = "", $dob = "") {
+        $mkey       = PAYNAMICSMKEY;
+
+        $raw_customer_info =
+        $fname . 
+        $lname . 
+        $mname . 
+        $email . 
+        $phone . 
+        $mobile . 
+        $dob . 
+        $mkey;
+
+        $signature_customer     = hash("sha512", $raw_customer_info);
+
+        $customer_info = array(
+            "fname"     => $fname,
+            "lname"     => $lname,
+            "mname"     => $mname,
+            "email"     => $email,
+            "phone"     => $phone,
+            "mobile"    => $mobile,
+            "dob"       => $dob,
+            "signature" => $signature_customer
+        );
+        
+        return $customer_info;
+    }
+
+    private function set_paynamics_order_details($orders, $amount, $total_amount, $shipping_price = "0.00", $discount_amount = "0.00") {
+        $order_details = array(
+            "orders"            => $orders,
+            "subtotalprice"     => $amount,
+            "shippingprice"     => "0.00",
+            "discountamount"    => "0.00",
+            "totalorderamount"  => $total_amount
+        );
+
+        return $order_details;
     }
 
     private function check_cc($cc, $extra_check = false){

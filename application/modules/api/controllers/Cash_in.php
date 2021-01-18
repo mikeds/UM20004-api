@@ -30,6 +30,9 @@ class Cash_in extends Client_Controller {
         } else if ($type == "paymaya") {
             $this->paymaya();
             return;
+        } else if ($type == "bancnet") {
+            $this->bancnet();
+            return;
         }
 
         // else if ($type == 'paynamics') {
@@ -38,6 +41,176 @@ class Cash_in extends Client_Controller {
         // }
 
         $this->output->set_status_header(401);
+    }
+
+    # PAYNAMICS BANCNET
+    private function bancnet() {
+        $this->load->model("api/transaction_fees_model", "tx_fees");
+
+        $account                = $this->_account;
+        $transaction_type_id    = "txtype_cashin8"; // cash-in
+        $transaction_desc       = "BambuPAY cash-in via BANCNET";
+        $post                   = $this->get_post();
+
+        $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;
+        $account_oauth_bridge_id   = $account->account_oauth_bridge_id;
+
+        if (!isset($post["amount"])) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Amount."
+                )
+            );
+            die();
+        }
+
+        $amount = $post["amount"];
+
+        if (is_decimal($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "No decimal value."
+                )
+            );
+            die();
+        }
+
+        if (!is_numeric($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Not numeric value."
+                )
+            );
+            die();
+        }
+
+        $fee = 0;
+        $total_amount = $amount + $fee;
+
+        // $fee = $this->get_fee(
+        //     $amount,
+        //     $transaction_type_id,
+        //     $admin_oauth_bridge_id
+        // );
+
+        $tx_row = $this->create_transaction(
+            $amount, 
+            $fee, 
+            $transaction_type_id, 
+            $account_oauth_bridge_id, 
+            ""
+        );
+
+        $fee            = number_format($fee, 2, '.', '');
+        $amount         = number_format($amount, 2, '.', '');
+        $total_amount   = number_format($total_amount, 2, '.', '');
+
+        $transaction_id = $tx_row['transaction_id'];
+        $sender_ref_id  = $tx_row['sender_ref_id'];
+
+        $request_id         = $sender_ref_id;
+        $pmethod            = "creditcard";
+        $pchannel           = "bancnet_cc";
+        $payment_action     = "direct_otc";
+        $collection_method  = "single_pay";
+        $amount             = $total_amount;
+        $currency           = "PHP";
+        $descriptor_note    = "";
+        $payment_notification_status    = "1";
+        $payment_notification_channel   = "";
+
+        $fname  = "Marknel";
+        $lname  = "Pineda";
+        $mname  = "Villamor";
+        $email  = "marknel.pineda23@gmail.com";
+        $phone  = "";
+        $mobile = "";
+        $dob    = "";
+
+        $transaction = $this->set_paynamics_transaction(
+            $request_id, 
+            $pmethod, 
+            $pchannel,
+            $payment_action, 
+            $collection_method, 
+            $amount, 
+            $currency, 
+            $payment_notification_status,
+            $payment_notification_channel,
+            $descriptor_note,
+            "bancnet"
+        );
+
+        $customer_info = $this->set_paynamics_customer_info(
+            $fname, 
+            $lname, 
+            $mname, 
+            $email
+        );
+
+        $billing_info = array(
+            "billing_address1"  => "asdasf, Hulo",
+            "billing_address2"  => "Hulo",
+            "billing_city"      => "Malabon",
+            "billing_state"     => "Abra",
+            "billing_country"   => "PH",
+            "billing_zip"       => "1470"
+        );
+
+        // order details
+        $order_details =  $this->set_paynamics_order_details(
+            array(
+                array(
+                    "itemname"      => $transaction_desc,
+                    "quantity"      => "1",
+                    "unitprice"     => $amount,
+                    "totalprice"    => $amount
+                ),
+                array(
+                    "itemname"      => "fee",
+                    "quantity"      => "1",
+                    "unitprice"     => $fee,
+                    "totalprice"    => $fee
+                )
+            ),
+            $amount, 
+            $total_amount
+        );
+
+        $parameters_raw = array(
+            "transaction"   => $transaction,
+            "customer_info" => $customer_info,
+            "billing_info"  => $billing_info,
+            "order_details" => $order_details
+        );
+        
+        $response_raw = $this->paynamics_request($parameters_raw);
+
+        if (!isset($response_raw->cc_info)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => isset($response_raw->response_advise) ? $response_raw->response_advise : "Something is error on payment gateway."
+                )
+            );
+            die();
+        }
+
+        echo json_encode(
+            array(
+                'message' =>  "Successfully request cash-in via CC!",
+                'response' => array(
+                    'sender_ref_id'     => $sender_ref_id,
+                    'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'timestamp'         => $this->_today,
+                    'gateway_message'   => isset($response_raw->response_message) ? $response_raw->response_message : "",            
+                    'redirect'          => $response_raw->cc_info
+                )
+            )
+        );
     }
 
     # PAYNAMICS PAYMAYA
@@ -590,9 +763,9 @@ class Cash_in extends Client_Controller {
         $payment_notification_status    = "1";
         $payment_notification_channel   = "";
 
-        $fname  = "Leo";
-        $lname  = "Trinidad";
-        $mname  = "Ff";
+        $fname  = "Marknel";
+        $lname  = "Pineda";
+        $mname  = "Villamor";
         $email  = "marknel.pineda23@gmail.com";
         $phone  = "";
         $mobile = "";
@@ -609,7 +782,7 @@ class Cash_in extends Client_Controller {
             $payment_notification_status,
             $payment_notification_channel,
             $descriptor_note,
-            true
+            "cc"
         );
 
         $customer_info = $this->set_paynamics_customer_info(
@@ -787,7 +960,7 @@ class Cash_in extends Client_Controller {
         return json_decode($response);
     }
 
-    private function set_paynamics_transaction($request_id, $pmethod, $pchannel, $payment_action, $collection_method, $amount, $currency, $payment_notification_status, $payment_notification_channel, $descriptor_note = "", $is_cc = false) {
+    private function set_paynamics_transaction($request_id, $pmethod, $pchannel, $payment_action, $collection_method, $amount, $currency, $payment_notification_status, $payment_notification_channel, $descriptor_note = "", $cc_type = "") {
         $merchantid = PAYNAMICSMID;
         $mkey       = PAYNAMICSMKEY;
 
@@ -815,25 +988,40 @@ class Cash_in extends Client_Controller {
 
         $transaction = array();
 
-        // expiration timestamp
-        if ($is_cc) {
+        if ($cc_type != "") {
+            // expiration timestamp
             $minutes_to_add = 30;
             $time = new DateTime($this->_today);
             $time->add(new DateInterval('PT' . 30 . 'M'));
             $expiry_limit = $time->format('m/d/Y H:i:s');
 
-            $transaction = array(
-                "descriptor_note"   => $descriptor_note,
-                "schedule"          => "",
-                "mlogo_url"         => "",
-                "pay_reference"     => "",
-                "deferred_period"   => "",
-                "deferred_time"     => "",
-                "dp_balance_info"   => "",
-                "expiry_limit"      => $expiry_limit,
-                "secure3d"          => "try3d",
-                "trxtype"           => "sale",
-            );
+            if ($cc_type == 'cc') {
+                $transaction = array(
+                    "descriptor_note"   => $descriptor_note,
+                    "schedule"          => "",
+                    "mlogo_url"         => "",
+                    "pay_reference"     => "",
+                    "deferred_period"   => "",
+                    "deferred_time"     => "",
+                    "dp_balance_info"   => "",
+                    "expiry_limit"      => $expiry_limit,
+                    "secure3d"          => "try3d",
+                    "trxtype"           => "sale",
+                );
+            } else if ($cc_type == 'bancnet') {
+                $transaction = array(
+                    "descriptor_note"   => $descriptor_note,
+                    "schedule"          => "",
+                    "mlogo_url"         => "",
+                    "pay_reference"     => "",
+                    "deferred_period"   => "",
+                    "deferred_time"     => "",
+                    "dp_balance_info"   => "",
+                    "expiry_limit"      => $expiry_limit,
+                    "secure3d"          => "try3d",
+                    "trxtype"           => "sale",
+                );
+            }
         }
 
         $transaction = array_merge(

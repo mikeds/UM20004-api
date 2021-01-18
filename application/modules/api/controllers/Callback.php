@@ -50,4 +50,38 @@ class Callback extends Api_Controller {
 		// unauthorized access
 		$this->output->set_status_header(401);
 	}
+
+	public function paynamics_response() {
+		echo json_encode(
+			array(
+				'message' => 'Successfully done transaction on our payment gateway.',
+				'response' => array(
+					'timestamp' => $this->_today
+				)
+			)
+		);
+	}
+
+	public function paynamics_cancel() {
+		echo json_encode(
+			array(
+				'error'		=> true,
+				'message' 	=> 'Payment gateway is cancelled, Invalid transaction.',
+				'response' 	=> array(
+					'timestamp' => $this->_today
+				)
+			)
+		);
+	}
+
+	public function paynamics_notification() {
+		echo json_encode(
+			array(
+				'message' 	=> 'Payment gateway notification callback.',
+				'response' 	=> array(
+					'timestamp' => $this->_today
+				)
+			)
+		);
+	}
 }

@@ -101,7 +101,7 @@ class Cash_in extends Client_Controller {
             $fee, 
             $transaction_type_id, 
             $account_oauth_bridge_id, 
-            ""
+            $admin_oauth_bridge_id
         );
 
         $fee            = number_format($fee, 2, '.', '');
@@ -190,10 +190,12 @@ class Cash_in extends Client_Controller {
         $response_raw = $this->paynamics_request($parameters_raw);
 
         if (!isset($response_raw->cc_info)) {
+            $response_code = isset($response_raw->response_code) ? $response_raw->response_code . ", " : "No response code from payment gateway, ";
+
             echo json_encode(
                 array(
                     'error'             => true,
-                    'error_description' => isset($response_raw->response_advise) ? $response_raw->response_advise : "Something is error on payment gateway."
+                    'error_description' => isset($response_raw->response_advise) ? $response_code . $response_raw->response_advise : "{$response_code}Something is error on payment gateway."
                 )
             );
             die();
@@ -271,7 +273,7 @@ class Cash_in extends Client_Controller {
             $fee, 
             $transaction_type_id, 
             $account_oauth_bridge_id, 
-            ""
+            $admin_oauth_bridge_id
         );
 
         $fee            = number_format($fee, 2, '.', '');
@@ -346,11 +348,13 @@ class Cash_in extends Client_Controller {
         
         $response_raw = $this->paynamics_request($parameters_raw);
 
-        if (!isset($response_raw->payment_action_info)) {
+        if (!isset($response_raw->cc_info)) {
+            $response_code = isset($response_raw->response_code) ? $response_raw->response_code . ", " : "No response code from payment gateway, ";
+
             echo json_encode(
                 array(
                     'error'             => true,
-                    'error_description' => isset($response_raw->response_advise) ? $response_raw->response_advise : "Something is error on payment gateway."
+                    'error_description' => isset($response_raw->response_advise) ? $response_code . $response_raw->response_advise : "{$response_code}Something is error on payment gateway."
                 )
             );
             die();
@@ -428,7 +432,7 @@ class Cash_in extends Client_Controller {
             $fee, 
             $transaction_type_id, 
             $account_oauth_bridge_id, 
-            ""
+            $admin_oauth_bridge_id
         );
 
         $fee            = number_format($fee, 2, '.', '');
@@ -503,11 +507,13 @@ class Cash_in extends Client_Controller {
         
         $response_raw = $this->paynamics_request($parameters_raw);
 
-        if (!isset($response_raw->payment_action_info)) {
+        if (!isset($response_raw->cc_info)) {
+            $response_code = isset($response_raw->response_code) ? $response_raw->response_code . ", " : "No response code from payment gateway, ";
+
             echo json_encode(
                 array(
                     'error'             => true,
-                    'error_description' => isset($response_raw->response_advise) ? $response_raw->response_advise : "Something is error on payment gateway."
+                    'error_description' => isset($response_raw->response_advise) ? $response_code . $response_raw->response_advise : "{$response_code}Something is error on payment gateway."
                 )
             );
             die();
@@ -585,7 +591,7 @@ class Cash_in extends Client_Controller {
             $fee, 
             $transaction_type_id, 
             $account_oauth_bridge_id, 
-            ""
+            $admin_oauth_bridge_id
         );
 
         $fee            = number_format($fee, 2, '.', '');
@@ -660,11 +666,13 @@ class Cash_in extends Client_Controller {
         
         $response_raw = $this->paynamics_request($parameters_raw);
 
-        if (!isset($response_raw->payment_action_info)) {
+        if (!isset($response_raw->cc_info)) {
+            $response_code = isset($response_raw->response_code) ? $response_raw->response_code . ", " : "No response code from payment gateway, ";
+
             echo json_encode(
                 array(
                     'error'             => true,
-                    'error_description' => isset($response_raw->response_advise) ? $response_raw->response_advise : "Something is error on payment gateway."
+                    'error_description' => isset($response_raw->response_advise) ? $response_code . $response_raw->response_advise : "{$response_code}Something is error on payment gateway."
                 )
             );
             die();
@@ -742,7 +750,7 @@ class Cash_in extends Client_Controller {
             $fee, 
             $transaction_type_id, 
             $account_oauth_bridge_id, 
-            ""
+            $admin_oauth_bridge_id
         );
 
         $fee            = number_format($fee, 2, '.', '');
@@ -831,10 +839,12 @@ class Cash_in extends Client_Controller {
         $response_raw = $this->paynamics_request($parameters_raw);
 
         if (!isset($response_raw->cc_info)) {
+            $response_code = isset($response_raw->response_code) ? $response_raw->response_code . ", " : "No response code from payment gateway, ";
+
             echo json_encode(
                 array(
                     'error'             => true,
-                    'error_description' => isset($response_raw->response_advise) ? $response_raw->response_advise : "Something is error on payment gateway."
+                    'error_description' => isset($response_raw->response_advise) ? $response_code . $response_raw->response_advise : "{$response_code}Something is error on payment gateway."
                 )
             );
             die();
@@ -899,11 +909,11 @@ class Cash_in extends Client_Controller {
         $fee = 0;
         $total_amount = $amount + $fee;
 
-        $fee = $this->get_fee(
-            $amount,
-            $transaction_type_id,
-            $admin_oauth_bridge_id
-        );
+        // $fee = $this->get_fee(
+        //     $amount,
+        //     $transaction_type_id,
+        //     $admin_oauth_bridge_id
+        // );
 
         $tx_row = $this->create_transaction(
             $amount, 

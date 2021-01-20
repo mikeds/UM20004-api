@@ -149,6 +149,8 @@ $route["callback/paynamics/notification"]   = "api/Callback/paynamics_notificati
 $route["callback/paynamics/response"]       = "api/Callback/paynamics_response";
 $route["callback/paynamics/cancel"]         = "api/Callback/paynamics_cancel";
 
+$route["cron/paynamics"]    = "public/Cron/paynamics";
+
 /*
 // for testing
 $route["token/sms"]             = "api/Token/sms";

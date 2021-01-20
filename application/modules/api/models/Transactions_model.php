@@ -100,6 +100,60 @@ class Transactions_model extends CI_Model {
 
 	}
 
+	function get_data_where_in( $select = array('*'), $data = array(), $where_in = array(), $inner_joints = array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
+		
+		$this->db->select(ARRtoSTR($select),false);
+
+		$this->db->from( $this->_table );
+
+		if (!empty($inner_joints)) {
+			foreach($inner_joints as $join) {
+				if (isset($join['type'])) {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition'],
+						$join['type']
+					);
+				} else {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition']
+					);
+				}
+			}
+		}
+
+		if(!empty($data)){
+			$this->db->where($data);
+		}
+
+		if(!empty($where_in)){
+			$this->db->where_in(
+				$where_in['field'],
+				$where_in['data']
+			);
+		}
+
+		if(!empty($limit)){
+			$this->db->limit($limit, $offset);
+		}
+		
+		if( !empty( $order_by ) ) {
+			$this->db->order_by( $order_by['filter'],$order_by['sort'] );
+		}
+
+		if( $group_by != '' ) {
+			$this->db->group_by( $group_by );
+		}
+
+		$query = $this->db->get();
+
+		$results = $query->result_array();
+
+		return $results;
+
+	}
+
 	function get_count( $data = array(), $like = array(), $inner_joints = array(), $order_by = array(), $offset = 0, $count = 0 ) {
 		if( !empty($data) ){
 			

@@ -141,6 +141,10 @@ class Cron extends Api_Controller {
         $debit_wallet_address		= $this->get_wallet_address($admin_oauth_bridge_id);
         $credit_wallet_address	    = $this->get_wallet_address($client_oauth_bridge_id);
 
+        if ($debit_wallet_address == "" || $credit_wallet_address == "") {
+            return;
+        }
+
         $debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
         if ($debit_new_balances) {
             // record to ledger

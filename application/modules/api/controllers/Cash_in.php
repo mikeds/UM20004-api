@@ -348,7 +348,7 @@ class Cash_in extends Client_Controller {
         
         $response_raw = $this->paynamics_request($parameters_raw);
 
-        if (!isset($response_raw->cc_info)) {
+        if (!isset($response_raw->payment_action_info)) {
             $response_code = isset($response_raw->response_code) ? $response_raw->response_code . ", " : "No response code from payment gateway, ";
 
             echo json_encode(
@@ -507,7 +507,7 @@ class Cash_in extends Client_Controller {
         
         $response_raw = $this->paynamics_request($parameters_raw);
 
-        if (!isset($response_raw->cc_info)) {
+        if (!isset($response_raw->payment_action_info)) {
             $response_code = isset($response_raw->response_code) ? $response_raw->response_code . ", " : "No response code from payment gateway, ";
 
             echo json_encode(
@@ -666,7 +666,7 @@ class Cash_in extends Client_Controller {
         
         $response_raw = $this->paynamics_request($parameters_raw);
 
-        if (!isset($response_raw->cc_info)) {
+        if (!isset($response_raw->payment_action_info)) {
             $response_code = isset($response_raw->response_code) ? $response_raw->response_code . ", " : "No response code from payment gateway, ";
 
             echo json_encode(

@@ -52,9 +52,30 @@ class Callback extends Api_Controller {
 	}
 
 	public function paynamics_response() {
+		if (!isset($_GET['success'])) {
+			echo json_encode(
+				array(
+					'message' => 'Cannot find status parameter.',
+					'response' => array(
+						'timestamp' => $this->_today
+					)
+				)
+			);
+
+			die();
+		}
+
+		$status = $_GET['success'];
+
+		$message = "Successfully done transaction on our payment gateway.";
+
+		if ($status == 'false') { 
+			$message = "Payment gateway is cancelled, Invalid transaction.";
+		}
+
 		echo json_encode(
 			array(
-				'message' => 'Successfully done transaction on our payment gateway.',
+				'message' => $message,
 				'response' => array(
 					'timestamp' => $this->_today
 				)

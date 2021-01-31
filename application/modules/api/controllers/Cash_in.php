@@ -207,6 +207,8 @@ class Cash_in extends Client_Controller {
                 'response' => array(
                     'sender_ref_id'     => $sender_ref_id,
                     'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'amount'            => $amount,
+                    'fee'               => $fee,
                     'timestamp'         => $this->_today,
                     'gateway_message'   => isset($response_raw->response_message) ? $response_raw->response_message : "",            
                     'redirect'          => $response_raw->cc_info
@@ -366,6 +368,9 @@ class Cash_in extends Client_Controller {
                 'response' => array(
                     'sender_ref_id'     => $sender_ref_id,
                     'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'amount'            => $amount,
+                    'fee'               => $fee,
+                    'total_amount'      => $total_amount,
                     'timestamp'         => $this->_today,
                     'gateway_message'   => isset($response_raw->response_message) ? $response_raw->response_message : "",            
                     'redirect'          => $response_raw->payment_action_info
@@ -525,6 +530,9 @@ class Cash_in extends Client_Controller {
                 'response' => array(
                     'sender_ref_id'     => $sender_ref_id,
                     'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'amount'            => $amount,
+                    'fee'               => $fee,
+                    'total_amount'      => $total_amount,
                     'timestamp'         => $this->_today,
                     'gateway_message'   => isset($response_raw->response_message) ? $response_raw->response_message : "",            
                     'redirect'          => $response_raw->payment_action_info
@@ -684,6 +692,9 @@ class Cash_in extends Client_Controller {
                 'response' => array(
                     'sender_ref_id'     => $sender_ref_id,
                     'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'amount'            => $amount,
+                    'fee'               => $fee,
+                    'total_amount'      => $total_amount,
                     'timestamp'         => $this->_today,
                     'gateway_message'   => isset($response_raw->response_message) ? $response_raw->response_message : "",            
                     'redirect'          => $response_raw->payment_action_info
@@ -856,6 +867,9 @@ class Cash_in extends Client_Controller {
                 'response' => array(
                     'sender_ref_id'     => $sender_ref_id,
                     'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'amount'            => $amount,
+                    'fee'               => $fee,
+                    'total_amount'      => $total_amount,
                     'timestamp'         => $this->_today,
                     'gateway_message'   => isset($response_raw->response_message) ? $response_raw->response_message : "",            
                     'redirect'          => $response_raw->cc_info
@@ -935,6 +949,9 @@ class Cash_in extends Client_Controller {
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
                     'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'amount'        => $amount,
+                    'fee'           => $fee,
+                    'total_amount'  => $total_amount,
                     'timestamp'     => $this->_today
                 )
             )

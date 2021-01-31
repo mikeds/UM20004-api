@@ -975,8 +975,8 @@ class Cash_in extends Client_Controller {
         $mkey       = PAYNAMICSMKEY;
 
         $notification_url   = base_url() . "callback/paynamics/notification";
-        $response_url       = base_url() . "callback/paynamics/response";
-        $cancel_url         = base_url() . "callback/paynamics/cancel";
+        $response_url       = base_url() . "callback/paynamics/response?success=true";
+        $cancel_url         = base_url() . "callback/paynamics/response?success=false";
 
         $raw_trx = 
         $merchantid . 

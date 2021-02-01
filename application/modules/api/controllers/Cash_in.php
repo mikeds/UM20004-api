@@ -992,8 +992,8 @@ class Cash_in extends Client_Controller {
         $mkey       = PAYNAMICSMKEY;
 
         $notification_url   = base_url() . "callback/paynamics/notification";
-        $response_url       = base_url() . "callback/paynamics/response?success=true";
-        $cancel_url         = base_url() . "callback/paynamics/response?success=false";
+        $response_url       = base_url() . "callback/paynamics/response?success=true&message=Successfully done transaction on our payment gateway&timestamp={$this->_today}";
+        $cancel_url         = base_url() . "callback/paynamics/response?success=false&message=Payment gateway is cancelled, Invalid transaction&timestamp={$this->_today}";
 
         $raw_trx = 
         $merchantid . 

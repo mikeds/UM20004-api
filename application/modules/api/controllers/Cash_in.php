@@ -35,18 +35,11 @@ class Cash_in extends Client_Controller {
             return;
         }
 
-        // else if ($type == 'paynamics') {
-        //     $this->paynamics();
-        //     return;
-        // }
-
         $this->output->set_status_header(401);
     }
 
     # PAYNAMICS BANCNET
     private function bancnet() {
-        $this->load->model("api/transaction_fees_model", "tx_fees");
-
         $account                = $this->_account;
         $transaction_type_id    = "txtype_cashin8"; // cash-in
         $transaction_desc       = "BambuPAY cash-in via BANCNET";
@@ -879,8 +872,6 @@ class Cash_in extends Client_Controller {
     }
 
 	private function otc() {
-        $this->load->model("api/transaction_fees_model", "tx_fees");
-
         $account                = $this->_account;
         $transaction_type_id    = "txtype_cashin1"; // cash-in
         $post                   = $this->get_post();

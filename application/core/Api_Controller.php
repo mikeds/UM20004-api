@@ -499,266 +499,109 @@ class Api_Controller extends MX_Controller {
 
 	}
 
-	public function get_fee($amount, $transaction_type_id, $admin_oauth_bridge_id) {
-		$this->load->model("api/transaction_fees_model", "tx_fees");
+	public function get_fee($amount, $transaction_type_id, $oauth_bridge_id) {
+		$this->load->model("api/income_groups_members_model", "income_groups_members");
+		$this->load->model("api/income_shares_model", "income_shares");
 
 		$fee = 0;
+		$is_type = "1";
 
-		// get transaction fee
-		$row = $this->tx_fees->get_datum(
+		$row = $this->income_groups_members->get_datum(
 			'',
 			array(
-				'transaction_type_id'       => $transaction_type_id,
-				'transaction_fee_from <='   => $amount,
-				'transaction_fee_to >='     => $amount,
-				'oauth_bridge_parent_id'    => $admin_oauth_bridge_id
+				'oauth_bridge_id'	=> $oauth_bridge_id
 			)
 		)->row();
 
 		if ($row != "") {
-			$fee = $row->transaction_fee_amount;
+			$ig_id = $row->ig_id;
+
+			$data = $this->income_shares->get_data(
+				array(
+					'*'
+				),
+				array(
+					'ig_id'					=> $ig_id,
+					'transaction_type_id'	=> $transaction_type_id
+				)
+			);
+
+			foreach($data as $datum) {
+				$is_type = $datum['is_type'];
+
+				$fee += $datum['is_amount'];
+			}
+
+			if ($is_type == "2") {
+				$fee = $fee * $amount;
+			}
 		}
 
 		return $fee;
 	}
 
-	public function distribute_income_shares($tx_parent_id, $merchant_no, $fee) {
-		$this->load->model("api/transactions_model", "transactions");
-		$this->load->model("api/merchants_model", "merchants");
-		$this->load->model("api/merchant_accounts_model", "merchant_accounts");
-		$this->load->model("api/income_scheme_merchants_model", "income_scheme_merchants");
+	public function distribute_income_shares($transaction_id, $amount, $transaction_type_id, $oauth_bridge_id, $debit_oauth_bridge_id) {
+		$this->load->model("api/income_groups_members_model", "income_groups_members");
+		$this->load->model("api/income_shares_model", "income_shares");
+		
+		$is_type = "1";
 
-		$admin_oauth_bridge_id 	= "";
-		$transaction_type_id 	= "txtype_income_shares";
-
-		$accumulated_fee = 0;
-		$flag = false;
-
-		/*
-			- get merchant scheme group
-			- get all merchant in scheme group
-			- start from merchant index to lower index
-		*/
-
-		$row = $this->income_scheme_merchants->get_datum(
+		$row = $this->income_groups_members->get_datum(
 			'',
 			array(
-				'income_scheme_merchants.merchant_number'	=> $merchant_no
-			),
-			array(),
-			array(
-				array(
-					'table_name'	=> 'merchants',
-					'condition'		=> 'merchants.merchant_number = income_scheme_merchants.merchant_number'
-				),
-				array(
-					'table_name'	=> 'oauth_bridges',
-					'condition'		=> 'oauth_bridges.oauth_bridge_id = merchants.oauth_bridge_id'
-				)
+				'oauth_bridge_id'	=> $oauth_bridge_id
 			)
 		)->row();
 
-		if ($row == "") {
-			// if merchant not found redirect to admin tx
-			// goto admin_income_tx;
-			return;
-		}
+		if ($row != "") {
+			$ig_id = $row->ig_id;
 
-		$scheme_type_id 			= $row->scheme_type_id;
-		$merchant_index				= $row->scheme_merchant_index;
-
-		$admin_oauth_bridge_id		= $row->oauth_bridge_parent_id;
-
-		$items = $this->income_scheme_merchants->get_data(
-			array(
-				'*'
-			),
-			array(
-				'scheme_merchant_index <=' 	=> $merchant_index,
-				'scheme_type_id'			=> $scheme_type_id
-			),
-			array(),
-			array(
+			$data = $this->income_shares->get_data(
 				array(
-					'table_name'	=> 'merchants',
-					'condition'		=> 'merchants.merchant_number = income_scheme_merchants.merchant_number'
-				)
-			),
-			array(
-				'filter'	=> 'scheme_merchant_index',
-				'sort'		=> 'DESC'
-			)
-		);
-
-		/*
-			$amount, 
-			$fee, 
-			$transaction_type_id, 
-			$requested_by_oauth_bridge_id, 
-			$requested_to_oauth_bridge_id, 
-			$created_by_oauth_bridge_id = null, 
-			$expiration_minutes = 60, 
-			$message = "",
-			$tx_parent_id = ""
-		*/
-
-		$duration = 0;
-
-		foreach($items as $item) {
-			$amount = 0;
-			$type	= $item['scheme_merchant_type'];
-			$value	= $item['scheme_merchant_value'];
-
-			$merchant_oauth_bridge_id	= $item['oauth_bridge_id'];
-
-			// get first active account of merchant
-			$merchant_account_row = $this->merchant_accounts->get_datum(
-				'',
-				array(
-					'merchants.oauth_bridge_id' => $merchant_oauth_bridge_id,
-					'merchant_status'			=> 1 // must be active merchant
-				),
-				array(),
-				array(
-					array(
-						'table_name'	=> 'merchants',
-						'condition'		=> 'merchants.merchant_number = merchant_accounts.merchant_number'
-					)
+					'*'
 				),
 				array(
-					'*',
-					'merchant_accounts.oauth_bridge_id as account_oauth_bridge_id'
+					'ig_id'					=> $ig_id,
+					'transaction_type_id'	=> $transaction_type_id
 				)
-			)->row();
-
-			if ($merchant_account_row == "") {
-				continue;
-			}
-
-			$account_oauth_bridge_id = $merchant_account_row->account_oauth_bridge_id;
-
-			if ($type == 1) {
-				// fixed value
-				$amount = $value;
-			} else if ($type == 2) {
-				// percentage value
-				$amount = $fee * ($value / 100);
-			}
-
-			$accumulated_fee += $amount;
-
-			if ($fee < $accumulated_fee) {
-				if ($flag) {
-					continue;
-				}
-				
-				$flag = true;
-
-				// adjust share fee from remaining fee
-				$amount = $fee - ($accumulated_fee - $amount);
-
-				if ($amount < 1) {
-					continue;
-				}
-			}
-
-			if ($amount == 0) {
-				continue;
-			}
-
-			$debit_wallet_address		= $this->get_wallet_address($admin_oauth_bridge_id);
-			$credit_wallet_address	    = $this->get_wallet_address($merchant_oauth_bridge_id);
-
-			// wallet cannot found
-			if ($credit_wallet_address == "" || $debit_wallet_address == "") {
-				continue;
-			}
-			
-			$duration++;
-			$new_date = date("Y-m-d H:i:s", strtotime("+$duration sec"));
-
-			$tx_row = $this->create_transaction(
-				$amount, 
-				0, 
-				$transaction_type_id,
-				$admin_oauth_bridge_id,
-				$account_oauth_bridge_id,
-				$admin_oauth_bridge_id,
-				60,
-				"Income Shares",
-				$tx_parent_id,
-				$new_date
 			);
 
-			$tx_id 					= $tx_row['transaction_id'];
-			$credit_total_amount 	= $amount;
+			// income distribution
+			foreach($data as $datum) {
+				$is_type 					= $datum['is_type'];
+				$fee 						= $datum['is_amount'];
+				$credit_oauth_bridge_id 	= $datum['oauth_bridge_id'];
 
-			$credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
-			if ($credit_new_balances) {
-				// record to ledger
-				$this->new_ledger_datum(
-					"income_shares", 
-					$tx_id, 
-					$debit_wallet_address, // debit from wallet address
-					$credit_wallet_address, // credit to wallet address
-					$credit_new_balances
+				if ($is_type == "2") {
+					$fee = ($fee / 100) * $amount;
+				}
+
+				$credit_total_amount = $fee;
+
+				$tx_row = $this->create_transaction(
+					$credit_total_amount, 
+					"0", 
+					"txtype_income_shares", 
+					$credit_oauth_bridge_id,  // to credit 
+					$debit_oauth_bridge_id // to debit 
 				);
-			}
-		}
 
+				$debit_wallet_address		= $this->get_wallet_address($debit_oauth_bridge_id);
+				$credit_wallet_address	    = $this->get_wallet_address($credit_oauth_bridge_id);
 
-		// ADMIN INCOME TX START HERE
-		// admin_income_tx:
-
-		if ($fee >= $accumulated_fee) {
-			// if ($tx_parent_id != "" && $admin_oauth_bridge_id == "") {
-				
-			// }
-
-			$amount = $fee - $accumulated_fee;
-			
-			$debit_wallet_address		= $this->get_wallet_address($admin_oauth_bridge_id);
-			$credit_wallet_address	    = $this->get_wallet_address($admin_oauth_bridge_id);
-
-			// wallet cannot found
-			if ($credit_wallet_address == "" || $debit_wallet_address == "") {
-				return;
-			}
-
-			if ($amount == 0) {
-				return;
-			}
-
-			$duration++;
-			$new_date = date("Y-m-d H:i:s", strtotime("+$duration sec"));
-
-			// remaining fee goes to admin
-			$tx_row = $this->create_transaction(
-				$amount, 
-				0, 
-				$transaction_type_id,
-				$admin_oauth_bridge_id,
-				$admin_oauth_bridge_id,
-				$admin_oauth_bridge_id,
-				60,
-				"Income Shares",
-				$tx_parent_id,
-				$new_date
-			);
-
-			$tx_id 					= $tx_row['transaction_id'];
-			$credit_total_amount 	= $amount;
-
-			$credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
-			if ($credit_new_balances) {
-				// record to ledger
-				$this->new_ledger_datum(
-					"income_shares", 
-					$tx_id, 
-					$debit_wallet_address, // debit from wallet address
-					$credit_wallet_address, // credit to wallet address
-					$credit_new_balances
-				);
+				if ($credit_wallet_address != "" && $debit_wallet_address != "") {
+					$credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
+					if ($credit_new_balances) {
+						// record to ledger
+						$this->new_ledger_datum(
+							"income_share_{$transaction_type_id}_credit", 
+							$transaction_id, 
+							$debit_wallet_address, // debit from wallet address
+							$credit_wallet_address, // credit to wallet address
+							$credit_new_balances
+						);
+					}
+				}
 			}
 		}
 	}

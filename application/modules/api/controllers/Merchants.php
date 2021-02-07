@@ -169,6 +169,9 @@ SQL;
 
         $data = $this->filter_merchant_tx($results);
 
+        echo json_encode($data);
+        die();
+
         $last_id = "";
 
 $sql = <<<SQL

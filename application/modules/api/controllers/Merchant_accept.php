@@ -97,6 +97,14 @@ class Merchant_accept extends Merchant_Controller {
         $amount = $row->transaction_amount;
         $fee 	= $row->transaction_fee;
 
+        $transaction_type_id = $row->transaction_type_id;
+
+        $fee = $this->get_fee(
+            $amount,
+            $transaction_type_id,
+            $merchant_oauth_bridge_id
+        );
+
         $total_amount 	= $amount + $fee;
 
         if ($merchant_balance < $total_amount) {
@@ -155,20 +163,24 @@ class Merchant_accept extends Merchant_Controller {
             );
         }
 
-        // do income sharing
-        $this->distribute_income_shares(
-			$transaction_id,
-			$merchant_no,
-			$fee_amount
-		);
-
         $this->transactions->update(
             $transaction_id,
             array(
+                'transaction_fee'           => $fee,
+                'transaction_total_amount'  => $total_amount,
                 'transaction_status' 		=> 1,
                 'transaction_date_approved'	=> $this->_today,
                 'transaction_requested_to'  => $account_oauth_bridge_id
             )
+        );
+
+        // do income sharing
+        $this->distribute_income_shares(
+            $transaction_id,
+            $amount,
+            $transaction_type_id,
+            $merchant_oauth_bridge_id, // member of the income group
+            $merchant_oauth_bridge_id // to debit
         );
 
         echo json_encode(

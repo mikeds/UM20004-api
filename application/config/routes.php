@@ -50,8 +50,15 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |		my-controller/my-method	-> my_controller/my_method
 */
 
+# for testing
+
+$route["test/reset-mobile-no"]      = "api/Test/reset_mobile_no";
+
+# prod
+
 $route["default_controller"]        = "api/Home";
 $route["token"]                     = "api/Token";
+$route["token/cancel"]              = "api/Token/cancel_token";
 
 $route["clients/login"]             = "api/Login/client";
 $route["merchants/login"]           = "api/Login/merchant";

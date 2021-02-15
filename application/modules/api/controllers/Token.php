@@ -2,15 +2,6 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Token extends Api_Controller {
-	private
-		$_address           = "9294713423",
-		$_address2			= "",
-		$_code			 	= "nILkL8Kua5qxehEBzB7F7qeXpSBGb7atMBp5rCRBB4jsy8o4Ef5BGqdU7o7bRt7r4xjsBRKarH5e49yIBbbX7CMrj6AfKA7z7H7Rzqet6AAdpCMdyK5IzeRb8tBgcn7Gr4BiR6gtEayzgI7LAqACq6zpEty4764Hjkj4Ef8qbLnCaB4GLIdnKRzHdj4knsRy7rktd5Gx6UMdoMdfM8BBzsXgppRCX7boKtKGeyxS5Az8EFj4qM9h7GLaKu76ra9I",
-		$_code2			 	= "",
-        $_shortcode         = "21587007",
-        $_app_id            = "AMM8H69MMeCb5Tp4nBiMnGC8kM7MHMba",
-        $_app_secret        = "53ecfe76327a3b27fb787f92251edf4b23ad667afa8be63516e5127ee7aba3d4";
-
 	public function after_init() {}
 
 	public function index() {
@@ -131,6 +122,52 @@ class Token extends Api_Controller {
 		$this->output->set_status_header(401);
 	}
 
+	public function cancel_token() {
+		if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+			$this->load->model('api/tokens_model', 'tokens');
+
+			$token = get_bearer_token();
+
+			$row = $this->tokens->get_datum(
+				'',
+				array(
+					'access_token'	=> $token
+				)
+			)->row();
+
+			if ($row == "") {
+				echo json_encode(
+					array(
+						'error'	=> true,
+						'error_description'	=> 'Cannot find token!'
+					)
+				);
+				die();
+			}
+
+			$this->tokens->update(
+				$row->access_token,
+				array(
+					'expires'	=> $this->_today
+				)
+			);
+
+			echo json_encode(
+				array(
+					'message'	=> "Successfully triggered to force expire the token.",
+					'response' => array(
+						'token_bearer' 	=> $token,
+						'timestamp'		=> $this->_today
+					)
+				)
+			);
+			die();
+		}
+
+		// unauthorized access
+		$this->output->set_status_header(401);
+	}
+
 	public function ubp() {
 		if (!isset($_GET['bank_code'])) {
 			echo json_encode(
@@ -161,7 +198,7 @@ class Token extends Api_Controller {
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => 'grant_type=password&client_id=854b7778-c9d3-4b3e-9fd5-21c828f7df39&username=partner_sb&password=p%40ssw0rd&scope='.$scope,
+            CURLOPT_POSTFIELDS => 'grant_type=password&client_id='. UBPCLIENTID .'&username='. UBPUSERNAME .'&password='. UBPPASSWORD .'&scope='.$scope,
             CURLOPT_HTTPHEADER => array(
             'Content-Type: application/x-www-form-urlencoded'
             ),

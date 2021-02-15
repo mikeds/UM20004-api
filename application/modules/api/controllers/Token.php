@@ -139,7 +139,7 @@ class Token extends Api_Controller {
 				echo json_encode(
 					array(
 						'error'	=> true,
-						'error_message'	=> 'Cannot find token!'
+						'error_description'	=> 'Cannot find token!'
 					)
 				);
 				die();
@@ -156,7 +156,8 @@ class Token extends Api_Controller {
 				array(
 					'message'	=> "Successfully triggered to force expire the token.",
 					'response' => array(
-						'token_bearer' 		=> $token
+						'token_bearer' 	=> $token,
+						'timestamp'		=> $this->_today
 					)
 				)
 			);

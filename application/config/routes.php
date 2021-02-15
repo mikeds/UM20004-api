@@ -52,6 +52,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $route["default_controller"]        = "api/Home";
 $route["token"]                     = "api/Token";
+$route["token/cancel"]              = "api/Token/cancel_token";
 
 $route["clients/login"]             = "api/Login/client";
 $route["merchants/login"]           = "api/Login/merchant";

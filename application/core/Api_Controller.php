@@ -304,7 +304,7 @@ class Api_Controller extends MX_Controller {
 					$send_to_email, 
 					$code, 
 					$expiration_date, 
-					"Bambupay OTP Code", 
+					"BambuPay OTP Code", 
 					$message
 				);
 			}

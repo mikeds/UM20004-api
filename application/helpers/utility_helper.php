@@ -1288,8 +1288,8 @@ if (! function_exists('send_email')){
 		if($CI->email->send()) {
 			return true;
 		} else {
-			// echo $CI->email->print_debugger();
-			// die();
+			echo $CI->email->print_debugger();
+			die();
 			return false;
 		}
 	}

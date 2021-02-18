@@ -6,6 +6,7 @@ class Sendmail extends Public_Controller {
 	public function after_init() {}
     
     public function index() {
+        /*
         $email_address = isset($_GET['email_address']) ? $_GET['email_address'] : "";
 
         if ($email_address == "") {
@@ -28,5 +29,6 @@ class Sendmail extends Public_Controller {
         } else {
             echo $this->email->print_debugger();
         }
+        */
     }
 }

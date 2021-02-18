@@ -54,7 +54,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $route["test/reset-mobile-no"]      = "api/Test/reset_mobile_no";
 
-$route["sendmail"]                  = "public/Sendmail";
+// $route["sendmail"]                  = "public/Sendmail"; // for testing only
 
 # prod
 

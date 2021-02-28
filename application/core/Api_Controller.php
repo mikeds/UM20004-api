@@ -501,41 +501,40 @@ class Api_Controller extends MX_Controller {
 
 	public function get_fee($amount, $transaction_type_id, $oauth_bridge_id) {
 		$this->load->model("api/income_groups_members_model", "income_groups_members");
-		$this->load->model("api/income_shares_model", "income_shares");
 
 		$fee = 0;
 		$is_type = "1";
 
-		$row = $this->income_groups_members->get_datum(
-			'',
-			array(
-				'oauth_bridge_id'	=> $oauth_bridge_id
-			)
-		)->row();
+		// $row = $this->income_groups_members->get_datum(
+		// 	'',
+		// 	array(
+		// 		'oauth_bridge_id'	=> $oauth_bridge_id
+		// 	)
+		// )->row();
 
-		if ($row != "") {
-			$ig_id = $row->ig_id;
+		// if ($row != "") {
+		// 	$ig_id = $row->ig_id;
 
-			$data = $this->income_shares->get_data(
-				array(
-					'*'
-				),
-				array(
-					'ig_id'					=> $ig_id,
-					'transaction_type_id'	=> $transaction_type_id
-				)
-			);
+		// 	$data = $this->income_shares->get_data(
+		// 		array(
+		// 			'*'
+		// 		),
+		// 		array(
+		// 			'ig_id'					=> $ig_id,
+		// 			'transaction_type_id'	=> $transaction_type_id
+		// 		)
+		// 	);
 
-			foreach($data as $datum) {
-				$is_type = $datum['is_type'];
+		// 	foreach($data as $datum) {
+		// 		$is_type = $datum['is_type'];
 
-				$fee += $datum['is_amount'];
-			}
+		// 		$fee += $datum['is_amount'];
+		// 	}
 
-			if ($is_type == "2") {
-				$fee = $fee * $amount;
-			}
-		}
+		// 	if ($is_type == "2") {
+		// 		$fee = $fee * $amount;
+		// 	}
+		// }
 
 		return $fee;
 	}

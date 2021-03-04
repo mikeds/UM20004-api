@@ -39,6 +39,8 @@ class Otp_sms extends Api_Controller {
 			$this->load->model("api/tms_admin_accounts_model", "admin_accounts");
 			$this->load->model("api/otp_model", "otp");
 			$this->load->model("api/oauth_bridges_model", "bridges");
+			$this->load->model("api/merchants_model", "merchants");
+			$this->load->model("api/agent_client_referrals_model", "agent_client_referrals");
 
 			$post       = $this->get_post();
 
@@ -187,6 +189,25 @@ class Otp_sms extends Api_Controller {
 				$this->client_accounts->insert(
 					$insert_data
 				);
+
+				// find ref code
+				if ($row_cpr->account_ref_code != "") {
+					$row_agent = $this->merchants->get_datum(
+						'',
+						array(
+							'merchant_ref_code' => $row_cpr->account_ref_code
+						)
+					)->row();
+
+					if ($row_agent != "") {
+						$this->agent_client_referrals->insert(
+							array(
+								'merchant_number' 	=> $row_agent->merchant_number,
+								'client_number'		=> $row_cpr->account_number
+							)
+						);
+					}
+				}
 
 				$account_number = $row_cpr->account_number;
 

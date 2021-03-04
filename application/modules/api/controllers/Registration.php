@@ -98,6 +98,8 @@ class Registration extends Tms_admin_Controller {
 				$email_address	= isset($post["email_address"]) ? $post["email_address"] : "";
 				$password		= isset($post["password"]) ? $post["password"] : "";
 				$others			= isset($post["others"]) ? $post["others"] : "";
+
+				$ref_code		= isset($post["ref_code"]) ? $post["ref_code"] : "";
 			} else {
 				// $username		= $this->input->post("username");
 				$fname			= $this->input->post("first_name");
@@ -144,6 +146,9 @@ class Registration extends Tms_admin_Controller {
 
 				$others			= $this->input->post("others");
 				$others			= is_null($others) ? "" : $others;
+
+				$ref_code		= $this->input->post("ref_code");
+				$ref_code		= is_null($ref_code) ? "" : $ref_code;
 			}
 
 			if ($fname == "" || $lname == "") {
@@ -307,7 +312,8 @@ class Registration extends Tms_admin_Controller {
 				'account_email_address'		=> $email_address,
 				'account_date_added'		=> $this->_today,
 				'account_status'			=> 0, 
-				'account_otp_number'		=> $otp_number
+				'account_otp_number'		=> $otp_number,
+				'account_ref_code'			=> $ref_code
 			);
 
 			// check if number is exist and mobile is exist then delete

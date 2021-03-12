@@ -138,6 +138,8 @@ $route["test/income-shares"]    = "api/Home/test_income_shares";
 $route["lookup/tx-list"]        = "api/Lookup/tx_list";
 $route["lookup/tx-fee"]         = "api/Lookup/tx_fee";
 
+$route["lookup/merchant/tx/(:any)"]    = "api/Lookup_merchant/tx/$1";
+
 $route["lookup/client/tx-list"]        = "api/Lookup_client/tx_list";
 $route["lookup/client/tx-fee"]         = "api/Lookup_client/tx_fee";
 

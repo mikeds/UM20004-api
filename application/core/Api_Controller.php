@@ -898,7 +898,7 @@ class Api_Controller extends MX_Controller {
 		$requested_by_oauth_bridge_id, 
 		$requested_to_oauth_bridge_id, 
 		$created_by_oauth_bridge_id = null, 
-		$expiration_minutes = 60, 
+		$expiration_minutes = 15, 
 		$message = "",
 		$tx_parent_id = "",
 		$date = ""
@@ -910,7 +910,7 @@ class Api_Controller extends MX_Controller {
 
 		$this->load->model("api/transactions_model", "transactions");
 		
-		if (is_null($created_by_oauth_bridge_id)) {
+		if (is_null($created_by_oauth_bridge_id) || $created_by_oauth_bridge_id == "") {
 			$created_by_oauth_bridge_id = $requested_by_oauth_bridge_id;
 		}
 
@@ -993,6 +993,61 @@ class Api_Controller extends MX_Controller {
 			'sender_ref_id'	=> $sender_ref_id,
 			'pin'			=> $pin
 		);
+	}
+
+	public function create_ledger(
+		$legder_desc, 
+		$transaction_id, 
+		$amount, 
+		$fee, 
+		$debit_oauth_bridge_id, 
+		$credit_oauth_bridge_id
+	) {
+		// create ledger
+		$debit_amount	= $amount + $fee;
+		$credit_amount 	= $amount;
+		$fee_amount		= $fee;
+
+		$debit_total_amount 	= 0 - $debit_amount; // make it negative
+		$credit_total_amount	= $credit_amount;
+
+		$debit_wallet_address		= $this->get_wallet_address($debit_oauth_bridge_id);
+		$credit_wallet_address	    = $this->get_wallet_address($credit_oauth_bridge_id);
+		
+		if ($credit_wallet_address == "" || $debit_wallet_address == "") {
+			echo json_encode(
+				array(
+					'error'		=> true,
+					'message'	=> "Wallet address not found!",
+					'timestamp'	=> $this->_today
+				)
+			);
+			die();
+		}
+
+		$debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
+		if ($debit_new_balances) {
+			// record to ledger
+			$this->new_ledger_datum(
+				"{$legder_desc}_debit", 
+				$transaction_id, 
+				$credit_wallet_address, // request from credit wallet
+				$debit_wallet_address, // requested to debit wallet
+				$debit_new_balances
+			);
+		}
+
+		$credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
+		if ($credit_new_balances) {
+			// record to ledger
+			$this->new_ledger_datum(
+				"{$legder_desc}_credit",
+				$transaction_id, 
+				$debit_wallet_address, // debit from wallet address
+				$credit_wallet_address, // credit to wallet address
+				$credit_new_balances
+			);
+		}
 	}
 
 	public function create_wallet_address($account_number, $bridge_id, $oauth_bridge_parent_id) {

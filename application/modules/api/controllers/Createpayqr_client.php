@@ -10,7 +10,7 @@ class Createpayqr_client extends Client_Controller {
 		}
 	}
 
-    public function accept() {
+    public function create() {
         $this->load->model("api/transactions_model", "transactions");
 
         $legder_desc            = "createpayqr";
@@ -20,79 +20,47 @@ class Createpayqr_client extends Client_Controller {
 
         $admin_oauth_bridge_id     = $account->oauth_bridge_parent_id;
         $client_oauth_bridge_id    = $account->oauth_bridge_id;
-        $client_balanace           = $this->decrypt_wallet_balance($account->wallet_balance);
+        $client_balance             = $this->decrypt_wallet_balance($account->wallet_balance);
 
-        if (!isset($post["sender_ref_id"])) {
+        if (!isset($post["amount"])) {
             echo json_encode(
                 array(
                     'error'             => true,
-                    'error_description' => "Sender Ref. ID is required!"
+                    'error_description' => "Invalid Amount."
                 )
             );
             die();
         }
 
-        $sender_ref_id = $post["sender_ref_id"];
-
-        $row = $this->transactions->get_datum(
-            '',
-            array(
-                'transaction_sender_ref_id' => $sender_ref_id,
-                'transaction_type_id'       => $transaction_type_id
-            )
-        )->row();
-                
-        if ($row == "") {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Invalid Sender Ref. No."
-                )
-            );
-            die();
-        }
-
-        if ($row->transaction_status == 1 || $transaction_status == 2) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Transaction is already done/cancelled!"
-                )
-            );
-            die();
-        }
-
-        if (strtotime($row->transaction_expiration_date) < strtotime($this->_today)) {
-            $this->transactions->update(
-                $row->transaction_id,
-                array(
-                    'transaction_status' => 2
-                )
-            );
-
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Transaction is expired!"
-                )
-            );
-            die();
-        }
-
-        // get transaction details
-        $transaction_id = $row->transaction_id;
-        $amount         = $row->transaction_amount;
-        $fee            = $row->transaction_fee;
-
-        $debit_from     = $client_oauth_bridge_id;
-        $credit_to      = $row->transaction_requested_by; // merchant oauth_bridge_id
+        // get amount
+        $amount = $post["amount"];
         
-        // create ledger
-        $debit_amount	= $amount + $fee;
-        $credit_amount 	= $amount;
-        $fee_amount		= $fee;
+        if (is_decimal($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "No decimal value."
+                )
+            );
+            die();
+        }
 
-        if ($client_balanace < $debit_amount) {
+        if (!is_numeric($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Not numeric value."
+                )
+            );
+            die();
+        }
+        
+        // get fee
+        $fee = 0;
+
+        $debit_amount = $amount + $fee;
+
+        if ($client_balance < $debit_amount) {
             echo json_encode(
                 array(
                     'error'             => true,
@@ -102,33 +70,26 @@ class Createpayqr_client extends Client_Controller {
             die();
         }
 
-        $debit_oauth_bridge_id 	= $debit_from;
-        $credit_oauth_bridge_id = $credit_to;
-
-        $this->create_ledger(
-            $legder_desc, 
-            $transaction_id, 
+        $tx_row = $this->create_transaction(
             $amount, 
-            $fee,
-            $debit_oauth_bridge_id, 
-            $credit_oauth_bridge_id
+            $fee, 
+            $transaction_type_id, 
+            $client_oauth_bridge_id, // requested by
+            "",
+            $client_oauth_bridge_id // created by
         );
 
-        // update
-        $this->transactions->update(
-            $transaction_id,
-            array(
-                'transaction_status'        => 1,
-                'transaction_approved_by'   => $client_oauth_bridge_id,
-                'transaction_date_approved' => $this->_today
-            )
-        );
+        $transaction_id = $tx_row['transaction_id'];
+        $sender_ref_id  = $tx_row['sender_ref_id'];
+        $pin            = $tx_row['pin'];
 
         echo json_encode(
             array(
-                'message' => "Successfully Accepted CreatePayQR.",
+                'message' => "Successfully created CreatePayQR.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
+                    'amount'        => $amount,
+                    'fee'           => $fee,
                     'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
                     'timestamp'     => $this->_today
                 )

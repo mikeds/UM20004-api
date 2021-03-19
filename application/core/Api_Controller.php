@@ -371,6 +371,34 @@ class Api_Controller extends MX_Controller {
 		$this->send_sms($mobile_no, $message, $access_token);
 	}
 
+	public function _send_sms($mobile_no, $message) {
+		$this->load->model("api/globe_access_tokens", "globe_access_token");
+
+		$access_token = "";
+
+		$row = $this->globe_access_token->get_datum(
+			'',
+			array(
+				'token_mobile_no' => $mobile_no
+			)
+		)->row();
+
+		if ($row != "") {
+			$access_token = $row->token_code;
+		}
+
+		$this->send_sms($mobile_no, $message, $access_token);
+	}
+
+	public function _send_email($send_to, $title, $message) {
+		send_email(
+			getenv("SMTPUSER"),
+			$send_to,
+			$title,
+			$message
+		);
+	}
+
 	private function otp_login($mobile_no, $expiration_date) {
 		$this->load->model("api/client_accounts_model", "client_accounts");
 		$this->load->model("api/globe_access_tokens", "globe_access_token");
@@ -412,7 +440,7 @@ class Api_Controller extends MX_Controller {
 			)
 		);
 
-		$message	= "OTP: {$code}. Expiration Date: {$expiration_date}";
+		$message	= "Your BambuPay verification code is {$code}. For your account SECURITY, do not share this code.";
 		
 		$access_token = "";
 
@@ -440,12 +468,11 @@ class Api_Controller extends MX_Controller {
 			if ($row_client->account_email_address != "") {
 				$send_to_email = $row_client->account_email_address;
 
-				$this->send_email_activation(
-					$send_to_email, 
-					$code, 
-					$expiration_date, 
-					"Bambupay OTP Code", 
-					$message
+				send_email(
+					SMTP_USER,
+					$send_to_email,
+					$email_title,
+					$email_message
 				);
 			}
 		}

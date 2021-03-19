@@ -13,6 +13,8 @@ class Scanpayqr_client extends Client_Controller {
 	}
 
 	public function accept() {
+        $this->load->model("api/merchant_accounts_model", "merchant_accounts");
+
         $account                = $this->_account;
         $transaction_type_id    = "txtype_scanpayqr1"; // scanpayqr
         $post                   = $this->get_post();
@@ -35,7 +37,8 @@ class Scanpayqr_client extends Client_Controller {
             '',
             array(
                 'transaction_sender_ref_id' => $sender_ref_id,
-                'transaction_type_id'       => $transaction_type_id
+                'transaction_type_id'       => $transaction_type_id,
+                'transaction_status'        => 0
             ),
             array(),
             array(
@@ -58,7 +61,7 @@ class Scanpayqr_client extends Client_Controller {
             echo json_encode(
                 array(
                     'error'             => true,
-                    'error_description' => "Invalid Refference ID."
+                    'error_description' => "Refference ID is expired or invalid."
                 )
             );
             die();
@@ -145,6 +148,54 @@ class Scanpayqr_client extends Client_Controller {
                 'transaction_date_approved' => $this->_today
             )
         );
+
+        // send notification to receiver client
+        $receiver_oauth_bridge_id = $transaction_requested_by;
+
+        $merchant_row = $this->merchant_accounts->get_datum(
+            '',
+            array(
+                'merchants.oauth_bridge_id' => $receiver_oauth_bridge_id
+            ),
+            array(),
+            array(
+                array(
+                    'table_name' 	=> 'merchants',
+                    'condition'		=> 'merchants.merchant_number = merchant_accounts.merchant_number'
+                ),
+                array(
+                    'table_name' 	=> 'wallet_addresses',
+                    'condition'		=> 'wallet_addresses.oauth_bridge_id = merchants.oauth_bridge_id'
+                )
+            )
+        )->row();
+
+        if ($merchant_row != "") {
+            $m_mobile_no        = $merchant_row->merchant_mobile_no;
+            $m_email_address    = $merchant_row->merchant_email_address;
+            $merchant_balance   = $this->decrypt_wallet_balance($merchant_row->wallet_balance);
+
+            $mobile_no          = $account->account_mobile_no;
+            $email_address      = $account->account_email_address;
+
+            $amount     = number_format($debit_amount, 2, '.', '');
+            $m_amount   = number_format($credit_amount, 2, '.', '');
+
+            $merchant_balance   = number_format($merchant_balance, 2, '.', '');
+
+            // message to client
+            $title      = "BambuPAY - PayQR";
+            $message    = "Your payment of PHP {$amount} to {$m_mobile_no} has been successfully processed on {$this->_today}. Ref No. {$sender_ref_id}";
+
+            $this->_send_sms($mobile_no, $message);
+            $this->_send_email($email_address, $title, $message);
+
+            // message to merchant
+            $message    = "You have received PHP {$m_amount} on {$this->_today}. New balance is PHP {$merchant_balance} Ref No. {$sender_ref_id}";
+
+            $this->_send_sms($m_mobile_no, $message);
+            $this->_send_email($m_email_address, $title, $message);
+        }
 
         echo json_encode(
             array(

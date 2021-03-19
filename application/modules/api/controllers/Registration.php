@@ -386,7 +386,7 @@ class Registration extends Tms_admin_Controller {
 
 			echo json_encode(
 				array(
-					'message' => 'Succefully registered!'
+					'message' => 'Succefully registered, Please activate your account using OTP provided via SMS and Email!'
 				)
 			);
 

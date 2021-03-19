@@ -18,24 +18,45 @@ class Scanpayqr_merchant extends Merchant_Controller {
 		$account_oauth_bridge_id    = $account->account_oauth_bridge_id;
 		$merchant_oauth_bridge_id	= $account->merchant_oauth_bridge_id;
 		$admin_oauth_bridge_id      = $account->oauth_bridge_parent_id;
-		
-		$amount = 0;
-        $fee = 0;
 
         if (!isset($post["amount"])) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Amount."
+                )
+            );
             die();
         }
 
+        // get amount
+        $amount = $post["amount"];
+        
         if (is_decimal($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "No decimal value."
+                )
+            );
             die();
         }
 
         if (!is_numeric($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Not numeric value."
+                )
+            );
             die();
         }
-        
-		$amount = $post["amount"];
 		
+        // get fee
+        $fee = 0;
+
+        $debit_amount = $amount + $fee;
+
 		$tx_row = $this->create_transaction(
             $amount, 
             $fee, 
@@ -47,7 +68,7 @@ class Scanpayqr_merchant extends Merchant_Controller {
 		$transaction_id = $tx_row['transaction_id'];
         $sender_ref_id  = $tx_row['sender_ref_id'];
         $pin            = $tx_row['pin'];
-		        
+
         echo json_encode(
             array(
                 'message' => "Successfully created ScanPayQR.",

@@ -161,6 +161,12 @@ class Send_to extends Client_Controller {
         $credit_wallet_address	    = $this->get_wallet_address($credit_oauth_bridge_id);
         
         if ($credit_wallet_address == "" || $debit_wallet_address == "") {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Cannot find wallet, Please contact system administrator."
+                )
+            );
             die();
         }
 
@@ -186,6 +192,40 @@ class Send_to extends Client_Controller {
                 $credit_wallet_address, // credit to wallet address
                 $credit_new_balances
             );
+        }
+
+        // send notification to receiver client
+        $receiver_oauth_bridge_id = $credit_oauth_bridge_id;
+
+        $client_row = $this->client_accounts->get_datum(
+            '',
+            array(
+                'client_accounts.oauth_bridge_id' => $receiver_oauth_bridge_id
+            ),
+            array(),
+            array(
+                array(
+                    'table_name' 	=> 'wallet_addresses',
+                    'condition'		=> 'wallet_addresses.oauth_bridge_id = client_accounts.oauth_bridge_id'
+                )
+            )
+        )->row();
+
+        if ($client_row != "") {
+            $client_email       = $client_row->account_email_address;
+            $client_mobile_no   = $client_row->account_mobile_no;
+            $client_balance     = $this->decrypt_wallet_balance($client_row->wallet_balance);
+
+            $sender_mobile_no   = $account->account_mobile_no;
+
+            $amount         = number_format($amount, 2, '.', '');
+            $client_balance = number_format($client_balance, 2, '.', '');
+
+            $title      = "BambuPAY - Send Money";
+            $message    = "You have received PHP {$amount} from {$sender_mobile_no} on {$this->_today}. New balance is PHP {$client_balance} Ref No. {$sender_ref_id}";
+
+            $this->_send_sms($client_mobile_no, $message);
+            $this->_send_email($client_email, $title, $message);
         }
 
         $this->transactions->update(

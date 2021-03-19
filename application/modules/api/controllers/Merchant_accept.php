@@ -25,6 +25,7 @@ class Merchant_accept extends Merchant_Controller {
 
 	public function cash_in() {
         $this->load->model("api/transactions_model", "transactions");
+        $this->load->model("api/client_accounts_model", "clients");
 
         $account                        = $this->_account;
         $transaction_type_group_id      = 3; // all cash in request
@@ -39,6 +40,12 @@ class Merchant_accept extends Merchant_Controller {
         $merchant_no                    = $account->merchant_number;
 
         if (!isset($post["sender_ref_id"])) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Sender Ref. ID is required!"
+                )
+            );
             die();
         }
 
@@ -182,6 +189,38 @@ class Merchant_accept extends Merchant_Controller {
             $merchant_oauth_bridge_id, // member of the income group
             $merchant_oauth_bridge_id // to debit
         );
+
+        // send notification to receiver client
+        $receiver_oauth_bridge_id = $row->oauth_bridge_id;
+
+        $client_row = $this->clients->get_datum(
+            '',
+            array(
+                'client_accounts.oauth_bridge_id' => $receiver_oauth_bridge_id
+            ),
+            array(),
+            array(
+                array(
+					'table_name' 	=> 'wallet_addresses',
+					'condition'		=> 'wallet_addresses.oauth_bridge_id = client_accounts.oauth_bridge_id'
+				)
+            )
+        )->row();
+
+        if ($client_row != "") {
+            $client_email       = $client_row->account_email_address;
+            $client_mobile_no   = $client_row->account_mobile_no;
+            $client_balance     = $this->decrypt_wallet_balance($client_row->wallet_balance);
+
+            $amount         = number_format($amount, 2, '.', '');
+            $client_balance = number_format($client_balance, 2, '.', '');
+
+            $title      = "BambuPay - Cash In";
+            $message    = "You have received PHP {$amount} on {$this->_today}. New balance is PHP {$client_balance} Ref No. {$sender_ref_id}";
+
+            $this->_send_sms($client_mobile_no, $message);
+            $this->_send_email($client_email, $title, $message);
+        }
 
         echo json_encode(
             array(

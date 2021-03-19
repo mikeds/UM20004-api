@@ -49,7 +49,7 @@ class Client_otp extends Client_Controller {
 				echo json_encode(
 					array(
 						'error'             => true,
-						'error_description' => "Invalid OTP."
+						'error_description' => "We are sorry. Your application to use the services of BambuPay has been disapproved. – BambuPay Team"
 					)
 				);
 				die();
@@ -59,7 +59,7 @@ class Client_otp extends Client_Controller {
 				echo json_encode(
 					array(
 						'error'             => true,
-						'error_description' => "OTP is belongs to other user."
+						'error_description' => "We are sorry. Your application to use the services of BambuPay has been disapproved. – BambuPay Team"
 					)
 				);
 				die();
@@ -69,7 +69,7 @@ class Client_otp extends Client_Controller {
 				echo json_encode(
 					array(
 						'error'             => true,
-						'error_description' => "OTP already used."
+						'error_description' => "We are sorry. Your application to use the services of BambuPay has been disapproved. – BambuPay Team"
 					)
 				);
 				die();
@@ -87,7 +87,7 @@ class Client_otp extends Client_Controller {
 
 			echo json_encode(
 				array(
-					'message' 	=> "Successfully OTP activated.",
+					'message' 	=> "We are sorry. Your application to use the services of BambuPay has been disapproved. – BambuPay Team",
 					'timestamp'	=> $this->_today
 				)
 			);

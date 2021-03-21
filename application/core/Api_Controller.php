@@ -455,7 +455,7 @@ class Api_Controller extends MX_Controller {
 			$access_token = $row->token_code;
 		}
 
-		$this->send_sms($mobile_no, $message, $access_token);
+		$this->send_sms($mobile_no, $message, $access_token, true); // bypass error return if sent sms failed
 
 		$row_client = $this->client_accounts->get_datum(
 			'',
@@ -478,7 +478,7 @@ class Api_Controller extends MX_Controller {
 		}
 	}
 
-	public function send_sms($mobile_no, $message, $access_token) {
+	public function send_sms($mobile_no, $message, $access_token, $is_bypass = false) {
 
 		$curl = curl_init();
 
@@ -499,6 +499,10 @@ class Api_Controller extends MX_Controller {
 		$response = curl_exec($curl);
 		$err = curl_error($curl);
 		curl_close($curl);
+
+		if ($is_bypass) {
+			return;
+		}
 
 		if ($err) {
 			echo json_encode(

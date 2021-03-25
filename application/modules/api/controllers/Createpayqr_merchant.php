@@ -143,7 +143,7 @@ class Createpayqr_merchant extends Merchant_Controller {
         $debit_oauth_bridge_id 	= $debit_from;
         $credit_oauth_bridge_id = $credit_to;
 
-        $this->create_ledger(
+        $balances = $this->create_ledger(
             $legder_desc, 
             $transaction_id, 
             $amount, 
@@ -162,6 +162,32 @@ class Createpayqr_merchant extends Merchant_Controller {
                 'transaction_date_approved' => $this->_today
             )
         );
+
+        // if ($row_client != "") {
+        //     $c_mobile_no        = $row_client->account_mobile_no;
+        //     $c_email_address    = $row_client->account_email_address;
+
+        //     $debit_amount       = number_format($debit_amount, 2, '.', '');
+        //     $credit_amount      = number_format($credit_amount, 2, '.', '');
+
+        //     $m_mobile_no        = $account->merchant_mobile_no;
+        //     $m_email_address    = $account->merchant_email_address;
+            
+        //     $balance            = isset($balances['credit_new_balance']) ? $balances['credit_new_balance'] : "";
+
+        //     // message to client
+        //     $title      = "BambuPAY - PayQR";
+        //     $message    = "Your payment of PHP {$debit_amount} to {$m_mobile_no} has been successfully processed on {$this->_today}. Ref No. {$sender_ref_id}";
+
+        //     $this->_send_sms($c_mobile_no, $message);
+        //     $this->_send_email($c_email_address, $title, $message);
+
+        //     // message to merchant
+        //     $message    = "You have received PHP {$credit_amount} on {$this->_today}. New balance is PHP {$balance} Ref No. {$sender_ref_id}";
+
+        //     $this->_send_sms($m_mobile_no, $message);
+        //     $this->_send_email($m_email_address, $title, $message);
+        // }
 
         echo json_encode(
             array(

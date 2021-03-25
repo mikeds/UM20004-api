@@ -387,7 +387,7 @@ class Api_Controller extends MX_Controller {
 			$access_token = $row->token_code;
 		}
 
-		$this->send_sms($mobile_no, $message, $access_token);
+		$this->send_sms($mobile_no, $message, $access_token, true);
 	}
 
 	public function _send_email($send_to, $title, $message) {
@@ -455,7 +455,7 @@ class Api_Controller extends MX_Controller {
 			$access_token = $row->token_code;
 		}
 
-		$this->send_sms($mobile_no, $message, $access_token, true); // bypass error return if sent sms failed
+		$this->send_sms($mobile_no, $message, $access_token); // bypass error return if sent sms failed
 
 		$row_client = $this->client_accounts->get_datum(
 			'',
@@ -500,11 +500,11 @@ class Api_Controller extends MX_Controller {
 		$err = curl_error($curl);
 		curl_close($curl);
 
-		if ($is_bypass) {
-			return;
-		}
-
 		if ($err) {
+			if ($is_bypass) {
+				return;
+			}
+
 			echo json_encode(
 				array(
 					'error'             => true,
@@ -514,6 +514,10 @@ class Api_Controller extends MX_Controller {
 			);
 			die();
 		} else {
+			if ($is_bypass) {
+				return;
+			}
+
 			$decoded = json_decode($response);
 			
 			if (isset($decoded->error)) {
@@ -1079,6 +1083,11 @@ class Api_Controller extends MX_Controller {
 				$credit_new_balances
 			);
 		}
+
+		return array(
+			'debit_new_balance' 	=> $debit_new_balances,
+			'credit_new_balance'	=> $credit_new_balances
+		);
 	}
 
 	public function create_wallet_address($account_number, $bridge_id, $oauth_bridge_parent_id) {

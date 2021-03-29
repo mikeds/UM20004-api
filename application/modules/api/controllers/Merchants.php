@@ -5,6 +5,76 @@ class Merchants extends Merchant_Controller {
 
 	public function after_init() {}
 
+    /*
+    public function transactions($tx_id = "") {
+        if ($_SERVER['REQUEST_METHOD'] != 'GET') {
+			$this->output->set_status_header(401);
+			die();
+        }
+
+        $account = $this->_account;
+        $merchant_oauth_bridge_id = $account->merchant_oauth_bridge_id;
+
+        $this->load->model("api/transactions_model", "transactions");
+        $this->load->model("api/merchant_accounts_model", "merchant_accounts");
+
+        $m_accounts_data = $this->merchant_accounts->_data(
+            array(
+                'merchant_accounts.oauth_bridge_id as ma_oauth_bridge_id'
+            ),
+            array(
+                array(
+                    'table_name'    => 'merchants',
+                    'condition'     => 'merchant_accounts.merchant_number = merchants.merchant_number'
+                )
+            ),
+            array(
+                'merchants.oauth_bridge_id' => $merchant_oauth_bridge_id
+            )
+        );
+
+        $m_accounts = array();
+
+        foreach($m_accounts_data as $datum) {
+            $m_accounts[] = $datum['ma_oauth_bridge_id'];
+        }
+
+        $data = $this->transactions->_data(
+            array(
+                '*'
+            ), // select
+            array(), // inner_joints
+            array(), // where
+            array( 
+                array(
+                    'field' => 'transaction_requested_by',
+                    'data'  => $m_accounts
+                ),
+                array(
+                    'field' => 'transaction_requested_to',
+                    'data'  => $m_accounts
+                )
+            ), //  where_in
+            array(
+                array(
+                    'field' => 'transaction_requested_by',
+                    'data'  => $merchant_oauth_bridge_id
+                ),
+                array(
+                    'field' => 'transaction_requested_to',
+                    'data'  => $merchant_oauth_bridge_id
+                )
+            ) // or_where
+        );
+
+        echo json_encode(
+            array(
+                'response' => $data
+            )
+        );
+    }
+    */
+    
 	public function balance() {
         if ($_SERVER['REQUEST_METHOD'] != 'GET') {
 			$this->output->set_status_header(401);

@@ -557,7 +557,7 @@ class Client_registration extends Tms_admin_Controller {
 
 			echo json_encode(
 				array(
-					'message'   => 'Thank you for signing up. Kindly give us a maximum of 48 to 72 hours to review your application.',
+					'message'   => 'Successfully Pre-registration!',
                     'response'  => array(
                         'timestamp' => $this->_today
                     )

@@ -87,14 +87,6 @@ $route["qr-code/client-accounts/(:any)"]  = "public/Qr_code/client_accounts/$1";
 
 $route["qr-code/transactions/(:any)"]     = "public/Qr_code/transactions/$1";
 
-$route["otp/top-up/activation"]     = "api/Otp_top_up/activation";
-$route["otp/cash-in/activation"]    = "api/Otp_cash_in/activation";
-$route["otp/send-to/activation"]    = "api/Otp_send_to/activation";
-
-$route["otp/top-up/resend"]     = "api/Otp_top_up/resend";
-$route["otp/cash-in/resend"]    = "api/Otp_cash_in/resend";
-$route["otp/send-to/resend"]    = "api/Otp_send_to/resend";
-
 $route["transactions/merchant/top-up"]  = "api/Top_up";
 $route["transactions/client/send-to"]   = "api/Send_to/direct";
 
@@ -108,10 +100,6 @@ $route["merchants/balance"]     = "api/Merchants/balance";
 
 $route["clients/ledger"]       = "api/Clients/ledger";
 $route["merchants/ledger"]     = "api/Merchants/ledger";
-
-
-$route["clients/ledger"]     = "api/Clients/ledger";
-$route["merchants/ledger"]   = "api/Merchants/ledger";
 
 $route["clients/ledger/(:any)"]     = "api/Clients/ledger/$1";
 $route["merchants/ledger/(:any)"]   = "api/Merchants/ledger/$1";
@@ -146,15 +134,6 @@ $route["lookup/client/tx-fee"]         = "api/Lookup_client/tx_fee";
 
 $route["lookup/client/ubp/banks"] = "api/Lookup_client/instapay_banks";
 
-/*
-$route["otp/request"]    = "api/Otp_sms/request";
-$route["otp/submit"]     = "api/Otp_sms/submit";
-*/
-
-$route["otp/token"]      = "api/Token/otp";
-
-$route["ubp/token"]      = "api/Token/ubp";
-
 $route["paynamics/auth"] = "public/Paynamics/auth";
 $route["paynamics/sale"] = "public/Paynamics/sale";
 
@@ -165,6 +144,14 @@ $route["callback/paynamics/response"]       = "api/Callback/paynamics_response";
 $route["callback/paynamics/cancel"]         = "api/Callback/paynamics_cancel";
 
 $route["cron/paynamics"]    = "public/Cron/paynamics";
+
+# OTP SMS
+$route["otp/token"]      = "api/Otp_sms/token";
+$route["otp/request"]    = "api/Otp_sms/request";
+$route["otp/submit"]     = "api/Otp_sms/submit";
+
+# OTP UBP
+$route["ubp/token"]      = "api/Token/ubp";
 
 /*
 // for testing

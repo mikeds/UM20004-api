@@ -7,7 +7,116 @@ class Otp_sms extends Api_Controller {
 		$this->oauth2->get_resource();
     }
 
-	/*
+	public function token() {
+		if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+			$this->load->model("api/globe_access_tokens", "globe_access_token");
+			$this->load->model("api/client_accounts_model", "client_accounts");
+
+			if (!isset($_GET['code'])) {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Please provide code from globeapi callback."
+					)
+				);
+				die();
+			}
+
+			$base_url 	= GLOBEBASEURL . "oauth/access_token";
+
+			$code  		= $_GET['code'];
+			$app_id     = GLOBEAPPID;
+			$app_secret = GLOBEAPPSECRET;
+			
+			$auth_url	= $base_url . "?app_id={$app_id}&app_secret={$app_secret}&code={$code}";
+
+			$curl = curl_init();
+
+			curl_setopt_array($curl, array(
+				CURLOPT_URL => $auth_url,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_ENCODING => "",
+				CURLOPT_MAXREDIRS => 10,
+				CURLOPT_TIMEOUT => 30,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => "POST",
+				CURLOPT_HTTPHEADER => array(
+					"Content-Type: application/json"
+				),
+			));
+
+			$response = curl_exec($curl);
+			$err = curl_error($curl);
+			curl_close($curl);
+
+			if ($err) {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Unable to generate token. Curl Error #: {$err}",
+						'redirect_url'		=> GLOBEBASEURL . "dialog/oauth/" . GLOBEAPPID
+					)
+				);
+				die();
+			}
+
+			$decoded = json_decode($response);
+
+			if (!isset($decoded->access_token)) {
+				echo json_encode(
+					array(
+						'error'             => true,
+						'error_description' => "Invalid code.",
+						'redirect_url'		=> GLOBEBASEURL . "dialog/oauth/" . GLOBEAPPID
+					)
+				);
+				die();
+			}
+
+			$access_token 	= $decoded->access_token;
+			$mobile_no		= $decoded->subscriber_number;
+
+			$row_token = $this->globe_access_token->get_datum(
+				'',
+				array(
+					'token_mobile_no'	=> $mobile_no,
+				)
+			)->row();
+
+			if ($row_token == "") {
+				$this->globe_access_token->insert(
+					array(
+						'token_code'			=> $access_token,
+						'token_mobile_no'		=> $mobile_no,
+						'token_date_added'		=> $this->_today
+					)
+				);
+			} else {
+				$this->globe_access_token->update(
+					$row_token->token_id,
+					array(
+						'token_code'			=> $access_token,
+						'token_date_added'		=> $this->_today
+					)
+				);
+			}
+
+			echo json_encode(
+				array(
+					'message'	=> "Successfully generated GLOBE API token.",
+					'response' => array(
+						'access_token' 		=> $access_token,
+						'subscriber_number'	=> $mobile_no
+					)
+				)
+			);
+			die();
+		}
+
+		// unauthorized access
+		$this->output->set_status_header(401);
+	}
+
 	public function request() {
 		if ($_SERVER['REQUEST_METHOD'] == 'POST' || $this->JSON_POST()) {
 
@@ -59,7 +168,7 @@ class Otp_sms extends Api_Controller {
 				echo json_encode(
 					array(
 						'error'             => true,
-						'error_description' => "Please provide otp."
+						'error_description' => "Please provide OTP no."
 					)
 				);
 				die();
@@ -81,7 +190,7 @@ class Otp_sms extends Api_Controller {
 				echo json_encode(
 					array(
 						'error'             => true,
-						'error_description' => "Invalid OTP."
+						'error_description' => "Invalid OTP no."
 					)
 				);
 				die();
@@ -91,7 +200,7 @@ class Otp_sms extends Api_Controller {
 				echo json_encode(
 					array(
 						'error'             => true,
-						'error_description' => "OTP is expired."
+						'error_description' => "OTP no. is expired."
 					)
 				);
 				die();
@@ -105,36 +214,6 @@ class Otp_sms extends Api_Controller {
 				)
 			);
 
-			$token_row = $this->get_token();
-			$client_id = $token_row->client_id;
-
-			$row_datum = $this->bridges->get_datum(
-				'',
-				array(
-					'oauth_bridge_id' => $client_id
-				)
-			)->row();
-
-			$bridge_parent_id = "";
-			$admin_oauth_bridge_id = $client_id;
-
-			if ($row_datum != "") {
-				$bridge_parent_id = $row_datum->oauth_bridge_parent_id;
-			}
-
-			if ($bridge_parent_id != "") {
-				$row_admin_datum = $this->admin_accounts->get_datum(
-					'',
-					array(
-						'oauth_bridge_id' => $bridge_parent_id
-					)
-				)->row();
-
-				if ($row_admin_datum != "") {
-					$admin_oauth_bridge_id = $bridge_parent_id;
-				}
-			}
-			
 			// check otp is for pre_registration
 			$row_cpr = $this->client_pre_registration->get_datum(
 				'',
@@ -144,79 +223,21 @@ class Otp_sms extends Api_Controller {
 			)->row();
 
 			if ($row_cpr != "") {
-				// move client pre-registration account to client accounts
-
-				$this->client_pre_registration->delete($row_cpr->account_number);
-
-				$bridge_id = $this->generate_code(
+				$this->client_pre_registration->update(
+					$row_cpr->account_number,
 					array(
-						'account_number' 		=> $row_cpr->account_number,
-						'account_date_added'	=> $this->_today,
-						'admin_oauth_bridge_id'	=> $admin_oauth_bridge_id
+						'account_sms_status'	=> 1,
+						'account_otp_number'	=> ""
 					)
 				);
 
-				// do insert bridge id
-				$this->bridges->insert(
+				echo json_encode(
 					array(
-						'oauth_bridge_id' 			=> $bridge_id,
-						'oauth_bridge_parent_id'	=> $admin_oauth_bridge_id,
-						'oauth_bridge_date_added'	=> $this->_today
+						'message' 	=> "Thank you for signing up. Kindly give us a maximum of 48 to 72 hours to review your application.",
+						'timestamp'	=> $this->_today
 					)
 				);
-
-				$insert_data = array(
-					'account_number'			=> $row_cpr->account_number,
-					'account_password'			=> $row_cpr->account_password,
-					'account_fname'				=> $row_cpr->account_fname,
-					'account_mname'				=> $row_cpr->account_mname,
-					'account_lname'				=> $row_cpr->account_lname,
-					'account_gender'			=> $row_cpr->account_gender,
-					'account_dob'				=> $row_cpr->account_dob,
-					'account_address'			=> $row_cpr->account_address,
-					'account_street'			=> $row_cpr->account_street, 
-					'account_brgy'				=> $row_cpr->account_brgy,
-					'account_city'				=> $row_cpr->account_city,
-					'country_id'				=> $row_cpr->country_id,
-					'province_id'				=> $row_cpr->province_id,
-					'province_others'			=> $row_cpr->province_others,
-					'account_mobile_no'			=> $row_cpr->account_mobile_no,
-					'account_email_address'		=> $row_cpr->account_email_address,
-					'account_date_added'		=> $this->_today,
-					'account_status'			=> 1, 
-					'oauth_bridge_id'			=> $bridge_id
-				);
-
-				$this->client_accounts->insert(
-					$insert_data
-				);
-
-				// find ref code
-				if ($row_cpr->account_ref_code != "") {
-					$row_agent = $this->merchants->get_datum(
-						'',
-						array(
-							'merchant_ref_code' => $row_cpr->account_ref_code
-						)
-					)->row();
-
-					if ($row_agent != "") {
-						$this->agent_client_referrals->insert(
-							array(
-								'merchant_number' 	=> $row_agent->merchant_number,
-								'client_number'		=> $row_cpr->account_number
-							)
-						);
-					}
-				}
-
-				$account_number = $row_cpr->account_number;
-
-				// create wallet address
-				$this->create_wallet_address($account_number, $bridge_id, $admin_oauth_bridge_id);
-
-				// create token auth for api
-				$this->create_token_auth($account_number, $bridge_id);
+				die();
 			}
 
 			echo json_encode(
@@ -231,5 +252,4 @@ class Otp_sms extends Api_Controller {
 		// unauthorized access
 		$this->output->set_status_header(401);
 	}
-	*/
 }

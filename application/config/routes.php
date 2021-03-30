@@ -68,9 +68,6 @@ $route["merchants/login"]           = "api/Login/merchant";
 $route["clients/registration"]      = "api/Client_registration/submit";
 // $route["merchants/registration"]    = "api/Registration/merchant";
 
-$route["tools/countries"]           = "api/Tools/countries";
-$route["tools/provinces/(:num)"]    = "api/Tools/provinces/$1";
-
 $route["callback/ubp/code"]         = "api/Callback/ubp_code";
 
 $route["activation/merchant-email/resend"]      = "api/Activation/merchant_email_resend";
@@ -152,6 +149,14 @@ $route["otp/submit"]     = "api/Otp_sms/submit";
 
 # OTP UBP
 $route["ubp/token"]      = "api/Token/ubp";
+
+# TOOLS
+$route["tools/countries"]           = "api/Tools/countries";
+$route["tools/provinces/(:num)"]    = "api/Tools/provinces/$1";
+
+$route["tools/id-types"]            = "api/Tools/id_types";
+$route["tools/source-of-funds"]     = "api/Tools/source_of_funds";
+$route["tools/nature-of-work"]      = "api/Tools/nature_of_work";
 
 /*
 // for testing

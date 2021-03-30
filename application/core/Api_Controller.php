@@ -371,6 +371,34 @@ class Api_Controller extends MX_Controller {
 		$this->send_sms($mobile_no, $message, $access_token);
 	}
 
+	public function _send_sms($mobile_no, $message) {
+		$this->load->model("api/globe_access_tokens", "globe_access_token");
+
+		$access_token = "";
+
+		$row = $this->globe_access_token->get_datum(
+			'',
+			array(
+				'token_mobile_no' => $mobile_no
+			)
+		)->row();
+
+		if ($row != "") {
+			$access_token = $row->token_code;
+		}
+
+		$this->send_sms($mobile_no, $message, $access_token, true);
+	}
+
+	public function _send_email($send_to, $title, $message) {
+		send_email(
+			SMTP_USER,
+			$send_to,
+			$title,
+			$message
+		);
+	}
+
 	private function otp_login($mobile_no, $expiration_date) {
 		$this->load->model("api/client_accounts_model", "client_accounts");
 		$this->load->model("api/globe_access_tokens", "globe_access_token");
@@ -412,7 +440,7 @@ class Api_Controller extends MX_Controller {
 			)
 		);
 
-		$message	= "OTP: {$code}. Expiration Date: {$expiration_date}";
+		$message	= "Your BambuPay verification code is {$code}. For your account SECURITY, do not share this code.";
 		
 		$access_token = "";
 
@@ -427,7 +455,7 @@ class Api_Controller extends MX_Controller {
 			$access_token = $row->token_code;
 		}
 
-		$this->send_sms($mobile_no, $message, $access_token);
+		$this->send_sms($mobile_no, $message, $access_token); // bypass error return if sent sms failed
 
 		$row_client = $this->client_accounts->get_datum(
 			'',
@@ -440,18 +468,17 @@ class Api_Controller extends MX_Controller {
 			if ($row_client->account_email_address != "") {
 				$send_to_email = $row_client->account_email_address;
 
-				$this->send_email_activation(
-					$send_to_email, 
-					$code, 
-					$expiration_date, 
-					"Bambupay OTP Code", 
-					$message
+				send_email(
+					SMTP_USER,
+					$send_to_email,
+					$email_title,
+					$email_message
 				);
 			}
 		}
 	}
 
-	public function send_sms($mobile_no, $message, $access_token) {
+	public function send_sms($mobile_no, $message, $access_token, $is_bypass = false) {
 
 		$curl = curl_init();
 
@@ -474,6 +501,10 @@ class Api_Controller extends MX_Controller {
 		curl_close($curl);
 
 		if ($err) {
+			if ($is_bypass) {
+				return;
+			}
+
 			echo json_encode(
 				array(
 					'error'             => true,
@@ -483,6 +514,10 @@ class Api_Controller extends MX_Controller {
 			);
 			die();
 		} else {
+			if ($is_bypass) {
+				return;
+			}
+
 			$decoded = json_decode($response);
 			
 			if (isset($decoded->error)) {
@@ -854,7 +889,7 @@ class Api_Controller extends MX_Controller {
 		// ), true);
 
 		send_email(
-			getenv("SMTPUSER"),
+			SMTP_USER,
 			$send_to_email,
 			$email_title,
 			$email_message
@@ -898,7 +933,7 @@ class Api_Controller extends MX_Controller {
 		$requested_by_oauth_bridge_id, 
 		$requested_to_oauth_bridge_id, 
 		$created_by_oauth_bridge_id = null, 
-		$expiration_minutes = 60, 
+		$expiration_minutes = 15, 
 		$message = "",
 		$tx_parent_id = "",
 		$date = ""
@@ -910,7 +945,7 @@ class Api_Controller extends MX_Controller {
 
 		$this->load->model("api/transactions_model", "transactions");
 		
-		if (is_null($created_by_oauth_bridge_id)) {
+		if (is_null($created_by_oauth_bridge_id) || $created_by_oauth_bridge_id == "") {
 			$created_by_oauth_bridge_id = $requested_by_oauth_bridge_id;
 		}
 
@@ -992,6 +1027,66 @@ class Api_Controller extends MX_Controller {
 			'transaction_id'=> $transaction_id,
 			'sender_ref_id'	=> $sender_ref_id,
 			'pin'			=> $pin
+		);
+	}
+
+	public function create_ledger(
+		$legder_desc, 
+		$transaction_id, 
+		$amount, 
+		$fee, 
+		$debit_oauth_bridge_id, 
+		$credit_oauth_bridge_id
+	) {
+		// create ledger
+		$debit_amount	= $amount + $fee;
+		$credit_amount 	= $amount;
+		$fee_amount		= $fee;
+
+		$debit_total_amount 	= 0 - $debit_amount; // make it negative
+		$credit_total_amount	= $credit_amount;
+
+		$debit_wallet_address		= $this->get_wallet_address($debit_oauth_bridge_id);
+		$credit_wallet_address	    = $this->get_wallet_address($credit_oauth_bridge_id);
+		
+		if ($credit_wallet_address == "" || $debit_wallet_address == "") {
+			echo json_encode(
+				array(
+					'error'		=> true,
+					'message'	=> "Wallet address not found!",
+					'timestamp'	=> $this->_today
+				)
+			);
+			die();
+		}
+
+		$debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
+		if ($debit_new_balances) {
+			// record to ledger
+			$this->new_ledger_datum(
+				"{$legder_desc}_debit", 
+				$transaction_id, 
+				$credit_wallet_address, // request from credit wallet
+				$debit_wallet_address, // requested to debit wallet
+				$debit_new_balances
+			);
+		}
+
+		$credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
+		if ($credit_new_balances) {
+			// record to ledger
+			$this->new_ledger_datum(
+				"{$legder_desc}_credit",
+				$transaction_id, 
+				$debit_wallet_address, // debit from wallet address
+				$credit_wallet_address, // credit to wallet address
+				$credit_new_balances
+			);
+		}
+
+		return array(
+			'debit_new_balance' 	=> $debit_new_balances,
+			'credit_new_balance'	=> $credit_new_balances
 		);
 	}
 

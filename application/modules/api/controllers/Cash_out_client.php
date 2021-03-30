@@ -233,7 +233,7 @@ class Cash_out_client extends Client_Controller {
        $curl = curl_init();
 
         curl_setopt_array($curl, array(
-        CURLOPT_URL => 'https://api-uat.unionbankph.com/partners/sb/partners/v3/transfers/single',
+        CURLOPT_URL => UBP_BASE_URL . 'partners/sb/partners/v3/transfers/single',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
@@ -265,10 +265,10 @@ class Cash_out_client extends Client_Controller {
             ]
         }',
         CURLOPT_HTTPHEADER => array(
-                'x-ibm-client-id: 854b7778-c9d3-4b3e-9fd5-21c828f7df39',
-                'x-ibm-client-secret: mJ5bF5kG2mK8bV3wP5oV4qT6iQ0eW8cT4kG5yR3eD1nV4wP7uM',
+                'x-ibm-client-id: ' . UBP_CLIENT_ID,
+                'x-ibm-client-secret: ' . UBP_SECRET_ID,
                 'authorization: Bearer ' . $acces_token,
-                'x-partner-id: 5dff2cdf-ef15-48fb-a87b-375ebff415bb',
+                'x-partner-id: ' . UBP_PARTNER_ID,
                 'Content-Type: application/json'
             ),
         ));
@@ -283,7 +283,7 @@ class Cash_out_client extends Client_Controller {
         $curl = curl_init();
         
         curl_setopt_array($curl, array(
-          CURLOPT_URL => 'https://api-uat.unionbankph.com/partners/sb/partners/v3/instapay/transfers/single',
+          CURLOPT_URL =>  UBP_BASE_URL . 'partners/sb/partners/v3/instapay/transfers/single',
           CURLOPT_RETURNTRANSFER => true,
           CURLOPT_ENCODING => '',
           CURLOPT_MAXREDIRS => 10,
@@ -326,10 +326,10 @@ class Cash_out_client extends Client_Controller {
           }
         }',
           CURLOPT_HTTPHEADER => array(
-            'x-ibm-client-id: 854b7778-c9d3-4b3e-9fd5-21c828f7df39',
-            'x-ibm-client-secret: mJ5bF5kG2mK8bV3wP5oV4qT6iQ0eW8cT4kG5yR3eD1nV4wP7uM',
-            'authorization: Bearer '. $acces_token,
-            'x-partner-id: 5dff2cdf-ef15-48fb-a87b-375ebff415bb',
+            'x-ibm-client-id: ' . UBP_CLIENT_ID,
+            'x-ibm-client-secret: ' . UBP_SECRET_ID,
+            'authorization: Bearer ' . $acces_token,
+            'x-partner-id: ' . UBP_PARTNER_ID,
             'Content-Type: application/json'
           ),
         ));

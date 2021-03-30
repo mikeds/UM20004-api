@@ -190,7 +190,7 @@ class Token extends Api_Controller {
 		$curl = curl_init();
         
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api-uat.unionbankph.com/partners/sb/partners/v1/oauth2/token',
+            CURLOPT_URL => UBP_BASE_URL . 'partners/sb/partners/v1/oauth2/token',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -198,7 +198,7 @@ class Token extends Api_Controller {
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => 'grant_type=password&client_id='. UBPCLIENTID .'&username='. UBPUSERNAME .'&password='. UBPPASSWORD .'&scope='.$scope,
+            CURLOPT_POSTFIELDS => 'grant_type=password&client_id='. UBP_CLIENT_ID .'&username='. UBP_USERNAME .'&password='. UBP_PASSWORD .'&scope='.$scope,
             CURLOPT_HTTPHEADER => array(
             'Content-Type: application/x-www-form-urlencoded'
             ),

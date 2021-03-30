@@ -7,6 +7,7 @@ class Otp_sms extends Api_Controller {
 		$this->oauth2->get_resource();
     }
 
+	/*
 	public function request() {
 		if ($_SERVER['REQUEST_METHOD'] == 'POST' || $this->JSON_POST()) {
 
@@ -230,5 +231,5 @@ class Otp_sms extends Api_Controller {
 		// unauthorized access
 		$this->output->set_status_header(401);
 	}
-
+	*/
 }

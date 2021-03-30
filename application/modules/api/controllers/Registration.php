@@ -5,6 +5,7 @@ class Registration extends Tms_admin_Controller {
 
 	public function after_init() {}
 
+	/*
 	public function uploads() {
 		if ($_FILES && $_POST) {
 			if (isset($_FILES['avatar_image'])) {
@@ -51,7 +52,9 @@ class Registration extends Tms_admin_Controller {
 			}
 		}
 	}
+	*/
 
+	/*
 	public function client() {
 		$admin_oauth_bridge_id = $this->_account->oauth_bridge_id;
 
@@ -60,25 +63,25 @@ class Registration extends Tms_admin_Controller {
 		$this->load->model("api/otp_model", "otp");
 
 		if ($_POST) {
-			/*
-			{
-				"username": "username",
-				"first_name" : "Client 1",
-				"middle_name" : "",
-				"last_name" : "Client 1",
-				"gender" : 1,
-				"dob": "1990-06-23",
-				"house_no": "23",
-				"street": "street",
-				"brgy": "brgy",
-				"city": "quezon city",
-				"country_id": 169,
-				"province_id": 4883,
-				"mobile_no": "09294713423",
-				"email_address": "marknel.pineda@gmail.com",
-				"password": ""
-			}
-			*/
+			
+			// {
+			// 	"username": "username",
+			// 	"first_name" : "Client 1",
+			// 	"middle_name" : "",
+			// 	"last_name" : "Client 1",
+			// 	"gender" : 1,
+			// 	"dob": "1990-06-23",
+			// 	"house_no": "23",
+			// 	"street": "street",
+			// 	"brgy": "brgy",
+			// 	"city": "quezon city",
+			// 	"country_id": 169,
+			// 	"province_id": 4883,
+			// 	"mobile_no": "09294713423",
+			// 	"email_address": "marknel.pineda@gmail.com",
+			// 	"password": ""
+			// }
+			
 
 			if ($this->JSON_POST()) {
 				$post = $this->get_post();
@@ -386,7 +389,7 @@ class Registration extends Tms_admin_Controller {
 
 			echo json_encode(
 				array(
-					'message' => 'Succefully registered!'
+					'message' => 'Succefully registered, Please activate your account using OTP provided via SMS and Email!'
 				)
 			);
 
@@ -403,24 +406,24 @@ class Registration extends Tms_admin_Controller {
 		$this->load->model("api/merchants_model", "merchants");
 
 		if ($_POST) {
-			/*
-			{
-				"first_name" : "Merchant 2",
-				"middle_name" : "",
-				"last_name" : "Merchant 2",
-				"gender" : 1,
-				"dob": "1990-06-23",
-				"house_no": "23",
-				"street": "street",
-				"brgy": "brgy",
-				"city": "quezon city",
-				"country_id": 169,
-				"province_id": 4883,
-				"mobile_no": "09294713423",
-				"email_address": "marknel.pineda@gmail.com",
-				"password": ""
-			}
-			*/
+			
+			// {
+			// 	"first_name" : "Merchant 2",
+			// 	"middle_name" : "",
+			// 	"last_name" : "Merchant 2",
+			// 	"gender" : 1,
+			// 	"dob": "1990-06-23",
+			// 	"house_no": "23",
+			// 	"street": "street",
+			// 	"brgy": "brgy",
+			// 	"city": "quezon city",
+			// 	"country_id": 169,
+			// 	"province_id": 4883,
+			// 	"mobile_no": "09294713423",
+			// 	"email_address": "marknel.pineda@gmail.com",
+			// 	"password": ""
+			// }
+			
 
 			if ($this->JSON_POST()) {
 				$post = $this->get_post();
@@ -735,4 +738,5 @@ class Registration extends Tms_admin_Controller {
 
 		return $account_number;
 	}
+	*/
 }

@@ -8,6 +8,97 @@ class Merchant_accounts_model extends CI_Model {
 	private
 		$_id = "account_number";
 
+	function _data(
+		$select = array('*'), 
+		$inner_joints = array(), 
+		$where = array(), 
+		$where_in = array(), 
+		$or_where = array(), 
+		$order_by = array(), 
+		$limit = 0, 
+		$offset = 0
+		) {
+
+		$this->db->select(ARRtoSTR($select), false);
+
+		$this->db->from( $this->_table );
+
+		if (!empty($inner_joints)) {
+			foreach($inner_joints as $join) {
+				if (isset($join['type'])) {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition'],
+						$join['type']
+					);
+				} else {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition']
+					);
+				}
+			}
+		}
+
+		if(!empty($where)){
+			$this->db->where($where);
+		}
+
+		if(!empty($where_in)){
+			foreach ($where_in as $i) {
+				if (!isset($i['field']) && !isset($i['data'])) {
+					continue;
+				}
+				
+				$field 	= $i['field'];
+				$data 	= $i['data'];
+				
+				$this->db->where_in(
+					$field,
+					$data
+				);
+			}
+		}
+
+		if(!empty($or_where)){
+			foreach ($or_where as $i) {
+				if (!isset($i['field']) && !isset($i['data'])) {
+					continue;
+				}
+				
+				$field 	= $i['field'];
+				$data 	= $i['data'];
+				$this->db->or_where(
+					$field,
+					$data
+				);
+			}
+		}
+
+		if(!empty($limit)){
+			$this->db->limit(
+				$limit, 
+				$offset
+			);
+		}
+		
+		if(!empty($order_by)) {
+			$filter_by 	= $order_by['filter_by'];
+			$sort_by	= $order_by['sort_by'];
+
+			$this->db->order_by(
+				$filter_by,
+				$sort_by
+			);
+		}
+
+		$query = $this->db->get();
+
+		$results = $query->result_array();
+
+		return $results;
+	}
+
 	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array(), $select = array()) {
 		if (!empty($select)) {
 			$this->db->select(ARRtoSTR($select));

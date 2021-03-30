@@ -55,13 +55,14 @@ class Quickpayqr_client extends Client_Controller {
 			die();
 		}
 
+		$legder_desc            = "quickpayqr";
 		$account                = $this->_account;
         $transaction_type_id    = "txtype_quickpayqr1"; // scanpayqr
         $post                   = $this->get_post();
 
         $admin_oauth_bridge_id     	= $account->oauth_bridge_parent_id;
         $client_oauth_bridge_id    	= $account->oauth_bridge_id;
-		$client_balanace           	= $this->decrypt_wallet_balance($account->wallet_balance);
+		$client_balance           	= $this->decrypt_wallet_balance($account->wallet_balance);
 		
 		$merchant_account_number	= isset($post['account_number']) ? $post['account_number'] : "";
 		
@@ -69,20 +70,47 @@ class Quickpayqr_client extends Client_Controller {
         $fee = 0;
 
 		if ($merchant_account_number == "") {
+			echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Merchant account no. is required!"
+                )
+            );
 			die();
 		}
 
         if (!isset($post["amount"])) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Invalid Amount."
+                )
+            );
             die();
         }
 
+        // get amount
+        $amount = $post["amount"];
+        
         if (is_decimal($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "No decimal value."
+                )
+            );
             die();
         }
 
         if (!is_numeric($amount)) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Not numeric value."
+                )
+            );
             die();
-		}
+        }
 
 		$row = $this->merchant_accounts->get_datum(
 			'',
@@ -113,18 +141,19 @@ class Quickpayqr_client extends Client_Controller {
 			die();
 		}
 
-		$amount			= $post["amount"];
-        $total_amount   = $amount + $fee;
+		// create ledger
+		$debit_amount	= $amount + $fee;
+		$credit_amount 	= $amount;
+		$fee_amount		= $fee;
 
-        if ($client_balanace < $total_amount) {
-            echo json_encode(
-                array(
-                    'error'             => true,
-					'error_description' => "Insufficient balance.",
-					'current_balance'	=> $client_balanace
-                )
-            );
-            die();
+		if ($client_balance < $debit_amount) {
+			echo json_encode(
+				array(
+					'error'             => true,
+					'error_description' => "Insufficient Balance!"
+				)
+			);
+			die();
 		}
 
 		$merchant_oauth_bridge_id			= $row->merchant_oauth_bridge_id;
@@ -143,43 +172,20 @@ class Quickpayqr_client extends Client_Controller {
         $pin            = $tx_row['pin'];
 
 		// create ledger
-		$debit_amount	= $total_amount;
-		$credit_amount 	= $amount;
-		$fee_amount		= $fee;
+		$debit_from     = $client_oauth_bridge_id; // client oauth_bridge_id
+        $credit_to      = $merchant_oauth_bridge_id; 
 
-		$debit_total_amount 	= 0 - $debit_amount; // make it negative
-		$credit_total_amount	= $credit_amount;
+        $debit_oauth_bridge_id 	= $debit_from;
+        $credit_oauth_bridge_id = $credit_to;
 
-		$credit_wallet_address	    = $this->get_wallet_address($merchant_oauth_bridge_id);
-		$debit_wallet_address		= $this->get_wallet_address($client_oauth_bridge_id);
-
-		if ($credit_wallet_address == "" || $debit_wallet_address == "") {
-			die();
-		}
-		
-		$debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
-		if ($debit_new_balances) {
-			// record to ledger
-			$this->new_ledger_datum(
-				"quickpayqr_debit", 
-				$transaction_id, 
-				$credit_wallet_address, // request from credit wallet
-				$debit_wallet_address, // requested to debit wallet
-				$debit_new_balances
-			);
-		}
-
-		$credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
-		if ($credit_new_balances) {
-			// record to ledger
-			$this->new_ledger_datum(
-				"quickpayqr_credit", 
-				$transaction_id, 
-				$debit_wallet_address, // debit from wallet address
-				$credit_wallet_address, // credit to wallet address
-				$credit_new_balances
-			);
-		}
+        $balances = $this->create_ledger(
+            $legder_desc, 
+            $transaction_id, 
+            $amount, 
+            $fee,
+            $debit_oauth_bridge_id, 
+            $credit_oauth_bridge_id
+        );
 
 		$this->transactions->update(
 			$transaction_id,
@@ -189,6 +195,31 @@ class Quickpayqr_client extends Client_Controller {
 				'transaction_date_approved' => $this->_today
 			)
 		);
+
+		// send notify
+		$c_mobile_no        = $account->account_mobile_no;
+		$c_email_address    = $account->account_email_address;
+
+		$debit_amount       = number_format($debit_amount, 2, '.', '');
+		$credit_amount      = number_format($credit_amount, 2, '.', '');
+
+		$m_mobile_no        = $row->merchant_mobile_no;
+		$m_email_address    = $row->merchant_email_address;
+		
+		$balance            = isset($balances['credit_new_balance']['new_balance']) ? $balances['credit_new_balance']['new_balance'] : "";
+
+		// message to client
+		$title      = "BambuPAY - QuickQR";
+		$message    = "Your payment of PHP {$debit_amount} to {$m_mobile_no} has been successfully processed on {$this->_today}. Ref No. {$sender_ref_id}";
+
+		$this->_send_sms($c_mobile_no, $message);
+		$this->_send_email($c_email_address, $title, $message);
+
+		// message to merchant
+		$message    = "You have received PHP {$credit_amount} on {$this->_today}. New balance is PHP {$balance} Ref No. {$sender_ref_id}";
+
+		$this->_send_sms($m_mobile_no, $message);
+		$this->_send_email($m_email_address, $title, $message);
 
 		echo json_encode(
             array(

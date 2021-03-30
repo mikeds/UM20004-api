@@ -392,7 +392,7 @@ class Api_Controller extends MX_Controller {
 
 	public function _send_email($send_to, $title, $message) {
 		send_email(
-			getenv("SMTPUSER"),
+			SMTP_USER,
 			$send_to,
 			$title,
 			$message
@@ -889,7 +889,7 @@ class Api_Controller extends MX_Controller {
 		// ), true);
 
 		send_email(
-			getenv("SMTPUSER"),
+			SMTP_USER,
 			$send_to_email,
 			$email_title,
 			$email_message

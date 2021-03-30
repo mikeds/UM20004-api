@@ -67,7 +67,7 @@ class Lookup_client extends Client_Controller {
 		$curl = curl_init();
 
 		curl_setopt_array($curl, array(
-			CURLOPT_URL => "https://api-uat.unionbankph.com/partners/sb/partners/v3/instapay/banks",
+			CURLOPT_URL => UBP_BASE_URL . "partners/sb/partners/v3/instapay/banks",
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_ENCODING => "",
 			CURLOPT_MAXREDIRS => 10,
@@ -76,9 +76,9 @@ class Lookup_client extends Client_Controller {
 			CURLOPT_CUSTOMREQUEST => "GET",
 			CURLOPT_HTTPHEADER => array(
 				"Content-Type: application/json",
-				'x-ibm-client-id: 854b7778-c9d3-4b3e-9fd5-21c828f7df39',
-				'x-ibm-client-secret: mJ5bF5kG2mK8bV3wP5oV4qT6iQ0eW8cT4kG5yR3eD1nV4wP7uM',
-				'x-partner-id: 5dff2cdf-ef15-48fb-a87b-375ebff415bb'
+				'x-ibm-client-id: ' . UBP_CLIENT_ID,
+				'x-ibm-client-secret: ' . UBP_SECRET_ID,
+				'x-partner-id: ' . UBP_PARTNER_ID
 			),
 		));
 
@@ -110,14 +110,6 @@ class Lookup_client extends Client_Controller {
 		}
 
 		$records = $decoded->records;
-		// $records = array_merge(
-		// 	array(
-		// 		"code" => "010419995",
-		// 		"bank" => "UNION BANK OF THE PHILIPPINES",
-		// 		"brstn" => null
-		// 	),
-		// 	$records
-		// );
 		
 		echo json_encode(
             array(

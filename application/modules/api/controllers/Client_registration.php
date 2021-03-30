@@ -355,7 +355,6 @@ class Client_registration extends Tms_admin_Controller {
 			$expiration_date 	= create_expiration_datetime($this->_today, $expiration_time);
 
 			$insert_data = array(
-                'account_status'			=> 0, 
 				'account_otp_number'		=> $otp_number,
 				'account_number'			=> $account_number,
 				'account_fname'				=> $fname,

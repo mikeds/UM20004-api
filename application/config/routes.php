@@ -65,8 +65,8 @@ $route["token/cancel"]              = "api/Token/cancel_token";
 $route["clients/login"]             = "api/Login/client";
 $route["merchants/login"]           = "api/Login/merchant";
 
-$route["clients/registration"]      = "api/Registration/client";
-$route["merchants/registration"]    = "api/Registration/merchant";
+$route["clients/registration"]      = "api/Client_registration/submit";
+// $route["merchants/registration"]    = "api/Registration/merchant";
 
 $route["tools/countries"]           = "api/Tools/countries";
 $route["tools/provinces/(:num)"]    = "api/Tools/provinces/$1";
@@ -146,8 +146,11 @@ $route["lookup/client/tx-fee"]         = "api/Lookup_client/tx_fee";
 
 $route["lookup/client/ubp/banks"] = "api/Lookup_client/instapay_banks";
 
+/*
 $route["otp/request"]    = "api/Otp_sms/request";
 $route["otp/submit"]     = "api/Otp_sms/submit";
+*/
+
 $route["otp/token"]      = "api/Token/otp";
 
 $route["ubp/token"]      = "api/Token/ubp";

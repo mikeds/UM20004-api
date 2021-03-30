@@ -378,7 +378,7 @@ $config['encryption_key'] = '';
 |
 */
 $config['sess_driver'] = 'files';
-$config['sess_cookie_name'] = getenv("SESSNNAME");
+$config['sess_cookie_name'] = SESSION_NAME;
 $config['sess_expiration'] = 3600; // set to 1hr
 $config['sess_save_path'] = NULL;
 $config['sess_match_ip'] = FALSE;
@@ -449,8 +449,8 @@ $config['global_xss_filtering'] = FALSE;
 | 'csrf_exclude_uris' = Array of URIs which ignore CSRF checks
 */
 $config['csrf_protection'] = FALSE;
-$config['csrf_token_name'] = 'csrf_' . getenv("SESSNNAME");
-$config['csrf_cookie_name'] = 'csrf_cookie_' . getenv("SESSNNAME");
+$config['csrf_token_name'] = 'csrf_' . SESSION_NAME;
+$config['csrf_cookie_name'] = 'csrf_cookie_' . SESSION_NAME;
 $config['csrf_expire'] = 7200;
 $config['csrf_regenerate'] = TRUE;
 $config['csrf_exclude_uris'] = array();

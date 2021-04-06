@@ -120,7 +120,7 @@ class Login extends Tms_admin_Controller {
 			echo json_encode(
 				array(
 					'response' => array(
-						'username' 		=> $row->account_username,
+						'username' 		=> $row->account_email_address,
 						'id'			=> $row->account_number,
 						// 'avatar' 		=> $row->account_avatar_base64,
 						'first_name'	=> $row->account_fname,
@@ -132,8 +132,7 @@ class Login extends Tms_admin_Controller {
 						'secret_key'	=> $row->client_secret,
 						'avatar_image'	=> $avatar_image_url,
 						'qr_code'		=> base_url() . "qr-code/client-accounts/{$qr_code}",
-						'account_status' 	=> $row->account_status == 1 ? "activated" : "deactivated",
-						'email_status'		=> $row->account_email_status == 1 ? "activated" : "not_activated"
+						'account_status' 	=> $row->account_status == 1 ? "activated" : "deactivated"
 					)
 				)
 			);
@@ -174,7 +173,8 @@ class Login extends Tms_admin_Controller {
 				'',
 				array(
 					'account_username' 	=> $username,
-					'account_password' 	=> $password
+					'account_password' 	=> $password,
+					'merchant_role'		=> 1 // merchant role only
 				),
 				array(),
 				$inner_joints,

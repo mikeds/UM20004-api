@@ -728,41 +728,43 @@ class Api_Controller extends MX_Controller {
 			$merchant_oauth_bridge_id
 		);
 
-		foreach($data as $datum) {
-			$legder_desc = "income_share";
-
-			$credit_oauth_bridge_id = $datum['oauth_bridge_id'];
-			$amount 				= $datum['igm_fees_amount'];
-			
-			$tx = $this->create_transaction(
-				$amount, 
-				0, 
-				'income_share', 
-				$debit_oauth_bridge_id, 
-				$credit_oauth_bridge_id
-			);
-
-			if (isset($tx['transaction_id'])) {
-				// update tx status
-				$this->transactions->update(
-					$tx['transaction_id'],
-					array(
-						'transaction_parent_id'		=> $transaction_id,
-						'transaction_status' 		=> 1,
-						'transaction_date_approved'	=> $this->_today,
-						'transaction_requested_to'  => $credit_oauth_bridge_id
-					)
+		if ($data) {
+			foreach($data as $datum) {
+				$legder_desc = "income_share";
+	
+				$credit_oauth_bridge_id = $datum['oauth_bridge_id'];
+				$amount 				= $datum['igm_fees_amount'];
+				
+				$tx = $this->create_transaction(
+					$amount, 
+					0, 
+					'income_share', 
+					$debit_oauth_bridge_id, 
+					$credit_oauth_bridge_id
+				);
+	
+				if (isset($tx['transaction_id'])) {
+					// update tx status
+					$this->transactions->update(
+						$tx['transaction_id'],
+						array(
+							'transaction_parent_id'		=> $transaction_id,
+							'transaction_status' 		=> 1,
+							'transaction_date_approved'	=> $this->_today,
+							'transaction_requested_to'  => $credit_oauth_bridge_id
+						)
+					);
+				}
+	
+				$balances = $this->create_ledger(
+					$legder_desc, 
+					$transaction_id, 
+					$amount, 
+					0,
+					$debit_oauth_bridge_id, 
+					$credit_oauth_bridge_id
 				);
 			}
-
-			$balances = $this->create_ledger(
-				$legder_desc, 
-				$transaction_id, 
-				$amount, 
-				0,
-				$debit_oauth_bridge_id, 
-				$credit_oauth_bridge_id
-			);
 		}
 	}
 

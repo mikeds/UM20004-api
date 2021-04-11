@@ -87,11 +87,6 @@ $route["qr-code/transactions/(:any)"]     = "public/Qr_code/transactions/$1";
 $route["transactions/merchant/top-up"]  = "api/Top_up";
 $route["transactions/client/send-to"]   = "api/Send_to/direct";
 
-$route["transactions/client/cash-in"]   = "api/Cash_in";
-$route["transactions/client/cash-in-test"]   = "api/Cash_in/paynamics_test";
-
-$route["transactions/merchant/accept-cash-in"]   = "api/Merchant_accept/cash_in";
-
 $route["clients/balance"]       = "api/Clients/balance";
 $route["merchants/balance"]     = "api/Merchants/balance";
 
@@ -141,6 +136,16 @@ $route["callback/paynamics/response"]       = "api/Callback/paynamics_response";
 $route["callback/paynamics/cancel"]         = "api/Callback/paynamics_cancel";
 
 $route["cron/paynamics"]    = "public/Cron/paynamics";
+
+# CASH-IN - CLIENT
+$route["transactions/client/cash-in"]           = "api/Cash_in_client/request";
+$route["transactions/client/cash-in-test"]      = "api/Cash_in_client/paynamics_test";
+
+# CASH-IN - MERCHANT
+$route["transactions/merchant/accept-cash-in"]  = "api/Cash_in_merchant/accept";
+
+# LOOKUP FEES - TEST
+$route["lookup/fees"]   = "api/Lookup_fees/fees";
 
 # OTP SMS
 $route["otp/token"]      = "api/Otp_sms/token";

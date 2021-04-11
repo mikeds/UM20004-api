@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Merchant_accept extends Merchant_Controller {
+class Cash_in_merchant extends Merchant_Controller {
 
 	public function after_init() {
         if ($_SERVER['REQUEST_METHOD'] != 'POST' || !$this->JSON_POST()) {
@@ -23,10 +23,11 @@ class Merchant_accept extends Merchant_Controller {
         $this->output->set_status_header(401);
     }
 
-	public function cash_in() {
+	public function accept() {
         $this->load->model("api/transactions_model", "transactions");
         $this->load->model("api/client_accounts_model", "clients");
 
+        $legder_desc                    = "cash_in";
         $account                        = $this->_account;
         $transaction_type_group_id      = 3; // all cash in request
         $transaction_type_user_to       = 2; // all merchant
@@ -83,7 +84,13 @@ class Merchant_accept extends Merchant_Controller {
             die();
         }
 
-        $expiration_date = $row->transaction_date_expiration;
+        // GET ROW DATA
+        $transaction_id         = $row->transaction_id;
+        $transaction_type_id    = $row->transaction_type_id;
+        $client_oauth_bridge_id = $row->oauth_bridge_id;
+        $expiration_date        = $row->transaction_date_expiration;
+        $amount                 = $row->transaction_amount;
+        $fee 	                = $row->transaction_fee;
 
         if (strtotime($expiration_date) < strtotime($this->_today)) {
             echo json_encode(
@@ -95,17 +102,7 @@ class Merchant_accept extends Merchant_Controller {
             die();
         }
 
-        $transaction_id = $row->transaction_id;
-
-        $amount			= 0;
-        $fee			= 0;
-        $total_amount 	= 0;
-
-        $amount = $row->transaction_amount;
-        $fee 	= $row->transaction_fee;
-
-        $transaction_type_id = $row->transaction_type_id;
-
+        // GET NEW FEE
         $fee = $this->get_fee(
             $amount,
             $transaction_type_id,
@@ -124,51 +121,17 @@ class Merchant_accept extends Merchant_Controller {
             die();
         }
 
-        $debit_amount	= $amount + $fee;
-        $credit_amount 	= $amount;
-        $fee_amount		= $fee;
+        $debit_oauth_bridge_id 	= $merchant_oauth_bridge_id;
+        $credit_oauth_bridge_id = $client_oauth_bridge_id; // credit to client
 
-        $total_amount   = $amount + $fee;
-
-        $debit_total_amount 	= 0 - $debit_amount; // make it negative
-        $credit_total_amount	= $credit_amount;
-
-        $debit_wallet_address		= $this->get_wallet_address($merchant_oauth_bridge_id);
-        $credit_wallet_address	    = $this->get_wallet_address($row->oauth_bridge_id);
-        
-        if ($credit_wallet_address == "" || $debit_wallet_address == "") {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Cannot find wallet, Please contact system administrator."
-                )
-            );
-            die();
-        }
-
-        $debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
-        if ($debit_new_balances) {
-            // record to ledger
-            $this->new_ledger_datum(
-                "cash_in_debit", 
-                $transaction_id, 
-                $credit_wallet_address, // request from credit wallet
-                $debit_wallet_address, // requested to debit wallet
-                $debit_new_balances
-            );
-        }
-
-        $credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
-        if ($credit_new_balances) {
-            // record to ledger
-            $this->new_ledger_datum(
-                "cash_in_credit", 
-                $transaction_id, 
-                $debit_wallet_address, // debit from wallet address
-                $credit_wallet_address, // credit to wallet address
-                $credit_new_balances
-            );
-        }
+        $balances = $this->create_ledger(
+            $legder_desc, 
+            $transaction_id, 
+            $amount, 
+            $fee,
+            $debit_oauth_bridge_id, 
+            $credit_oauth_bridge_id
+        );
 
         $this->transactions->update(
             $transaction_id,
@@ -183,11 +146,7 @@ class Merchant_accept extends Merchant_Controller {
 
         // do income sharing
         $this->distribute_income_shares(
-            $transaction_id,
-            $amount,
-            $transaction_type_id,
-            $merchant_oauth_bridge_id, // member of the income group
-            $merchant_oauth_bridge_id // to debit
+            $transaction_id
         );
 
         // send notification to receiver client
@@ -226,11 +185,11 @@ class Merchant_accept extends Merchant_Controller {
             array(
                 'message'   => "Successfully accepted cash-in",
                 'response'  => array(
+                    'transaction_id'    => $row->transaction_id,
+                    'sender_ref_id'     => $row->transaction_sender_ref_id,
                     'tx_amount'         => $amount,
                     'tx_fee'            => $fee,
                     'tx_total_amount'   => $total_amount,
-                    'transaction_id'    => $row->transaction_id,
-                    'sender_ref_id'     => $row->transaction_sender_ref_id,
                     'timestamp'         => $this->_today
                 )
             )

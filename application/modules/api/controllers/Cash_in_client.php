@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Cash_in extends Client_Controller {
+class Cash_in_client extends Client_Controller {
 
 	public function after_init() {
         if ($_SERVER['REQUEST_METHOD'] != 'POST' || !$this->JSON_POST()) {
@@ -10,7 +10,7 @@ class Cash_in extends Client_Controller {
 		}
     }
 
-    public function index() {
+    public function request() {
         $post = $this->get_post();
 
         $type = isset($post["type"]) ? $post["type"] : "";
@@ -83,11 +83,10 @@ class Cash_in extends Client_Controller {
         $fee = 0;
         $total_amount = $amount + $fee;
 
-        // $fee = $this->get_fee(
-        //     $amount,
-        //     $transaction_type_id,
-        //     $admin_oauth_bridge_id
-        // );
+        $fee = $this->get_fee(
+            $amount,
+            $transaction_type_id
+        );
 
         $tx_row = $this->create_transaction(
             $amount, 
@@ -912,13 +911,13 @@ class Cash_in extends Client_Controller {
         }
 
         $fee = 0;
-        $total_amount = $amount + $fee;
 
-        // $fee = $this->get_fee(
-        //     $amount,
-        //     $transaction_type_id,
-        //     $admin_oauth_bridge_id
-        // );
+        $fee = $this->get_fee(
+            $amount,
+            $transaction_type_id
+        );
+
+        $total_amount = $amount + $fee;
 
         $tx_row = $this->create_transaction(
             $amount, 

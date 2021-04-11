@@ -120,7 +120,7 @@ class Cash_out_client extends Client_Controller {
         $sender_ref_id  = $tx_row['sender_ref_id'];
 
         $account_name = "{$fname} {$mname} {$lname}";
-        $has_error_transfer = $this->ubp_request($sender_ref_id, $account_number, $account_name, $message, $debit_amount, $bank_code);
+        $has_error_transfer = $this->ubp_request($sender_ref_id, $account_number, $account_name, $message, $total_amount, $bank_code);
 
         if ($has_error_transfer) {
             echo json_encode(
@@ -130,7 +130,7 @@ class Cash_out_client extends Client_Controller {
                 )
             );
 
-            $this->transaction_id->update(
+            $this->transactions->update(
                 $transaction_id,
                 array(
                     'transaction_status' => 2 // cancel
@@ -172,9 +172,12 @@ class Cash_out_client extends Client_Controller {
             array(
                 'message' =>  "Successfully cash-out!",
                 'response' => array(
-                    'sender_ref_id' => $sender_ref_id,
-                    'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
-                    'timestamp'     => $this->_today
+                    'sender_ref_id'     => $sender_ref_id,
+                    'qr_code'           => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                    'tx_amount'         => $amount,
+                    'tx_fee'            => $fee,
+                    'tx_total_amount'   => $total_amount,
+                    'timestamp'         => $this->_today
                 )
             )
         );

@@ -906,7 +906,8 @@ class Api_Controller extends MX_Controller {
 			'ledger_datum_old_balance'      => $old_balance,
 			'ledger_datum_new_balance'      => $new_balance,
 			'ledger_datum_amount'           => $amount,
-			'ledger_datum_date_added'       => $this->_today
+			'ledger_datum_date_added'       => $this->_today,
+			'ledger_date_micro'				=> isset(gettimeofday()['usec']) ? strtotime($this->_today).gettimeofday()['usec'] : strtotime($this->_today)
 		);
 
 		$ledger_datum_id = $this->generate_code(

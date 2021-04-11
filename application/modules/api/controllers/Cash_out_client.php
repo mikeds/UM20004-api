@@ -26,6 +26,7 @@ class Cash_out_client extends Client_Controller {
     private function ubp() {
         $this->load->model("api/transaction_fees_model", "tx_fees");
 
+        $legder_desc            = "cash_out_ubp";
         $account                = $this->_account;
         $transaction_type_id    = "txtype_cashout2"; // cash-out
         $post                   = $this->get_post();
@@ -85,26 +86,19 @@ class Cash_out_client extends Client_Controller {
         }
 
         $fee = 0;
-        $total_amount = $amount + $fee;
+        // GET NEW FEE
+        $fee = $this->get_fee(
+            $amount,
+            $transaction_type_id
+        );
 
-        // $fee = $this->get_fee(
-        //     $amount,
-        //     $transaction_type_id,
-        //     $admin_oauth_bridge_id
-        // );
-        
-        $debit_amount	= $amount + $fee;
-        $credit_amount 	= $amount;
-        $fee_amount		= $fee;
-
-        $debit_total_amount 	= 0 - $debit_amount; // make it negative
-        $credit_total_amount	= $credit_amount;
+        $total_amount 	= $amount + $fee;
         
         // check current balanace
         $wallet_balance_encrypted   = $account->wallet_balance;
         $wallet_balance             = $this->decrypt_wallet_balance($wallet_balance_encrypted);
 
-        if ($wallet_balance < $debit_amount) {
+        if ($wallet_balance < $total_amount) {
             echo json_encode(
                 array(
                     'error'             => true,
@@ -114,36 +108,12 @@ class Cash_out_client extends Client_Controller {
             die();
         }
 
-        // find wallet
-        $debit_wallet_address		= $this->get_wallet_address($account_oauth_bridge_id);
-        $credit_wallet_address	    = $this->get_wallet_address($admin_oauth_bridge_id);
-        
-        if ($credit_wallet_address == "" || $debit_wallet_address == "") {
-            echo json_encode(
-                array(
-                    'error'             => true,
-                    'error_description' => "Cannot find wallet, Please contact system administrator."
-                )
-            );
-
-            // cancel the request
-            $this->transactions->update(
-                $transaction_id,
-                array(
-                    'transaction_status' 		=> 2,
-                    'transaction_date_approved'	=> $this->_today,
-                    'transaction_requested_to'  => $admin_oauth_bridge_id
-                )
-            );
-            die();
-        }
-
         $tx_row = $this->create_transaction(
             $amount, 
             $fee, 
             $transaction_type_id, 
-            $admin_oauth_bridge_id, 
-            $account_oauth_bridge_id
+            $account_oauth_bridge_id, // client
+            $admin_oauth_bridge_id
         );
 
         $transaction_id = $tx_row['transaction_id'];
@@ -159,46 +129,42 @@ class Cash_out_client extends Client_Controller {
                     'error_description' => $has_error_transfer
                 )
             );
+
+            $this->transaction_id->update(
+                $transaction_id,
+                array(
+                    'transaction_status' => 2 // cancel
+                )
+            );
+
             die();
         }
 
-        $debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
-        if ($debit_new_balances) {
-            // record to ledger
-            $this->new_ledger_datum(
-                "cash_in_debit", 
-                $transaction_id, 
-                $credit_wallet_address, // request from credit wallet
-                $debit_wallet_address, // requested to debit wallet
-                $debit_new_balances
-            );
-        }
+        $debit_oauth_bridge_id  = $account_oauth_bridge_id;
+        $credit_oauth_bridge_id = $admin_oauth_bridge_id;
 
-        $credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
-        if ($credit_new_balances) {
-            // record to ledger
-            $this->new_ledger_datum(
-                "cash_in_credit", 
-                $transaction_id, 
-                $debit_wallet_address, // debit from wallet address
-                $credit_wallet_address, // credit to wallet address
-                $credit_new_balances
-            );
-        }
+        $balances = $this->create_ledger(
+            $legder_desc, 
+            $transaction_id, 
+            $amount, 
+            $fee,
+            $debit_oauth_bridge_id, 
+            $credit_oauth_bridge_id
+        );
 
-        // // do income sharing
-        // $this->distribute_income_shares(
-		// 	$transaction_id,
-		// 	$merchant_no,
-		// 	$fee_amount
-        // );
+        // do income sharing
+        $this->distribute_income_shares(
+			$transaction_id
+        );
         
         $this->transactions->update(
             $transaction_id,
             array(
                 'transaction_status' 		=> 1,
                 'transaction_date_approved'	=> $this->_today,
-                'transaction_requested_to'  => $admin_oauth_bridge_id
+                'transaction_requested_to'  => $admin_oauth_bridge_id,
+                'transaction_approved_by'   => $account_oauth_bridge_id,
+                'transaction_date_approved'	=> $this->_today
             )
         );
 

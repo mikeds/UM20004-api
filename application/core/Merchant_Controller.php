@@ -108,13 +108,12 @@ class Merchant_Controller extends Api_Controller {
 				}
 			}
 
+			$from 	= "";
+			$to		= "";
+
 			$from_account_info 		= $this->get_oauth_account_info($datum['transaction_requested_by']);
 			$to_account_info 		= $this->get_oauth_account_info($datum['transaction_requested_to']);
 			$created_account_info 	= $this->get_oauth_account_info($datum['transaction_created_by']);
-
-			$from 	= "ADMIN";
-			$to 	= "ADMIN";
-			$created_by	= "ADMIN";
 
 			if ($from_account_info) {
 				$from = trim("{$from_account_info['account_fname']} {$from_account_info['account_mname']} {$from_account_info['account_lname']}");
@@ -130,14 +129,6 @@ class Merchant_Controller extends Api_Controller {
 
 			$account_no_by = $created_account_info['account_number'];
 
-			// if ($balance_type == 'credit') {
-			// 	$tx_from = $to;
-			// 	$tx_to = $from;
-			// } else {
-			// 	$tx_from = $from;
-			// 	$tx_to = $to;
-			// }
-
 			$results[] = array(
 				'tx_id' 			=> $datum['transaction_id'],
 				'sender_ref_id' 	=> $datum['transaction_sender_ref_id'],
@@ -152,7 +143,7 @@ class Merchant_Controller extends Api_Controller {
 				'date_created' 		=> $datum['transaction_date_created'],
 				'tx_status'			=> $tx_status,
 				'balance_type'		=> $balance_type,
-				'qr_code'			=> $datum['qr_code']
+				'qr_code'			=> base_url() . "qr-code/transactions/" . $datum['transaction_sender_ref_id']
 			);
 		}
 

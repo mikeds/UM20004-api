@@ -143,9 +143,9 @@ class Client_Controller extends Api_Controller {
 			$to_account_info 		= $this->get_oauth_account_info($datum['transaction_requested_to']);
 			$created_account_info 	= $this->get_oauth_account_info($datum['transaction_created_by']);
 
-			$from 	= "ADMIN";
-			$to 	= "ADMIN";
-			$created_by	= "ADMIN";
+			$from 	= "";
+			$to 	= "";
+			$created_by	= "";
 
 			if ($from_account_info) {
 				$from = trim("{$from_account_info['account_fname']} {$from_account_info['account_mname']} {$from_account_info['account_lname']}");
@@ -184,7 +184,7 @@ class Client_Controller extends Api_Controller {
 				'date_created' 		=> $datum['transaction_date_created'],
 				'tx_status'			=> $tx_status,
 				'balance_type'		=> $balance_type,
-				'qr_code'			=> $datum['qr_code']
+				'qr_code'			=> base_url() . "qr-code/transactions/" . $datum['transaction_sender_ref_id']
 			);
 		}
 

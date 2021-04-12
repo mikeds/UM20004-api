@@ -738,7 +738,7 @@ class Api_Controller extends MX_Controller {
 				$tx = $this->create_transaction(
 					$amount, 
 					0, 
-					'income_share', 
+					'txtype_income_shares', 
 					$debit_oauth_bridge_id, 
 					$credit_oauth_bridge_id
 				);
@@ -1119,7 +1119,8 @@ class Api_Controller extends MX_Controller {
             'transaction_created_by'        => $created_by_oauth_bridge_id,
             'transaction_date_created'      => $date,
 			'transaction_date_expiration'   => $stamp,
-			'transaction_otp_status'		=> 1 // temporary activated
+			'transaction_otp_status'		=> 1, // temporary activated
+			'transaction_date_micro'		=> isset(gettimeofday()['usec']) ? strtotime($this->_today).gettimeofday()['usec'] : strtotime($this->_today)
         );
 
         // generate sender ref id

@@ -90,18 +90,6 @@ $route["transactions/client/send-to"]   = "api/Send_to/direct";
 $route["clients/balance"]       = "api/Clients/balance";
 $route["merchants/balance"]     = "api/Merchants/balance";
 
-$route["clients/ledger"]       = "api/Clients/ledger";
-$route["merchants/ledger"]     = "api/Merchants/ledger";
-
-$route["clients/ledger/(:any)"]     = "api/Clients/ledger/$1";
-$route["merchants/ledger/(:any)"]   = "api/Merchants/ledger/$1";
-
-$route["clients/transactions"]     = "api/Clients/transactions";
-$route["merchants/transactions"]   = "api/Merchants/transactions";
-
-$route["clients/transactions/(:any)"]     = "api/Clients/transactions/$1";
-$route["merchants/transactions/(:any)"]   = "api/Merchants/transactions/$1";
-
 $route["transactions/merchant/scanpayqr/create"]   = "api/Scanpayqr_merchant/create";
 $route["transactions/client/scanpayqr/accept"]     = "api/Scanpayqr_client/accept";
 
@@ -136,6 +124,24 @@ $route["callback/paynamics/response"]       = "api/Callback/paynamics_response";
 $route["callback/paynamics/cancel"]         = "api/Callback/paynamics_cancel";
 
 $route["cron/paynamics"]    = "public/Cron/paynamics";
+
+/*
+# LEDGET - CLIENT
+$route["clients/ledger"]        = "api/Ledger_client";
+$route["clients/ledger/(:any)"] = "api/Ledger_client/$1";
+
+# LEDGER - MERCHANT
+$route["merchants/ledger"]          = "api/Ledger_merchant";
+$route["merchants/ledger/(:any)"]   = "api/Ledger_merchant/$1";
+*/
+
+# TX - CLIENT
+$route["clients/transactions"]          = "api/Tx_client/transactions";
+$route["clients/transactions/(:any)"]   = "api/Tx_client/transactions/$1";
+
+# TX - MERCHANT
+$route["merchants/transactions"]        = "api/Tx_merchant/transactions";
+$route["merchants/transactions/(:any)"] = "api/Tx_merchant/transactions/$1";
 
 # CASH-IN - CLIENT
 $route["transactions/client/cash-in"]           = "api/Cash_in_client/request";

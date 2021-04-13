@@ -71,7 +71,7 @@ class Tx_client extends Client_Controller {
             $or_where_in, // or_where_in
             array(), // or_where_not_in
             array(
-                'filter_by' => "transaction_date_created",
+                'filter_by' => "transaction_date_created, transaction_date_micro",
                 'sort_by'   => "DESC"
             ), // order_by
             0,
@@ -98,7 +98,7 @@ class Tx_client extends Client_Controller {
             $or_where_in, // or_where_in
             array(), // or_where_not_in
             array(
-                'filter_by' => "transaction_date_created",
+                'filter_by' => "transaction_date_created, transaction_date_micro",
                 'sort_by'   => "ASC"
             ), // order_by
             1 // limit

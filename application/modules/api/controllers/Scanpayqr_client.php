@@ -8,13 +8,13 @@ class Scanpayqr_client extends Client_Controller {
 			$this->output->set_status_header(401);
 			die();
         }
-        
-        $this->load->model("api/transactions_model", "transactions");
 	}
 
 	public function accept() {
+        $this->load->model("api/transactions_model", "transactions");
         $this->load->model("api/merchant_accounts_model", "merchant_accounts");
 
+        $legder_desc            = "scanpayqr";
         $account                = $this->_account;
         $transaction_type_id    = "txtype_scanpayqr1"; // scanpayqr
         $post                   = $this->get_post();
@@ -24,14 +24,16 @@ class Scanpayqr_client extends Client_Controller {
         $client_balanace           = $this->decrypt_wallet_balance($account->wallet_balance);
 
         if (!isset($post["sender_ref_id"])) {
+            echo json_encode(
+                array(
+                    'error'             => true,
+                    'error_description' => "Sender Ref. ID is required!"
+                )
+            );
             die();
         }
 
-        $sender_ref_id = $post['sender_ref_id'];
-
-        if (trim($sender_ref_id) == "") {
-            die();
-        }
+        $sender_ref_id = $post["sender_ref_id"];
 
         $row = $this->transactions->get_datum(
             '',
@@ -80,10 +82,8 @@ class Scanpayqr_client extends Client_Controller {
         }
         
         // merchant
-        $transaction_requested_by = $row->merchant_oauth_bridge_id;
-
-        // client
-        $transaction_requested_to = $client_oauth_bridge_id;
+        $debit_from = $client_oauth_bridge_id;
+        $credit_to  = $row->merchant_oauth_bridge_id;
 
         $transaction_id = $row->transaction_id;
         $amount         = $row->transaction_amount;
@@ -101,56 +101,36 @@ class Scanpayqr_client extends Client_Controller {
             die();
         }
 
+        $debit_oauth_bridge_id 	= $debit_from;
+        $credit_oauth_bridge_id = $credit_to;
+
         // create ledger
-        $debit_amount	= $total_amount;
-        $credit_amount 	= $amount;
-        $fee_amount		= $fee;
-
-        $debit_total_amount 	= 0 - $debit_amount; // make it negative
-        $credit_total_amount	= $credit_amount;
-
-        $credit_wallet_address	    = $this->get_wallet_address($transaction_requested_by);
-        $debit_wallet_address		= $this->get_wallet_address($transaction_requested_to);
-
-        if ($credit_wallet_address == "" || $debit_wallet_address == "") {
-            die();
-        }
-        
-        $debit_new_balances = $this->update_wallet($debit_wallet_address, $debit_total_amount);
-        if ($debit_new_balances) {
-            // record to ledger
-            $this->new_ledger_datum(
-                "scanpayqr_debit", 
-                $transaction_id, 
-                $credit_wallet_address, // request from credit wallet
-                $debit_wallet_address, // requested to debit wallet
-                $debit_new_balances
-            );
-        }
-
-        $credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
-        if ($credit_new_balances) {
-            // record to ledger
-            $this->new_ledger_datum(
-                "scanpayqr_credit", 
-                $transaction_id, 
-                $debit_wallet_address, // debit from wallet address
-                $credit_wallet_address, // credit to wallet address
-                $credit_new_balances
-            );
-        }
+        $balances = $this->create_ledger(
+            $legder_desc, 
+            $transaction_id, 
+            $amount, 
+            $fee,
+            $debit_oauth_bridge_id, 
+            $credit_oauth_bridge_id
+        );
 
         $this->transactions->update(
             $row->transaction_id,
             array(
                 'transaction_status'        => 1,
-                'transaction_requested_to'  => $transaction_requested_to,
+                'transaction_requested_to'  => $debit_oauth_bridge_id,
+                'transaction_approved_by'   => $debit_oauth_bridge_id,
                 'transaction_date_approved' => $this->_today
             )
         );
 
+        // do income sharing
+        $this->distribute_income_shares(
+            $transaction_id
+        );
+
         // send notification to receiver client
-        $receiver_oauth_bridge_id = $transaction_requested_by;
+        $receiver_oauth_bridge_id = $debit_oauth_bridge_id; // debit to client
 
         $merchant_row = $this->merchant_accounts->get_datum(
             '',
@@ -202,6 +182,9 @@ class Scanpayqr_client extends Client_Controller {
                 'message' => "Successfully accepted ScanPayQR.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
+                    'amount'        => $amount,
+                    'fee'           => $fee,
+                    'total_amount'  => $total_amount,
                     'timestamp'     => $this->_today
                 )
             )

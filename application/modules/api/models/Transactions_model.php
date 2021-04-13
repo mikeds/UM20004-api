@@ -19,7 +19,8 @@ class Transactions_model extends CI_Model {
 		$or_where_not_in = array(),
 		$order_by = array(), 
 		$limit = 0, 
-		$offset = 0
+		$offset = 0,
+		$is_regroup = false
 		) {
 
 		$this->db->select(ARRtoSTR($select), false);
@@ -43,7 +44,9 @@ class Transactions_model extends CI_Model {
 			}
 		}
 		
-		$this->db->group_start();
+		if ($is_regroup) {
+			$this->db->group_start();
+		} 
 
 		if(!empty($where_in)){
 			foreach ($where_in as $i) {
@@ -122,7 +125,9 @@ class Transactions_model extends CI_Model {
 			}
 		}
 
-		$this->db->group_end();
+		if ($is_regroup) {
+			$this->db->group_end();
+		} 
 
 		if(!empty($where)){
 			$is_multi_where = false;
@@ -182,7 +187,8 @@ class Transactions_model extends CI_Model {
 		$or_where_not_in = array(),
 		$order_by = array(), 
 		$limit = 0, 
-		$offset = 0
+		$offset = 0,
+		$is_regroup = false
 		) {
 
 		$this->db->select(ARRtoSTR($select), false);
@@ -205,6 +211,10 @@ class Transactions_model extends CI_Model {
 				}
 			}
 		}
+
+		if ($is_regroup) {
+			$this->db->group_start();
+		} 
 
 		if(!empty($where_in)){
 			foreach ($where_in as $i) {
@@ -282,6 +292,10 @@ class Transactions_model extends CI_Model {
 				);
 			}
 		}
+
+		if ($is_regroup) {
+			$this->db->group_end();
+		} 
 
 		if(!empty($where)){
 			$is_multi_where = false;
@@ -337,7 +351,8 @@ class Transactions_model extends CI_Model {
 		$or_where_in = array(),
 		$or_where_not_in = array(),
 		$limit = 0, 
-		$offset = 0
+		$offset = 0,
+		$is_regroup = false
 		) {
 
 		$this->db->from( $this->_table );
@@ -358,6 +373,10 @@ class Transactions_model extends CI_Model {
 				}
 			}
 		}
+
+		if ($is_regroup) {
+			$this->db->group_start();
+		} 
 
 		if(!empty($where_in)){
 			foreach ($where_in as $i) {
@@ -435,6 +454,10 @@ class Transactions_model extends CI_Model {
 				);
 			}
 		}
+
+		if ($is_regroup) {
+			$this->db->group_end();
+		} 
 
 		if(!empty($where)){
 			$is_multi_where = false;

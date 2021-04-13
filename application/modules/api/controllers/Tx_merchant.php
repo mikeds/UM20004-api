@@ -99,7 +99,10 @@ class Tx_merchant extends Merchant_Controller {
             array(
                 'filter_by' => "transaction_date_created",
                 'sort_by'   => "DESC"
-            ) // order_by
+            ), // order_by
+            0,
+            $this->_limit,
+            true
         );
 
         $results = $this->filter_merchant_tx($data);

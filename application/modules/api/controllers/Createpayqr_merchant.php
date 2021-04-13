@@ -125,10 +125,17 @@ class Createpayqr_merchant extends Merchant_Controller {
         $debit_from     = $client_oauth_bridge_id; // client oauth_bridge_id
         $credit_to      = $merchant_oauth_bridge_id; 
 
+        // get fee
+        $fee = $this->get_fee(
+            $amount,
+            $transaction_type_id,
+            $merchant_oauth_bridge_id
+        );
+
         // create ledger
         $debit_amount	= $amount + $fee;
         $credit_amount 	= $amount;
-        $fee_amount		= $fee;
+        $total_amount	= $amount + $fee;
 
         if ($client_balance < $debit_amount) {
             echo json_encode(
@@ -143,6 +150,7 @@ class Createpayqr_merchant extends Merchant_Controller {
         $debit_oauth_bridge_id 	= $debit_from;
         $credit_oauth_bridge_id = $credit_to;
 
+        // create ledger
         $balances = $this->create_ledger(
             $legder_desc, 
             $transaction_id, 
@@ -150,6 +158,11 @@ class Createpayqr_merchant extends Merchant_Controller {
             $fee,
             $debit_oauth_bridge_id, 
             $credit_oauth_bridge_id
+        );
+
+        // do income sharing
+        $this->distribute_income_shares(
+            $transaction_id
         );
 
         // update
@@ -196,6 +209,7 @@ class Createpayqr_merchant extends Merchant_Controller {
                     'sender_ref_id' => $sender_ref_id,
                     'amount'        => $amount,
                     'fee'           => $fee,
+                    'total_amount'  => $total_amount,
                     'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
                     'timestamp'     => $this->_today
                 )

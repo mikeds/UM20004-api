@@ -141,10 +141,20 @@ class Quickpayqr_client extends Client_Controller {
 			die();
 		}
 
+		$merchant_oauth_bridge_id			= $row->merchant_oauth_bridge_id;
+		$merchant_account_oauth_bridge_id 	= $row->merchant_account_oauth_bridge_id;
+
+        // get fee
+        $fee = $this->get_fee(
+            $amount,
+            $transaction_type_id,
+            $merchant_oauth_bridge_id
+        );
+
 		// create ledger
 		$debit_amount	= $amount + $fee;
 		$credit_amount 	= $amount;
-		$fee_amount		= $fee;
+		$total_amount	= $amount + $fee;
 
 		if ($client_balance < $debit_amount) {
 			echo json_encode(
@@ -155,9 +165,6 @@ class Quickpayqr_client extends Client_Controller {
 			);
 			die();
 		}
-
-		$merchant_oauth_bridge_id			= $row->merchant_oauth_bridge_id;
-		$merchant_account_oauth_bridge_id 	= $row->merchant_account_oauth_bridge_id;
 		
 		$tx_row = $this->create_transaction(
             $amount, 
@@ -166,11 +173,11 @@ class Quickpayqr_client extends Client_Controller {
 			$client_oauth_bridge_id,
             $merchant_account_oauth_bridge_id
 		);
-		
+
 		$transaction_id = $tx_row['transaction_id'];
         $sender_ref_id  = $tx_row['sender_ref_id'];
         $pin            = $tx_row['pin'];
-
+		
 		// create ledger
 		$debit_from     = $client_oauth_bridge_id; // client oauth_bridge_id
         $credit_to      = $merchant_oauth_bridge_id; 
@@ -186,6 +193,11 @@ class Quickpayqr_client extends Client_Controller {
             $debit_oauth_bridge_id, 
             $credit_oauth_bridge_id
         );
+		
+		// do income sharing
+		$this->distribute_income_shares(
+			$transaction_id
+		);
 
 		$this->transactions->update(
 			$transaction_id,
@@ -226,6 +238,9 @@ class Quickpayqr_client extends Client_Controller {
                 'message' => "Successfully transfer to merchant via QuickPayQR.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
+					'amount'		=> $amount,
+					'fee'			=> $fee,
+					'total_amount'	=> $total_amount,
 					'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
 					'timestamp'     => $this->_today
                 )

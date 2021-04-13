@@ -1092,10 +1092,7 @@ class Api_Controller extends MX_Controller {
 		$tx_parent_id = "",
 		$date = ""
 	) {
-
-		if ($date == "") {
-			$date = $this->_today;
-		}
+		$date = $this->_today;
 
 		$this->load->model("api/transactions_model", "transactions");
 		

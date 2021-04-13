@@ -93,9 +93,6 @@ $route["merchants/balance"]     = "api/Merchants/balance";
 $route["transactions/merchant/scanpayqr/create"]   = "api/Scanpayqr_merchant/create";
 $route["transactions/client/scanpayqr/accept"]     = "api/Scanpayqr_client/accept";
 
-$route["transactions/client/createpayqr/create"]     = "api/Createpayqr_client/create";
-$route["transactions/merchant/createpayqr/accept"]   = "api/Createpayqr_merchant/accept";
-
 $route["transactions/client/quickpayqr/scan/(:any)"]    = "api/Quickpayqr_client/scan/$1";
 $route["transactions/client/quickpayqr/accept"]         = "api/Quickpayqr_client/accept";
 
@@ -124,6 +121,10 @@ $route["callback/paynamics/response"]       = "api/Callback/paynamics_response";
 $route["callback/paynamics/cancel"]         = "api/Callback/paynamics_cancel";
 
 $route["cron/paynamics"]    = "public/Cron/paynamics";
+
+# CreateScanQR
+$route["transactions/client/createpayqr/create"]     = "api/Createpayqr_client/create";
+$route["transactions/merchant/createpayqr/accept"]   = "api/Createpayqr_merchant/accept";
 
 /*
 # LEDGET - CLIENT

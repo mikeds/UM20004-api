@@ -688,7 +688,7 @@ class Api_Controller extends MX_Controller {
 				$m_account_oauth_bridge_id = $requested_to;
 			}
 
-			// get merchan of merchant accounts
+			// get merchant of merchant accounts
 			$row_merchant = $this->merchants->_datum(
 				array(
 					'merchants.oauth_bridge_id as "merchant_oauth_bridge_id"',
@@ -705,6 +705,9 @@ class Api_Controller extends MX_Controller {
 						'condition'		=> "oauth_bridges.oauth_bridge_id = merchants.oauth_bridge_id"
 					)
 				),
+				array(),
+				array(),
+				array(),
 				array(),
 				array(
 					array(
@@ -1089,10 +1092,7 @@ class Api_Controller extends MX_Controller {
 		$tx_parent_id = "",
 		$date = ""
 	) {
-
-		if ($date == "") {
-			$date = $this->_today;
-		}
+		$date = $this->_today;
 
 		$this->load->model("api/transactions_model", "transactions");
 		
@@ -1705,4 +1705,11 @@ class Api_Controller extends MX_Controller {
 			'errors' => $error_uploads
 		);
     }
+	
+	public function get_offset($page = 1, $limit = 10, $num_rows = 10) {
+		$page 	= ($page < 1 ? 1 : $page);
+		$offset = ($page - 1) * $limit;
+		$offset = ($offset >= $num_rows && $page == 1 ? 0 : $offset);
+		return $offset;
+	}
 }

@@ -628,7 +628,7 @@ class Api_Controller extends MX_Controller {
 
 	public function distribute_income_shares($transaction_id) {
 		$this->load->model("api/transactions_model", "tx");
-		$this->load->model("api/income_groups_members", "igm");
+		$this->load->model("api/income_groups_members_model", "igm");
 		$this->load->model("api/merchants_model", "merchants");
 
 		$row_tx = $this->tx->_datum(

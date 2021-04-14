@@ -28,19 +28,19 @@ class Lookup_fees extends Api_Controller {
 		}
 
         // get fee
-        $fee = $this->get_fee(
+        $fees = $this->get_fee(
             $amount,
             $transaction_type_id
         );
 
-		$total_amount = $amount + $fee;
+		$total_amount = $amount + $fees;
 
 		echo json_encode(
 			array(
 				'message' 	=> "Succesfully retrieve tx fee! ",
 				'response'	=> array(
 					'amount'		=> $amount,
-					'fees'			=> $fee,
+					'fees'			=> $fees,
 					'total_amount'	=> $total_amount
 				),
 				'timestamp'	=> $this->_today

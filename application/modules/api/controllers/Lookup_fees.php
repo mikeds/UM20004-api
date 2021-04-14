@@ -12,9 +12,9 @@ class Lookup_fees extends Api_Controller {
 			goto end;
 		}
 
-		$post       = $this->get_post();
-		$amount		= $post['amount'];
-		$tx_type_id = $post['tx_type_id'];
+		$post       			= $this->get_post();
+		$amount					= $post['amount'];
+		$transaction_type_id 	= $post['tx_type_id'];
 
 		if ($tx_type_id == "") {
 			echo json_encode(
@@ -27,10 +27,11 @@ class Lookup_fees extends Api_Controller {
 			die();
 		}
 
-		$fees = $this->get_fee(
-			$amount,
-			$tx_type_id
-		);
+        // get fee
+        $fees = $this->get_fee(
+            $amount,
+            $transaction_type_id
+        );
 
 		$total_amount = $amount + $fees;
 

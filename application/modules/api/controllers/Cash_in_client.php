@@ -935,7 +935,7 @@ class Cash_in_client extends Client_Controller {
 
         echo json_encode(
             array(
-                'message' =>  "Successfully created cash-in via OTC!",
+                'message' =>  "Go to the nearest BambuPay merchant and show the Merchant the generated QR Code.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
                     'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",

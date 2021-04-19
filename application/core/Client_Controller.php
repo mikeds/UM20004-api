@@ -143,6 +143,11 @@ class Client_Controller extends Api_Controller {
 			$to_account_info 		= $this->get_oauth_account_info($datum['transaction_requested_to']);
 			$created_account_info 	= $this->get_oauth_account_info($datum['transaction_created_by']);
 
+			if ($datum['transaction_type_id'] == 'txtype_scanpayqr1') {
+				$from_account_info 		= $this->get_oauth_account_info($datum['transaction_requested_to']);
+				$to_account_info 		= $this->get_oauth_account_info($datum['transaction_requested_by']);
+			}
+
 			$from 	= "";
 			$to 	= "";
 			$created_by	= "";

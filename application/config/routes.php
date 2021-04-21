@@ -65,9 +65,6 @@ $route["token/cancel"]              = "api/Token/cancel_token";
 $route["clients/login"]             = "api/Login/client";
 $route["merchants/login"]           = "api/Login/merchant";
 
-$route["clients/registration"]      = "api/Client_registration/submit";
-// $route["merchants/registration"]    = "api/Registration/merchant";
-
 $route["callback/ubp/code"]         = "api/Callback/ubp_code";
 
 $route["activation/merchant-email/resend"]      = "api/Activation/merchant_email_resend";
@@ -121,6 +118,10 @@ $route["callback/paynamics/response"]       = "api/Callback/paynamics_response";
 $route["callback/paynamics/cancel"]         = "api/Callback/paynamics_cancel";
 
 $route["cron/paynamics"]    = "public/Cron/paynamics";
+
+# REGISTRATION
+$route["clients/registration"]      = "api/Client_registration/submit";
+$route["merchants/registration"]    = "api/Merchant_registration/submit";
 
 # CreateScanQR
 $route["transactions/client/createpayqr/create"]     = "api/Createpayqr_client/create";

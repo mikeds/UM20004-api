@@ -73,7 +73,7 @@ class Merchant_registration extends Tms_admin_Controller {
             $now	        = is_null($now) ? 0 : $now;
 
             // Biz type
-            $biz_type       = $this->input->post("biz-type");
+            $biz_type       = $this->input->post("biz_type");
             $biz_type	    = is_null($biz_type) ? 0 : $biz_type;
 
             // Indentification

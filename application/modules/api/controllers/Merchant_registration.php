@@ -290,6 +290,16 @@ class Merchant_registration extends Tms_admin_Controller {
                 die();
             }
 
+            if ($biz_type == "") {
+                echo json_encode(
+                    array(
+                        'error'             => true,
+                        'error_description' => "Business Type is required."
+                    )
+                );
+                die();
+            }
+
             if ($id_type == "") {
                 echo json_encode(
                     array(

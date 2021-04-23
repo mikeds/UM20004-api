@@ -9,7 +9,7 @@ class Merchant_registration extends Tms_admin_Controller {
 		$admin_oauth_bridge_id = $this->_account->oauth_bridge_id;
 
 		$this->load->model("api/merchant_pre_registration_model", "merchant_pre_registration");
-		// $this->load->model("api/client_accounts_model", "client_accounts");
+		$this->load->model("api/merchants_model", "merchants");
         $this->load->model("api/otp_model", "otp");
 
 		if ($_POST) {
@@ -72,6 +72,10 @@ class Merchant_registration extends Tms_admin_Controller {
             $now            = $this->input->post("nature_of_work");
             $now	        = is_null($now) ? 0 : $now;
 
+            // Biz type
+            $biz_type       = $this->input->post("biz-type");
+            $biz_type	    = is_null($biz_type) ? 0 : $biz_type;
+
             // Indentification
             $id_type        = $this->input->post("id_type");
             $id_type	    = is_null($id_type) ? 0 : $id_type;
@@ -102,22 +106,22 @@ class Merchant_registration extends Tms_admin_Controller {
 				die();
 			}
 
-                // $client_row_email_validation = $this->client_accounts->get_datum(
-                //     '',
-                //     array(
-                //         'account_email_address' => $email_address
-                //     )
-                // )->row();
+                $m_row_email_validation = $this->merchants->get_datum(
+                    '',
+                    array(
+                        'merchant_email_address' => $email_address
+                    )
+                )->row();
 
-                // if ($client_row_email_validation != "") {
-                //     echo json_encode(
-                //         array(
-                //             'error'             => true,
-                //             'error_description' => "Email Address is already used."
-                //         )
-                //     );
-                //     die();
-                // }
+                if ($m_row_email_validation != "") {
+                    echo json_encode(
+                        array(
+                            'error'             => true,
+                            'error_description' => "Email Address is already used."
+                        )
+                    );
+                    die();
+                }
 
             if ($password == "") {
                 echo json_encode(
@@ -149,22 +153,22 @@ class Merchant_registration extends Tms_admin_Controller {
 			// 	die();
 			// }
 			
-                // $client_row_mobile_validation = $this->client_accounts->get_datum(
-                //     '',
-                //     array(
-                //         'account_mobile_no' => $mobile_no
-                //     )
-                // )->row();
+                $m_row_mobile_validation = $this->merchants->get_datum(
+                    '',
+                    array(
+                        'merchant_mobile_no' => $mobile_no
+                    )
+                )->row();
 
-                // if ($client_row_mobile_validation != "") {
-                //     echo json_encode(
-                //         array(
-                //             'error'             => true,
-                //             'error_description' => "Mobile no. is already used."
-                //         )
-                //     );
-                //     die();
-                // }
+                if ($m_row_mobile_validation != "") {
+                    echo json_encode(
+                        array(
+                            'error'             => true,
+                            'error_description' => "Mobile no. is already used."
+                        )
+                    );
+                    die();
+                }
 			
             if ($dob == "") {
                 echo json_encode(
@@ -361,6 +365,7 @@ class Merchant_registration extends Tms_admin_Controller {
 				'account_postal_code'	    => $postal_code,
                 'sof_id'                    => $sof,       
                 'now_id'                    => $now,
+                'biz_type_id'               => $biz_type,
                 'account_id_type'           => $id_type,
                 'account_id_no'             => $id_no,
                 'account_id_exp_date'       => $id_exp_date,

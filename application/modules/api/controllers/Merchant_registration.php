@@ -11,6 +11,7 @@ class Merchant_registration extends Tms_admin_Controller {
 		$this->load->model("api/merchant_pre_registration_model", "merchant_pre_registration");
 		$this->load->model("api/merchants_model", "merchants");
         $this->load->model("api/otp_model", "otp");
+        $this->load->model("api/biz_types_model", "biz_types");
 
 		if ($_POST) {
             // Personal Information
@@ -514,6 +515,92 @@ class Merchant_registration extends Tms_admin_Controller {
                         'error_description' => "ID front and back copy are required."
                     )
                 );
+                die();
+            }
+
+            // file validation
+            $row_biz_type = $this->biz_types->_datum(
+                array('*'),
+                array(),
+                array(
+                    'biz_type_id' => $biz_type
+                )
+            )->row();
+
+            if ($row_biz_type == "") {
+                echo json_encode(
+                    array(
+                        'error'             => true,
+                        'error_description' => "Invalid Business Type!"
+                    )
+                );
+                die();
+            }
+
+            if (isset($_FILES['files'])) {
+                if (isset($_FILES['files']['tmp_name'])) {
+                
+                    $files =  $_FILES['files']['tmp_name'];
+                    $names =  $_FILES['files']['name'];
+
+                    $no_of_files_required = $row_biz_type->biz_type_no_of_files;
+
+                    $no_of_files = count($files);
+
+                    if ($no_of_files != $no_of_files_required) {
+                        echo json_encode(
+                            array(
+                                'error'             => true,
+                                'error_description' => "Requirements are not complete. {$no_of_files}/{$no_of_files_required}."
+                            )
+                        );
+
+                        die();
+                    }
+    
+                    $allowed_types      = "jpg|jpeg|JPG|JPEG|PNG|png|bmp|docx|doc|pdf";
+                    $allowed_types_arr  = explode("|", $allowed_types);
+    
+                    $is_allowed = true;
+    
+                    foreach($names as $name) {
+                        $tmp        = explode(".", $name);
+                        $extension  = end($tmp);
+    
+                        if(!in_array($extension, $allowed_types_arr)) {
+                            $is_allowed = false;
+                            break;
+                        }
+                    }
+                    
+                    if (!$is_allowed) {
+                        echo json_encode(
+                            array(
+                                'error'             => true,
+                                'error_description' => "File/s not allowed to upload!"
+                            )
+                        );
+
+                        die();
+                    }
+    
+                    $upload_avatar_results = $this->upload_files(
+                        "merchants/" . $account_number,
+                        $_FILES['files'],
+                        "files",
+                        false,
+                        20,
+                        $allowed_types
+                    );
+                }
+            } else {
+                echo json_encode(
+                    array(
+                        'error'             => true,
+                        'error_description' => "File requirements not found!"
+                    )
+                );
+
                 die();
             }
 

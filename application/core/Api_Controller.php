@@ -1584,7 +1584,7 @@ class Api_Controller extends MX_Controller {
 	}
 
 	public function upload_files($folder_name, $files, $title = "", $is_data = false, $file_size_limit = 20, $allowed_types = "") {
-		$upload_path = "{$this->_upload_path}/uploads/{$folder_name}";
+		$upload_path = "{$this->_upload_path}/" . ENVIRONMENT . "/uploads/{$folder_name}";
 
 		if (!file_exists($upload_path)) {
 			mkdir($upload_path, 0755, true);

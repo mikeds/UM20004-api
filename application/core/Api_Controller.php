@@ -1652,10 +1652,11 @@ class Api_Controller extends MX_Controller {
 			$today = strtotime($this->_today);
 
 			if ($title != "") {
-				$file_name = "{$title}_{$key}_{$today}";
-				$file_name =  "{$file_name}.{$ext}";
+				$file_name = "{$title}_{$key}";
+				// $file_name =  "{$file_name}.{$ext}";
+				$file_name = "{$title}_{$key}_" . $file;
 			} else {
-				$file_name = $file;
+				$file_name = "{$key}_" . $file;
 			}
 
             $items[] = $file_name;

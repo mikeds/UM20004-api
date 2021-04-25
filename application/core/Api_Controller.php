@@ -1584,7 +1584,7 @@ class Api_Controller extends MX_Controller {
 	}
 
 	public function upload_files($folder_name, $files, $title = "", $is_data = false, $file_size_limit = 20, $allowed_types = "") {
-		$upload_path = "{$this->_upload_path}/uploads/{$folder_name}";
+		$upload_path = "{$this->_upload_path}/" . ENVIRONMENT . "/uploads/{$folder_name}";
 
 		if (!file_exists($upload_path)) {
 			mkdir($upload_path, 0755, true);
@@ -1654,8 +1654,9 @@ class Api_Controller extends MX_Controller {
 			if ($title != "") {
 				$file_name = "{$title}_{$key}_{$today}";
 				$file_name =  "{$file_name}.{$ext}";
+				// $file_name = "{$title}_{$key}_" . $file;
 			} else {
-				$file_name = $file;
+				$file_name = "{$key}_" . $file;
 			}
 
             $items[] = $file_name;
@@ -1671,16 +1672,16 @@ class Api_Controller extends MX_Controller {
 				$full_path 		= "{$upload_path}/{$file_name}";
 
 				if ($is_data) {
-					$filecontent 	= file_get_contents($full_path);
-
-					// update image save base64
-					$data[] = array(
-						'file_name' => $file_name,
-						'base64_image' => rtrim(base64_encode($filecontent))
-					);
-
 					// delete uploaded image
-					if(file_exists($full_path)){
+					if(file_exists($full_path)) {
+						$filecontent 	= file_get_contents($full_path);
+
+						// update image save base64
+						$data[] = array(
+							'file_name' => $file_name,
+							'base64_image' => rtrim(base64_encode($filecontent))
+						);
+
 						unlink($full_path);
 					}
 				} else {

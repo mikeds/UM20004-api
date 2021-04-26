@@ -1,12 +1,12 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Income_shares_model extends CI_Model {
+class Merchant_pre_registration_model extends CI_Model {
 	private 
-		$_table	= 'income_shares  income_shares',
-		$_table_x	= 'income_shares';
+		$_table	= 'merchant_pre_registration  merchant_pre_registration',
+		$_table_x	= 'merchant_pre_registration';
 
 	private
-		$_id = "is_id";
+		$_id = "account_number";
 
 	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array()) {
 		$this->db->from($this->_table);
@@ -156,11 +156,9 @@ class Income_shares_model extends CI_Model {
 		}
 	} 
 
-	/*
 	public function delete($id){
 		$this->db->where($this->_id, $id); 
 		$this->db->delete($this->_table_x);
 	}
-	*/
 }
-	
+

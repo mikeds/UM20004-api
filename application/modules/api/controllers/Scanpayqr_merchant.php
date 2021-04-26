@@ -53,9 +53,13 @@ class Scanpayqr_merchant extends Merchant_Controller {
         }
 		
         // get fee
-        $fee = 0;
+        $fee = $this->get_fee(
+            $amount,
+            $transaction_type_id,
+            $merchant_oauth_bridge_id
+        );
 
-        $debit_amount = $amount + $fee;
+        $total_amount = $amount + $fee;
 
 		$tx_row = $this->create_transaction(
             $amount, 
@@ -74,6 +78,9 @@ class Scanpayqr_merchant extends Merchant_Controller {
                 'message' => "Successfully created ScanPayQR.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
+                    'amount'        => $amount,
+                    'fee'           => $fee,
+                    'total_amount'  => $total_amount,
                     'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
                     'timestamp'     => $this->_today
                 )

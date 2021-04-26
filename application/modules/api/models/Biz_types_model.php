@@ -1,12 +1,12 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Transactions_model extends CI_Model {
+class Biz_types_model extends CI_Model {
 	private 
-		$_table	= 'transactions  transactions',
-		$_table_x	= 'transactions';
+		$_table	= 'biz_types  biz_types',
+		$_table_x	= 'biz_types';
 
 	private
-		$_id = "transaction_id";
+		$_id = "biz_type_id";
 
 	function _data(
 		$select = array('*'), 

@@ -1,12 +1,12 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Income_groups_members_model extends CI_Model {
+class Id_types_model extends CI_Model {
 	private 
-		$_table	= 'income_groups_members  income_groups_members',
-		$_table_x	= 'income_groups_members';
+		$_table	= 'id_types  id_types',
+		$_table_x	= 'id_types';
 
 	private
-		$_id = "igm_id";
+		$_id = "id_type_id";
 
 	function _data(
 		$select = array('*'), 
@@ -97,170 +97,6 @@ class Income_groups_members_model extends CI_Model {
 		$results = $query->result_array();
 
 		return $results;
-	}
-
-	function _datum(
-		$select = array('*'), 
-		$inner_joints = array(), 
-		$where = array(), 
-		$where_in = array(), 
-		$or_where = array(), 
-		$order_by = array(), 
-		$limit = 0, 
-		$offset = 0
-		) {
-
-		$this->db->select(ARRtoSTR($select), false);
-
-		$this->db->from( $this->_table );
-
-		if (!empty($inner_joints)) {
-			foreach($inner_joints as $join) {
-				if (isset($join['type'])) {
-					$this->db->join(
-						$join['table_name'],
-						$join['condition'],
-						$join['type']
-					);
-				} else {
-					$this->db->join(
-						$join['table_name'],
-						$join['condition']
-					);
-				}
-			}
-		}
-
-		if(!empty($where)){
-			$this->db->where($where);
-		}
-
-		if(!empty($where_in)){
-			foreach ($where_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				
-				$this->db->where_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if(!empty($or_where)){
-			foreach ($or_where as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				$this->db->or_where(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if(!empty($limit)){
-			$this->db->limit(
-				$limit, 
-				$offset
-			);
-		}
-		
-		if(!empty($order_by)) {
-			$filter_by 	= $order_by['filter_by'];
-			$sort_by	= $order_by['sort_by'];
-
-			$this->db->order_by(
-				$filter_by,
-				$sort_by
-			);
-		}
-
-		$query = $this->db->get();
-
-		return $query;
-	}
-
-	function _count(
-		$inner_joints = array(), 
-		$where = array(), 
-		$where_in = array(), 
-		$or_where = array(), 
-		$limit = 0, 
-		$offset = 0
-		) {
-
-		$this->db->from( $this->_table );
-
-		if (!empty($inner_joints)) {
-			foreach($inner_joints as $join) {
-				if (isset($join['type'])) {
-					$this->db->join(
-						$join['table_name'],
-						$join['condition'],
-						$join['type']
-					);
-				} else {
-					$this->db->join(
-						$join['table_name'],
-						$join['condition']
-					);
-				}
-			}
-		}
-
-		if(!empty($where)){
-			$this->db->where($where);
-		}
-
-		if(!empty($where_in)){
-			foreach ($where_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				
-				$this->db->where_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if(!empty($or_where)){
-			foreach ($or_where as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				$this->db->or_where(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if(!empty($limit)){
-			$this->db->limit(
-				$limit, 
-				$offset
-			);
-		}
-
-		$query = $this->db->get();
-
-		return $this->db->count_all_results();
 	}
 
 	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array(), $select = array()) {

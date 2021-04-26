@@ -534,108 +534,239 @@ class Api_Controller extends MX_Controller {
 
 	}
 
-	public function get_fee($amount, $transaction_type_id, $oauth_bridge_id) {
-		$this->load->model("api/income_groups_members_model", "income_groups_members");
+	public function get_income_groups_members($transaction_type_id, $merchant_oauth_bridge_id = "") {
+		$this->load->model("api/income_groups_members_model", "igm");
 
-		$fee = 0;
-		$is_type = "1";
+		$where = array(
+			'income_groups.transaction_type_id'	=> $transaction_type_id,
+		);
 
-		// $row = $this->income_groups_members->get_datum(
-		// 	'',
-		// 	array(
-		// 		'oauth_bridge_id'	=> $oauth_bridge_id
-		// 	)
-		// )->row();
+		if ($merchant_oauth_bridge_id != "") {
+			$where = array_merge(
+				$where,
+				array(
+					'oauth_bridge_id' => $merchant_oauth_bridge_id
+				)
+			);
+		}
 
-		// if ($row != "") {
-		// 	$ig_id = $row->ig_id;
-
-		// 	$data = $this->income_shares->get_data(
-		// 		array(
-		// 			'*'
-		// 		),
-		// 		array(
-		// 			'ig_id'					=> $ig_id,
-		// 			'transaction_type_id'	=> $transaction_type_id
-		// 		)
-		// 	);
-
-		// 	foreach($data as $datum) {
-		// 		$is_type = $datum['is_type'];
-
-		// 		$fee += $datum['is_amount'];
-		// 	}
-
-		// 	if ($is_type == "2") {
-		// 		$fee = $fee * $amount;
-		// 	}
-		// }
-
-		return $fee;
-	}
-
-	public function distribute_income_shares($transaction_id, $amount, $transaction_type_id, $oauth_bridge_id, $debit_oauth_bridge_id) {
-		$this->load->model("api/income_groups_members_model", "income_groups_members");
-		$this->load->model("api/income_shares_model", "income_shares");
-		
-		$is_type = "1";
-
-		$row = $this->income_groups_members->get_datum(
-			'',
+		$row = $this->igm->_datum(
 			array(
-				'oauth_bridge_id'	=> $oauth_bridge_id
+				'*'
+			),
+			array(
+				array(
+					'table_name'	=> "income_groups",
+					'condition'		=> "income_groups.ig_id = income_groups_members.ig_id"
+				),
+				array(
+					'table_name'	=> "transaction_types",
+					'condition'		=> "income_groups.transaction_type_id = transaction_types.transaction_type_id"
+				)
+			),
+			$where,
+			array(),
+			array(),
+			array(
+				'filter_by'	=> "igm_id",
+				'sort_by'	=> "ASC"
 			)
 		)->row();
 
 		if ($row != "") {
 			$ig_id = $row->ig_id;
 
-			$data = $this->income_shares->get_data(
+			$data = $this->igm->_data(
 				array(
-					'*'
+					'*',
+					'income_groups_members.oauth_bridge_id as oauth_bridge_id'
 				),
 				array(
-					'ig_id'					=> $ig_id,
-					'transaction_type_id'	=> $transaction_type_id
+					array(
+						'table_name'	=> "merchants",
+						'condition'		=> "merchants.oauth_bridge_id = income_groups_members.oauth_bridge_id",
+						'type'			=> "left"
+					)
+				),
+				array(
+					'ig_id' => $ig_id
+				),
+				array(),
+				array(),
+				array(
+					'filter_by' => 'igm_id',
+					'sort_by'	=> 'ASC'
 				)
 			);
 
-			// income distribution
+			return $data;
+		}
+
+		return false;
+	}
+
+	public function get_fee($amount, $transaction_type_id, $merchant_oauth_bridge_id = "") {
+		$this->load->model("api/income_groups_members_model", "igm");
+
+		$fee = 0;
+
+		$data = $this->get_income_groups_members(
+			$transaction_type_id,
+			$merchant_oauth_bridge_id
+		);
+
+		if ($data) {
 			foreach($data as $datum) {
-				$is_type 					= $datum['is_type'];
-				$fee 						= $datum['is_amount'];
-				$credit_oauth_bridge_id 	= $datum['oauth_bridge_id'];
+				$share_amount = $datum['igm_fees_amount'];
+	
+				$fee += $share_amount;
+			}
+		}
 
-				if ($is_type == "2") {
-					$fee = ($fee / 100) * $amount;
-				}
+		return $fee;
+	}
 
-				$credit_total_amount = $fee;
+	public function distribute_income_shares($transaction_id) {
+		$this->load->model("api/transactions_model", "tx");
+		$this->load->model("api/income_groups_members_model", "igm");
+		$this->load->model("api/merchants_model", "merchants");
 
-				$tx_row = $this->create_transaction(
-					$credit_total_amount, 
-					"0", 
-					"txtype_income_shares", 
-					$credit_oauth_bridge_id,  // to credit 
-					$debit_oauth_bridge_id // to debit 
+		$row_tx = $this->tx->_datum(
+			array(
+				'*'
+			),
+			array(
+				array(
+					"table_name"	=> "transaction_types",
+					"condition"		=> "transaction_types.transaction_type_id = transactions.transaction_type_id"
+				)
+			),
+			array(
+				'transaction_id' => $transaction_id
+			)
+		)->row();
+
+		if ($row_tx == "") {
+			return;
+		}
+
+		$amount 				= $row_tx->transaction_amount;
+		$transaction_type_id	= $row_tx->transaction_type_id;
+
+		$m_account_oauth_bridge_id = "";
+
+		$requested_by 	= $row_tx->transaction_requested_by; // from
+		$requested_to 	= $row_tx->transaction_requested_to; // to
+		
+		$debit_oauth_bridge_id 		= "";
+		$merchant_oauth_bridge_id 	= "";
+
+		if (
+			$transaction_type_id == "txtype_cashout1" || 
+			$transaction_type_id == "txtype_cashout2" ||
+			$transaction_type_id == "txtype_createpayqr1" ||
+			$transaction_type_id == "txtype_encash1" ||
+			$transaction_type_id == "txtype_income_shares" ||
+			$transaction_type_id == "txtype_quickpayqr1" ||
+			$transaction_type_id == "txtype_transfer1"
+		) {
+			$debit_oauth_bridge_id = $requested_by;
+		} else {
+			$debit_oauth_bridge_id = $requested_to;
+		}
+
+		if (
+			$transaction_type_id == "txtype_cashin1" ||
+			$transaction_type_id == "txtype_cashout1" ||
+			$transaction_type_id == "txtype_createpayqr1" ||
+			$transaction_type_id == "txtype_quickpayqr1" ||
+			$transaction_type_id == "txtype_scanpayqr1"
+		) {
+			if ($transaction_type_id == "txtype_scanpayqr1") {
+				$m_account_oauth_bridge_id = $requested_by;
+			} else {
+				$m_account_oauth_bridge_id = $requested_to;
+			}
+
+			// get merchant of merchant accounts
+			$row_merchant = $this->merchants->_datum(
+				array(
+					'merchants.oauth_bridge_id as "merchant_oauth_bridge_id"',
+					'oauth_bridge_parent_id'
+				),
+				array(
+					array(
+						'table_name'	=> "merchant_accounts",
+						'condition'		=> "merchant_accounts.merchant_number = merchants.merchant_number",
+						'position'		=> "left"
+					),
+					array(
+						'table_name'	=> "oauth_bridges",
+						'condition'		=> "oauth_bridges.oauth_bridge_id = merchants.oauth_bridge_id"
+					)
+				),
+				array(),
+				array(),
+				array(),
+				array(),
+				array(
+					array(
+						'field'	=> 'merchants.oauth_bridge_id',
+						'data'	=>  $m_account_oauth_bridge_id
+					),
+					array(
+						'field'	=> 'merchant_accounts.oauth_bridge_id',
+						'data'	=>  $m_account_oauth_bridge_id
+					)
+				)
+			)->row();
+
+			if ($row_merchant != "") {
+				$merchant_oauth_bridge_id = $row_merchant->merchant_oauth_bridge_id;
+			}
+		}
+
+		$data = $this->get_income_groups_members(
+			$transaction_type_id,
+			$merchant_oauth_bridge_id
+		);
+
+		if ($data) {
+			foreach($data as $datum) {
+				$legder_desc = "income_share";
+	
+				$credit_oauth_bridge_id = $datum['oauth_bridge_id'];
+				$amount 				= $datum['igm_fees_amount'];
+				
+				$tx = $this->create_transaction(
+					$amount, 
+					0, 
+					'txtype_income_shares', 
+					$debit_oauth_bridge_id, 
+					$credit_oauth_bridge_id
 				);
-
-				$debit_wallet_address		= $this->get_wallet_address($debit_oauth_bridge_id);
-				$credit_wallet_address	    = $this->get_wallet_address($credit_oauth_bridge_id);
-
-				if ($credit_wallet_address != "" && $debit_wallet_address != "") {
-					$credit_new_balances = $this->update_wallet($credit_wallet_address, $credit_total_amount);
-					if ($credit_new_balances) {
-						// record to ledger
-						$this->new_ledger_datum(
-							"income_share_{$transaction_type_id}_credit", 
-							$transaction_id, 
-							$debit_wallet_address, // debit from wallet address
-							$credit_wallet_address, // credit to wallet address
-							$credit_new_balances
-						);
-					}
+	
+				if (isset($tx['transaction_id'])) {
+					// update tx status
+					$this->transactions->update(
+						$tx['transaction_id'],
+						array(
+							'transaction_parent_id'		=> $transaction_id,
+							'transaction_status' 		=> 1,
+							'transaction_date_approved'	=> $this->_today,
+							'transaction_requested_to'  => $credit_oauth_bridge_id
+						)
+					);
 				}
+	
+				$balances = $this->create_ledger(
+					$legder_desc, 
+					$transaction_id, 
+					$amount, 
+					0,
+					$debit_oauth_bridge_id, 
+					$credit_oauth_bridge_id
+				);
 			}
 		}
 	}
@@ -780,7 +911,8 @@ class Api_Controller extends MX_Controller {
 			'ledger_datum_old_balance'      => $old_balance,
 			'ledger_datum_new_balance'      => $new_balance,
 			'ledger_datum_amount'           => $amount,
-			'ledger_datum_date_added'       => $this->_today
+			'ledger_datum_date_added'       => $this->_today,
+			'ledger_date_micro'				=> isset(gettimeofday()['usec']) ? strtotime($this->_today).gettimeofday()['usec'] : strtotime($this->_today)
 		);
 
 		$ledger_datum_id = $this->generate_code(
@@ -858,15 +990,37 @@ class Api_Controller extends MX_Controller {
 	public function get_wallet_address($bridge_id) {
 		$this->load->model('api/wallet_addresses_model', 'wallet_addresses');
 
-		$row = $this->wallet_addresses->get_datum(
-			'',
+		$row = $this->wallet_addresses->_datum(
+			array('*'),
+			array(),
 			array(
 				'oauth_bridge_id' => $bridge_id
 			)
 		)->row();
 
 		if ($row == "") {
-			return "";
+			$row_merchant = $this->wallet_addresses->_datum(
+				array('*'),
+				array(
+					array(
+						'table_name'	=> "merchants",
+						'condition'		=> "merchants.oauth_bridge_id = wallet_addresses.oauth_bridge_id"
+					),
+					array(
+						'table_name'	=> "merchant_accounts",
+						'condition'		=> "merchant_accounts.merchant_number = merchants.merchant_number"
+					)
+				),
+				array(
+					'merchant_accounts.oauth_bridge_id' => $bridge_id
+				)
+			)->row();
+
+			if ($row_merchant == "") {
+				return "";
+			}
+
+			return $row_merchant->wallet_address;
 		}
 
 		return $row->wallet_address;
@@ -938,10 +1092,7 @@ class Api_Controller extends MX_Controller {
 		$tx_parent_id = "",
 		$date = ""
 	) {
-
-		if ($date == "") {
-			$date = $this->_today;
-		}
+		$date = $this->_today;
 
 		$this->load->model("api/transactions_model", "transactions");
 		
@@ -968,7 +1119,8 @@ class Api_Controller extends MX_Controller {
             'transaction_created_by'        => $created_by_oauth_bridge_id,
             'transaction_date_created'      => $date,
 			'transaction_date_expiration'   => $stamp,
-			'transaction_otp_status'		=> 1 // temporary activated
+			'transaction_otp_status'		=> 1, // temporary activated
+			'transaction_date_micro'		=> isset(gettimeofday()['usec']) ? strtotime($this->_today).gettimeofday()['usec'] : strtotime($this->_today)
         );
 
         // generate sender ref id
@@ -1039,9 +1191,8 @@ class Api_Controller extends MX_Controller {
 		$credit_oauth_bridge_id
 	) {
 		// create ledger
-		$debit_amount	= $amount + $fee;
+		$debit_amount	= $amount;
 		$credit_amount 	= $amount;
-		$fee_amount		= $fee;
 
 		$debit_total_amount 	= 0 - $debit_amount; // make it negative
 		$credit_total_amount	= $credit_amount;
@@ -1049,11 +1200,22 @@ class Api_Controller extends MX_Controller {
 		$debit_wallet_address		= $this->get_wallet_address($debit_oauth_bridge_id);
 		$credit_wallet_address	    = $this->get_wallet_address($credit_oauth_bridge_id);
 		
-		if ($credit_wallet_address == "" || $debit_wallet_address == "") {
+		if ($debit_wallet_address == "") {
 			echo json_encode(
 				array(
 					'error'		=> true,
-					'message'	=> "Wallet address not found!",
+					'message'	=> "Debit Wallet address not found!",
+					'timestamp'	=> $this->_today
+				)
+			);
+			die();
+		}
+
+		if ($credit_wallet_address == "") {
+			echo json_encode(
+				array(
+					'error'		=> true,
+					'message'	=> "Credit Wallet address not found!",
 					'timestamp'	=> $this->_today
 				)
 			);
@@ -1422,7 +1584,7 @@ class Api_Controller extends MX_Controller {
 	}
 
 	public function upload_files($folder_name, $files, $title = "", $is_data = false, $file_size_limit = 20, $allowed_types = "") {
-		$upload_path = "{$this->_upload_path}/uploads/{$folder_name}";
+		$upload_path = "{$this->_upload_path}/" . ENVIRONMENT . "/uploads/{$folder_name}";
 
 		if (!file_exists($upload_path)) {
 			mkdir($upload_path, 0755, true);
@@ -1492,8 +1654,9 @@ class Api_Controller extends MX_Controller {
 			if ($title != "") {
 				$file_name = "{$title}_{$key}_{$today}";
 				$file_name =  "{$file_name}.{$ext}";
+				// $file_name = "{$title}_{$key}_" . $file;
 			} else {
-				$file_name = $file;
+				$file_name = "{$key}_" . $file;
 			}
 
             $items[] = $file_name;
@@ -1509,16 +1672,16 @@ class Api_Controller extends MX_Controller {
 				$full_path 		= "{$upload_path}/{$file_name}";
 
 				if ($is_data) {
-					$filecontent 	= file_get_contents($full_path);
-
-					// update image save base64
-					$data[] = array(
-						'file_name' => $file_name,
-						'base64_image' => rtrim(base64_encode($filecontent))
-					);
-
 					// delete uploaded image
-					if(file_exists($full_path)){
+					if(file_exists($full_path)) {
+						$filecontent 	= file_get_contents($full_path);
+
+						// update image save base64
+						$data[] = array(
+							'file_name' => $file_name,
+							'base64_image' => rtrim(base64_encode($filecontent))
+						);
+
 						unlink($full_path);
 					}
 				} else {
@@ -1543,4 +1706,11 @@ class Api_Controller extends MX_Controller {
 			'errors' => $error_uploads
 		);
     }
+	
+	public function get_offset($page = 1, $limit = 10, $num_rows = 10) {
+		$page 	= ($page < 1 ? 1 : $page);
+		$offset = ($page - 1) * $limit;
+		$offset = ($offset >= $num_rows && $page == 1 ? 0 : $offset);
+		return $offset;
+	}
 }

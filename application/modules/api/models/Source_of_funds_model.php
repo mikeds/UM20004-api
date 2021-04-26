@@ -1,14 +1,106 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Income_scheme_merchants_model extends CI_Model {
+class Source_of_funds_model extends CI_Model {
 	private 
-		$_table	= 'income_scheme_merchants  income_scheme_merchants',
-		$_table_x	= 'income_scheme_merchants';
+		$_table	= 'source_of_funds  source_of_funds',
+		$_table_x	= 'source_of_funds';
 
 	private
-		$_id = "scheme_merchant_id";
+		$_id = "sof_id";
+
+	function _data(
+		$select = array('*'), 
+		$inner_joints = array(), 
+		$where = array(), 
+		$where_in = array(), 
+		$or_where = array(), 
+		$order_by = array(), 
+		$limit = 0, 
+		$offset = 0
+		) {
+
+		$this->db->select(ARRtoSTR($select), false);
+
+		$this->db->from( $this->_table );
+
+		if (!empty($inner_joints)) {
+			foreach($inner_joints as $join) {
+				if (isset($join['type'])) {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition'],
+						$join['type']
+					);
+				} else {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition']
+					);
+				}
+			}
+		}
+
+		if(!empty($where)){
+			$this->db->where($where);
+		}
+
+		if(!empty($where_in)){
+			foreach ($where_in as $i) {
+				if (!isset($i['field']) && !isset($i['data'])) {
+					continue;
+				}
+				
+				$field 	= $i['field'];
+				$data 	= $i['data'];
+				
+				$this->db->where_in(
+					$field,
+					$data
+				);
+			}
+		}
+
+		if(!empty($or_where)){
+			foreach ($or_where as $i) {
+				if (!isset($i['field']) && !isset($i['data'])) {
+					continue;
+				}
+				
+				$field 	= $i['field'];
+				$data 	= $i['data'];
+				$this->db->or_where(
+					$field,
+					$data
+				);
+			}
+		}
+
+		if(!empty($limit)){
+			$this->db->limit(
+				$limit, 
+				$offset
+			);
+		}
+		
+		if(!empty($order_by)) {
+			$filter_by 	= $order_by['filter_by'];
+			$sort_by	= $order_by['sort_by'];
+
+			$this->db->order_by(
+				$filter_by,
+				$sort_by
+			);
+		}
+
+		$query = $this->db->get();
+
+		$results = $query->result_array();
+
+		return $results;
+	}
 
 	function get_datum($id = '', $data = array(), $where_or = array(), $inner_joints = array(), $select = array()) {
+
 		if (!empty($select)) {
 			$this->db->select(ARRtoSTR($select));
 		}
@@ -48,7 +140,7 @@ class Income_scheme_merchants_model extends CI_Model {
 		return $query;
 	}
 
-	function get_data( $select = array('*'), $data = array(), $like= array(), $inner_joints = array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
+	function get_data( $select = array('*'), $data = array(), $or_where = array(), $inner_joints = array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
 		
 		$this->db->select(ARRtoSTR($select),false);
 
@@ -75,8 +167,62 @@ class Income_scheme_merchants_model extends CI_Model {
 			$this->db->where($data);
 		}
 
-		if(!empty( $like )){
-		$this->db->like( $like['field'], $like['value'] );
+		if(!empty( $or_where )){
+		$this->db->or_where($or_where);
+		}
+
+		if(!empty($limit)){
+			$this->db->limit($limit, $offset);
+		}
+		
+		if( !empty( $order_by ) ) {
+			$this->db->order_by( $order_by['filter'],$order_by['sort'] );
+		}
+
+		if( $group_by != '' ) {
+			$this->db->group_by( $group_by );
+		}
+
+		$query = $this->db->get();
+
+		$results = $query->result_array();
+
+		return $results;
+
+	}
+
+	function get_data_where_in( $select = array('*'), $data = array(), $where_in = array(), $inner_joints = array(), $order_by = array(), $offset = 0, $limit = 0, $group_by = '' ) {
+		
+		$this->db->select(ARRtoSTR($select),false);
+
+		$this->db->from( $this->_table );
+
+		if (!empty($inner_joints)) {
+			foreach($inner_joints as $join) {
+				if (isset($join['type'])) {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition'],
+						$join['type']
+					);
+				} else {
+					$this->db->join(
+						$join['table_name'],
+						$join['condition']
+					);
+				}
+			}
+		}
+
+		if(!empty($data)){
+			$this->db->where($data);
+		}
+
+		if(!empty($where_in)){
+			$this->db->where_in(
+				$where_in['field'],
+				$where_in['data']
+			);
 		}
 
 		if(!empty($limit)){

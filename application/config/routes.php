@@ -65,12 +65,6 @@ $route["token/cancel"]              = "api/Token/cancel_token";
 $route["clients/login"]             = "api/Login/client";
 $route["merchants/login"]           = "api/Login/merchant";
 
-$route["clients/registration"]      = "api/Client_registration/submit";
-// $route["merchants/registration"]    = "api/Registration/merchant";
-
-$route["tools/countries"]           = "api/Tools/countries";
-$route["tools/provinces/(:num)"]    = "api/Tools/provinces/$1";
-
 $route["callback/ubp/code"]         = "api/Callback/ubp_code";
 
 $route["activation/merchant-email/resend"]      = "api/Activation/merchant_email_resend";
@@ -90,31 +84,11 @@ $route["qr-code/transactions/(:any)"]     = "public/Qr_code/transactions/$1";
 $route["transactions/merchant/top-up"]  = "api/Top_up";
 $route["transactions/client/send-to"]   = "api/Send_to/direct";
 
-$route["transactions/client/cash-in"]   = "api/Cash_in";
-$route["transactions/client/cash-in-test"]   = "api/Cash_in/paynamics_test";
-
-$route["transactions/merchant/accept-cash-in"]   = "api/Merchant_accept/cash_in";
-
 $route["clients/balance"]       = "api/Clients/balance";
 $route["merchants/balance"]     = "api/Merchants/balance";
 
-$route["clients/ledger"]       = "api/Clients/ledger";
-$route["merchants/ledger"]     = "api/Merchants/ledger";
-
-$route["clients/ledger/(:any)"]     = "api/Clients/ledger/$1";
-$route["merchants/ledger/(:any)"]   = "api/Merchants/ledger/$1";
-
-$route["clients/transactions"]     = "api/Clients/transactions";
-$route["merchants/transactions"]   = "api/Merchants/transactions";
-
-$route["clients/transactions/(:any)"]     = "api/Clients/transactions/$1";
-$route["merchants/transactions/(:any)"]   = "api/Merchants/transactions/$1";
-
 $route["transactions/merchant/scanpayqr/create"]   = "api/Scanpayqr_merchant/create";
 $route["transactions/client/scanpayqr/accept"]     = "api/Scanpayqr_client/accept";
-
-$route["transactions/client/createpayqr/create"]     = "api/Createpayqr_client/create";
-$route["transactions/merchant/createpayqr/accept"]   = "api/Createpayqr_merchant/accept";
 
 $route["transactions/client/quickpayqr/scan/(:any)"]    = "api/Quickpayqr_client/scan/$1";
 $route["transactions/client/quickpayqr/accept"]         = "api/Quickpayqr_client/accept";
@@ -145,6 +119,42 @@ $route["callback/paynamics/cancel"]         = "api/Callback/paynamics_cancel";
 
 $route["cron/paynamics"]    = "public/Cron/paynamics";
 
+# REGISTRATION
+$route["clients/registration"]      = "api/Client_registration/submit";
+$route["merchants/registration"]    = "api/Merchant_registration/submit";
+
+# CreateScanQR
+$route["transactions/client/createpayqr/create"]     = "api/Createpayqr_client/create";
+$route["transactions/merchant/createpayqr/accept"]   = "api/Createpayqr_merchant/accept";
+
+/*
+# LEDGET - CLIENT
+$route["clients/ledger"]        = "api/Ledger_client";
+$route["clients/ledger/(:any)"] = "api/Ledger_client/$1";
+
+# LEDGER - MERCHANT
+$route["merchants/ledger"]          = "api/Ledger_merchant";
+$route["merchants/ledger/(:any)"]   = "api/Ledger_merchant/$1";
+*/
+
+# TX - CLIENT
+$route["clients/transactions"]          = "api/Tx_client/transactions";
+$route["clients/transactions/(:any)"]   = "api/Tx_client/transactions/$1";
+
+# TX - MERCHANT
+$route["merchants/transactions"]        = "api/Tx_merchant/transactions";
+$route["merchants/transactions/(:any)"] = "api/Tx_merchant/transactions/$1";
+
+# CASH-IN - CLIENT
+$route["transactions/client/cash-in"]           = "api/Cash_in_client/request";
+$route["transactions/client/cash-in-test"]      = "api/Cash_in_client/paynamics_test";
+
+# CASH-IN - MERCHANT
+$route["transactions/merchant/accept-cash-in"]  = "api/Cash_in_merchant/accept";
+
+# LOOKUP FEES - TEST
+$route["lookup/fees"]   = "api/Lookup_fees/fees";
+
 # OTP SMS
 $route["otp/token"]      = "api/Otp_sms/token";
 $route["otp/request"]    = "api/Otp_sms/request";
@@ -152,6 +162,14 @@ $route["otp/submit"]     = "api/Otp_sms/submit";
 
 # OTP UBP
 $route["ubp/token"]      = "api/Token/ubp";
+
+# TOOLS
+$route["tools/countries"]           = "api/Tools/countries";
+$route["tools/provinces/(:num)"]    = "api/Tools/provinces/$1";
+
+$route["tools/id-types"]            = "api/Tools/id_types";
+$route["tools/source-of-funds"]     = "api/Tools/source_of_funds";
+$route["tools/nature-of-work"]      = "api/Tools/nature_of_work";
 
 /*
 // for testing

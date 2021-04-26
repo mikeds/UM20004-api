@@ -1,26 +1,22 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Transactions_model extends CI_Model {
+class Income_groups_model extends CI_Model {
 	private 
-		$_table	= 'transactions  transactions',
-		$_table_x	= 'transactions';
+		$_table	= 'income_groups  income_groups',
+		$_table_x	= 'income_groups';
 
 	private
-		$_id = "transaction_id";
+		$_id = "ig_id";
 
 	function _data(
 		$select = array('*'), 
 		$inner_joints = array(), 
 		$where = array(), 
 		$where_in = array(), 
-		$where_not_in = array(),
 		$or_where = array(), 
-		$or_where_in = array(),
-		$or_where_not_in = array(),
 		$order_by = array(), 
 		$limit = 0, 
-		$offset = 0,
-		$is_regroup = false
+		$offset = 0
 		) {
 
 		$this->db->select(ARRtoSTR($select), false);
@@ -43,10 +39,10 @@ class Transactions_model extends CI_Model {
 				}
 			}
 		}
-		
-		if ($is_regroup) {
-			$this->db->group_start();
-		} 
+
+		if(!empty($where)){
+			$this->db->where($where);
+		}
 
 		if(!empty($where_in)){
 			foreach ($where_in as $i) {
@@ -58,22 +54,6 @@ class Transactions_model extends CI_Model {
 				$data 	= $i['data'];
 				
 				$this->db->where_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if(!empty($where_not_in)){
-			foreach ($where_not_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				
-				$this->db->where_not_in(
 					$field,
 					$data
 				);
@@ -92,63 +72,6 @@ class Transactions_model extends CI_Model {
 					$field,
 					$data
 				);
-			}
-		}
-
-		if(!empty($or_where_in)){
-			foreach ($or_where_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				$this->db->or_where_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if(!empty($or_where_not_in)){
-			foreach ($or_where_not_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				$this->db->or_where_not_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if ($is_regroup) {
-			$this->db->group_end();
-		} 
-
-		if(!empty($where)){
-			$is_multi_where = false;
-			foreach ($where as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				
-				$this->db->where(
-					$field,
-					$data
-				);
-
-				$is_multi_where = true;
-			}
-
-			if (!$is_multi_where) {
-				$this->db->where($where);
 			}
 		}
 
@@ -181,14 +104,10 @@ class Transactions_model extends CI_Model {
 		$inner_joints = array(), 
 		$where = array(), 
 		$where_in = array(), 
-		$where_not_in = array(),
 		$or_where = array(), 
-		$or_where_in = array(),
-		$or_where_not_in = array(),
 		$order_by = array(), 
 		$limit = 0, 
-		$offset = 0,
-		$is_regroup = false
+		$offset = 0
 		) {
 
 		$this->db->select(ARRtoSTR($select), false);
@@ -212,9 +131,9 @@ class Transactions_model extends CI_Model {
 			}
 		}
 
-		if ($is_regroup) {
-			$this->db->group_start();
-		} 
+		if(!empty($where)){
+			$this->db->where($where);
+		}
 
 		if(!empty($where_in)){
 			foreach ($where_in as $i) {
@@ -226,22 +145,6 @@ class Transactions_model extends CI_Model {
 				$data 	= $i['data'];
 				
 				$this->db->where_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if(!empty($where_not_in)){
-			foreach ($where_not_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				
-				$this->db->where_not_in(
 					$field,
 					$data
 				);
@@ -260,63 +163,6 @@ class Transactions_model extends CI_Model {
 					$field,
 					$data
 				);
-			}
-		}
-
-		if(!empty($or_where_in)){
-			foreach ($or_where_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				$this->db->or_where_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if(!empty($or_where_not_in)){
-			foreach ($or_where_not_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				$this->db->or_where_not_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if ($is_regroup) {
-			$this->db->group_end();
-		} 
-
-		if(!empty($where)){
-			$is_multi_where = false;
-			foreach ($where as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				
-				$this->db->where(
-					$field,
-					$data
-				);
-
-				$is_multi_where = true;
-			}
-
-			if (!$is_multi_where) {
-				$this->db->where($where);
 			}
 		}
 
@@ -346,13 +192,9 @@ class Transactions_model extends CI_Model {
 		$inner_joints = array(), 
 		$where = array(), 
 		$where_in = array(), 
-		$where_not_in = array(),
 		$or_where = array(), 
-		$or_where_in = array(),
-		$or_where_not_in = array(),
 		$limit = 0, 
-		$offset = 0,
-		$is_regroup = false
+		$offset = 0
 		) {
 
 		$this->db->from( $this->_table );
@@ -374,9 +216,9 @@ class Transactions_model extends CI_Model {
 			}
 		}
 
-		if ($is_regroup) {
-			$this->db->group_start();
-		} 
+		if(!empty($where)){
+			$this->db->where($where);
+		}
 
 		if(!empty($where_in)){
 			foreach ($where_in as $i) {
@@ -388,22 +230,6 @@ class Transactions_model extends CI_Model {
 				$data 	= $i['data'];
 				
 				$this->db->where_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if(!empty($where_not_in)){
-			foreach ($where_not_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				
-				$this->db->where_not_in(
 					$field,
 					$data
 				);
@@ -422,63 +248,6 @@ class Transactions_model extends CI_Model {
 					$field,
 					$data
 				);
-			}
-		}
-
-		if(!empty($or_where_in)){
-			foreach ($or_where_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				$this->db->or_where_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if(!empty($or_where_not_in)){
-			foreach ($or_where_not_in as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				$this->db->or_where_not_in(
-					$field,
-					$data
-				);
-			}
-		}
-
-		if ($is_regroup) {
-			$this->db->group_end();
-		} 
-
-		if(!empty($where)){
-			$is_multi_where = false;
-			foreach ($where as $i) {
-				if (!isset($i['field']) && !isset($i['data'])) {
-					continue;
-				}
-				
-				$field 	= $i['field'];
-				$data 	= $i['data'];
-				
-				$this->db->where(
-					$field,
-					$data
-				);
-
-				$is_multi_where = true;
-			}
-
-			if (!$is_multi_where) {
-				$this->db->where($where);
 			}
 		}
 

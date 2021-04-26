@@ -231,6 +231,9 @@ class Otp_sms extends Api_Controller {
 					)
 				);
 
+				// delete used otp
+				$this->otp->delete($row->otp_number);
+
 				echo json_encode(
 					array(
 						'message' 	=> "Thank you for signing up. Kindly give us a maximum of 48 to 72 hours to review your application.",

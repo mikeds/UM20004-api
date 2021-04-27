@@ -217,7 +217,7 @@ class Login extends Tms_admin_Controller {
 						'avatar_image'	=> $avatar_image_url,
 						'qr_code'		=> base_url() . "qr-code/merchant-accounts/{$qr_code}",
 						'account_status' 	=> $row->merchant_status == 1 ? "verified" : "unverified",
-						'email_status'		=> $row->merchant_email_status == 1 ? "activated" : "not_activated"
+						// 'email_status'		=> $row->merchant_email_status == 1 ? "activated" : "not_activated"
 					)
 				)
 			);

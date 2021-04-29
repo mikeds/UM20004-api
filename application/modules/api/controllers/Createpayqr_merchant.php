@@ -172,8 +172,8 @@ class Createpayqr_merchant extends Merchant_Controller {
                 'transaction_status'        => 1,
                 'transaction_fee'           => $fee,
                 'transaction_total_amount'  => $total_amount,
-                'transaction_requested_to'  => $merchant_oauth_bridge_id,
-                'transaction_approved_by'   => $merchant_oauth_bridge_id,
+                'transaction_requested_to'  => $account_oauth_bridge_id,
+                'transaction_approved_by'   => $account_oauth_bridge_id,
                 'transaction_date_approved' => $this->_today
             )
         );

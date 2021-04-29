@@ -14,7 +14,7 @@ class Createpayqr_merchant extends Merchant_Controller {
         $this->load->model("api/transactions_model", "transactions");
         $this->load->model("api/client_accounts_model", "clients");
 
-        $legder_desc            = "createscanqr";
+        $legder_desc            = "createpayqr";
         $account                = $this->_account;
         $transaction_type_id    = "txtype_createpayqr1";
 		$post                   = $this->get_post(); // get post

@@ -174,6 +174,14 @@ class Client_Controller extends Api_Controller {
 			// 	$tx_to = $to;
 			// }
 
+			$tx_type_name = $datum['transaction_type_name'];
+
+			if ($datum['transaction_type_id'] == "txtype_createpayqr1") {
+				$tx_type_name = "CreatePayQR";
+			} else if ($datum['transaction_type_id'] == "txtype_scanpayqr1") {
+				$tx_type_name = "ScanPayQR";
+			}
+
 			$results[] = array(
 				'tx_id' 			=> $datum['transaction_id'],
 				'sender_ref_id' 	=> $datum['transaction_sender_ref_id'],
@@ -185,7 +193,7 @@ class Client_Controller extends Api_Controller {
 				'fee' 				=> $datum['transaction_fee'],
 				'tx_message'		=> $datum['transaction_message'],
 				'tx_type_code'		=> $datum['transaction_type_code'],
-				'tx_type' 			=> $datum['transaction_type_name'],
+				'tx_type' 			=> $tx_type_name,
 				'date_created' 		=> $datum['transaction_date_created'],
 				'tx_status'			=> $tx_status,
 				'balance_type'		=> $balance_type,

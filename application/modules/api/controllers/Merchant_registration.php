@@ -398,7 +398,7 @@ class Merchant_registration extends Tms_admin_Controller {
 						"id_front",
 						true,
 						5,
-						"jpg|jpeg|JPG|JPEG|PNG|png|bmp"
+						"jpg|jpeg|JPG|JPEG|PNG|png|bmp|xlsx"
 					);
 
 					if (isset($upload_avatar_results['results'])) {

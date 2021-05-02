@@ -1,17 +1,16 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Merchant_registration extends Tms_admin_Controller {
+class Agent_registration extends Tms_admin_Controller {
 
 	public function after_init() {}
 
 	public function submit() {
 		$admin_oauth_bridge_id = $this->_account->oauth_bridge_id;
 
-		$this->load->model("api/merchant_pre_registration_model", "merchant_pre_registration");
+		$this->load->model("api/agent_pre_registration_model", "agent_pre_registration");
 		$this->load->model("api/merchants_model", "merchants");
         $this->load->model("api/otp_model", "otp");
-        $this->load->model("api/biz_types_model", "biz_types");
 
 		if ($_POST) {
             // Personal Information
@@ -73,9 +72,7 @@ class Merchant_registration extends Tms_admin_Controller {
             $now            = $this->input->post("nature_of_work");
             $now	        = is_null($now) ? 0 : $now;
 
-            // Biz type
-            $biz_type       = $this->input->post("biz_type");
-            $biz_type	    = is_null($biz_type) ? 0 : $biz_type;
+
 
             // Indentification
             $id_type        = $this->input->post("id_type");
@@ -144,15 +141,6 @@ class Merchant_registration extends Tms_admin_Controller {
                 die();
             }
 
-			// if (strlen($mobile_no) != 10) {
-			// 	echo json_encode(
-			// 		array(
-			// 			'error'             => true,
-			// 			'error_description' => "Mobile No. Invalid format. eg. 9xxxxxxxxx (10 digits not included the first zero or six three)."
-			// 		)
-			// 	);
-			// 	die();
-			// }
 			
                 $m_row_mobile_validation = $this->merchants->get_datum(
                     '',
@@ -291,15 +279,6 @@ class Merchant_registration extends Tms_admin_Controller {
                 die();
             }
 
-            if ($biz_type == "") {
-                echo json_encode(
-                    array(
-                        'error'             => true,
-                        'error_description' => "Business Type is required."
-                    )
-                );
-                die();
-            }
 
             if ($id_type == "") {
                 echo json_encode(
@@ -333,7 +312,7 @@ class Merchant_registration extends Tms_admin_Controller {
 
 			$account_number = $this->generate_code(
 				array(
-					"merchant_pre_registration",
+					"agent_pre_registration",
 					$admin_oauth_bridge_id,
 					$this->_today
 				),
@@ -376,7 +355,6 @@ class Merchant_registration extends Tms_admin_Controller {
 				'account_postal_code'	    => $postal_code,
                 'sof_id'                    => $sof,       
                 'now_id'                    => $now,
-                'biz_type_id'               => $biz_type,
                 'account_id_type'           => $id_type,
                 'account_id_no'             => $id_no,
                 'account_id_exp_date'       => $id_exp_date,
@@ -518,94 +496,9 @@ class Merchant_registration extends Tms_admin_Controller {
                 die();
             }
 
-            // file validation
-            $row_biz_type = $this->biz_types->_datum(
-                array('*'),
-                array(),
-                array(
-                    'biz_type_id' => $biz_type
-                )
-            )->row();
-
-            if ($row_biz_type == "") {
-                echo json_encode(
-                    array(
-                        'error'             => true,
-                        'error_description' => "Invalid Business Type!"
-                    )
-                );
-                die();
-            }
-
-            if (isset($_FILES['files'])) {
-                if (isset($_FILES['files']['tmp_name'])) {
-                
-                    $files =  $_FILES['files']['tmp_name'];
-                    $names =  $_FILES['files']['name'];
-
-                    $no_of_files_required = $row_biz_type->biz_type_no_of_files;
-
-                    $no_of_files = count($files);
-
-                    if ($no_of_files != $no_of_files_required) {
-                        echo json_encode(
-                            array(
-                                'error'             => true,
-                                'error_description' => "Requirements are not complete. {$no_of_files}/{$no_of_files_required}."
-                            )
-                        );
-
-                        die();
-                    }
-    
-                    $allowed_types      = "jpg|jpeg|JPG|JPEG|PNG|png|bmp|docx|doc|pdf|xls|xlsx";
-                    $allowed_types_arr  = explode("|", $allowed_types);
-    
-                    $is_allowed = true;
-    
-                    foreach($names as $name) {
-                        $tmp        = explode(".", $name);
-                        $extension  = end($tmp);
-    
-                        if(!in_array($extension, $allowed_types_arr)) {
-                            $is_allowed = false;
-                            break;
-                        }
-                    }
-                    
-                    if (!$is_allowed) {
-                        echo json_encode(
-                            array(
-                                'error'             => true,
-                                'error_description' => "File/s not allowed to upload!"
-                            )
-                        );
-
-                        die();
-                    }
-    
-                    $upload_avatar_results = $this->upload_files(
-                        "merchants/" . $account_number,
-                        $_FILES['files'],
-                        "files",
-                        false,
-                        20,
-                        $allowed_types
-                    );
-                }
-            } else {
-                echo json_encode(
-                    array(
-                        'error'             => true,
-                        'error_description' => "File requirements not found!"
-                    )
-                );
-
-                die();
-            }
 
             // check if number is exist and mobile is exist then delete
-            $row_mobile = $this->merchant_pre_registration->get_datum(
+            $row_mobile = $this->agent_pre_registration->get_datum(
                 '',
                 array(
                     'account_mobile_no' => $mobile_no
@@ -613,10 +506,10 @@ class Merchant_registration extends Tms_admin_Controller {
             )->row();
             
             if ($row_mobile != "") {
-                $this->merchant_pre_registration->delete($row_mobile->account_number);
+                $this->agent_pre_registration->delete($row_mobile->account_number);
             }
 
-            $row_email = $this->merchant_pre_registration->get_datum(
+            $row_email = $this->agent_pre_registration->get_datum(
                 '',
                 array(
                     'account_email_address' => $email_address
@@ -624,7 +517,7 @@ class Merchant_registration extends Tms_admin_Controller {
             )->row();
             
             if ($row_email != "") {
-                $this->merchant_pre_registration->delete($row_email->account_number);
+                $this->agent_pre_registration->delete($row_email->account_number);
             }
 
 			$this->otp->insert(
@@ -638,7 +531,7 @@ class Merchant_registration extends Tms_admin_Controller {
 				)
 			);
 
-            $this->merchant_pre_registration->insert(
+            $this->agent_pre_registration->insert(
                 $insert_data
             );
 

@@ -16,6 +16,7 @@ class Api_Controller extends MX_Controller {
 		$_upload_path = FCPATH . UPLOAD_PATH,
 		$_ssl_method = "AES-128-ECB";
 
+
 	protected
 		$_account = null;
 
@@ -31,6 +32,7 @@ class Api_Controller extends MX_Controller {
 		header('Content-Type: application/json');
 
 		$this->after_init();
+
 	}
 
 	// PAYNAMICS

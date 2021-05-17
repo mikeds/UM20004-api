@@ -206,7 +206,7 @@ class Createpayqr_merchant extends Merchant_Controller {
 
         echo json_encode(
             array(
-                'message' => "Successfully accepted CreatePayQR.",
+                'message' => "Successfully accepted ScanPayQR.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
                     'amount'        => $amount,

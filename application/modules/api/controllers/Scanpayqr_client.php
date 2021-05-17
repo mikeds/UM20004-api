@@ -179,7 +179,7 @@ class Scanpayqr_client extends Client_Controller {
 
         echo json_encode(
             array(
-                'message' => "Successfully accepted ScanPayQR.",
+                'message' => "Successfully accepted CreatePayQR.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
                     'amount'        => $amount,

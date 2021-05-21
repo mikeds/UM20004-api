@@ -177,7 +177,7 @@ class Client_Controller extends Api_Controller {
 			$tx_type_name = $datum['transaction_type_name'];
 
 			if ($datum['transaction_type_id'] == "txtype_createpayqr1") {
-				$tx_type_name = "CreatePayQR";
+				$tx_type_name = "CreatePayQR"; // client create qr
 			} else if ($datum['transaction_type_id'] == "txtype_scanpayqr1") {
 				$tx_type_name = "ScanPayQR";
 			}

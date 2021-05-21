@@ -9,6 +9,7 @@ class Client_registration extends Tms_admin_Controller {
 		$admin_oauth_bridge_id = $this->_account->oauth_bridge_id;
 
 		$this->load->model("api/client_pre_registration_model", "client_pre_registration");
+        $this->load->model("api/agent_pre_registration_model", "agent_pre_registration");
 		$this->load->model("api/client_accounts_model", "client_accounts");
         $this->load->model("api/otp_model", "otp");
 
@@ -517,7 +518,7 @@ class Client_registration extends Tms_admin_Controller {
                 die();
             }
 
-            // check if number is exist and mobile is exist then delete
+            // check if number is exist and mobile is exist from client_pre_registration then delete
             $row_mobile = $this->client_pre_registration->get_datum(
                 '',
                 array(
@@ -538,6 +539,65 @@ class Client_registration extends Tms_admin_Controller {
             
             if ($row_email != "") {
                 $this->client_pre_registration->delete($row_email->account_number);
+            }
+
+            // check if number is exist and mobile is exist from agent_pre_registration then delete
+            $agent_row_mobile = $this->agent_pre_registration->get_datum(
+                '',
+                array(
+                    'account_mobile_no' => $mobile_no
+                )
+            )->row();
+            
+            
+            if ($agent_row_mobile != "") {
+                $this->agent_pre_registration->delete($agent_row_mobile->account_number);
+            }
+
+            $agent_row_email = $this->agent_pre_registration->get_datum(
+                '',
+                array(
+                    'account_email_address' => $email_address
+                )
+            )->row();
+            
+            if ($agent_row_email != "") {
+                $this->agent_pre_registration->delete($row_email->account_number);
+            }
+
+            // check if number is exist and mobile is exist from merchant/agent accounts - prevent from data inserting
+            $accounts_row_mobile = $this->client_accounts->get_datum(
+                '',
+                array(
+                    'account_mobile_no' => $mobile_no
+                )
+            )->row();
+            
+            if ($accounts_row_mobile != "") {
+                echo json_encode(
+                    array(
+                        'error'             => true,
+                        'error_description' => "Mobile phone number already used!"
+                    )
+                );
+                die();
+            }
+
+            $accounts_row_email = $this->client_accounts->get_datum(
+                '',
+                array(
+                    'account_email_address' => $email_address
+                )
+            )->row();
+
+            if ($accounts_row_email != "") {
+                echo json_encode(
+                    array(
+                        'error'             => true,
+                        'error_description' => "Email address already used!"
+                    )
+                );
+                die();
             }
 
 			$this->otp->insert(

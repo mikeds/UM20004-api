@@ -9,7 +9,9 @@ class Agent_registration extends Tms_admin_Controller {
 		$admin_oauth_bridge_id = $this->_account->oauth_bridge_id;
 
 		$this->load->model("api/agent_pre_registration_model", "agent_pre_registration");
+        $this->load->model("api/client_pre_registration_model", "client_pre_registration");
 		$this->load->model("api/merchants_model", "merchants");
+        $this->load->model("api/client_accounts_model", "client_accounts");
         $this->load->model("api/otp_model", "otp");
 
 		if ($_POST) {
@@ -104,22 +106,22 @@ class Agent_registration extends Tms_admin_Controller {
 				die();
 			}
 
-                $m_row_email_validation = $this->merchants->get_datum(
-                    '',
-                    array(
-                        'merchant_email_address' => $email_address
-                    )
-                )->row();
+                // $m_row_email_validation = $this->merchants->get_datum(
+                //     '',
+                //     array(
+                //         'merchant_email_address' => $email_address
+                //     )
+                // )->row();
 
-                if ($m_row_email_validation != "") {
-                    echo json_encode(
-                        array(
-                            'error'             => true,
-                            'error_description' => "Email Address is already used."
-                        )
-                    );
-                    die();
-                }
+                // if ($m_row_email_validation != "") {
+                //     echo json_encode(
+                //         array(
+                //             'error'             => true,
+                //             'error_description' => "Email Address is already used."
+                //         )
+                //     );
+                //     die();
+                // }
 
             if ($password == "") {
                 echo json_encode(
@@ -497,13 +499,14 @@ class Agent_registration extends Tms_admin_Controller {
             }
 
 
-            // check if number is exist and mobile is exist then delete
+            // check if number is exist and mobile is exist from agent_pre_registration then delete
             $row_mobile = $this->agent_pre_registration->get_datum(
                 '',
                 array(
                     'account_mobile_no' => $mobile_no
                 )
             )->row();
+            
             
             if ($row_mobile != "") {
                 $this->agent_pre_registration->delete($row_mobile->account_number);
@@ -519,6 +522,66 @@ class Agent_registration extends Tms_admin_Controller {
             if ($row_email != "") {
                 $this->agent_pre_registration->delete($row_email->account_number);
             }
+
+            // check if number is exist and mobile is exist from client_pre_registration then delete
+            $client_row_mobile = $this->client_pre_registration->get_datum(
+                '',
+                array(
+                    'account_mobile_no' => $mobile_no
+                )
+            )->row();
+            
+            if ($client_row_mobile != "") {
+                $this->client_pre_registration->delete($client_row_mobile->account_number);
+            }
+
+            $client_row_email = $this->client_pre_registration->get_datum(
+                '',
+                array(
+                    'account_email_address' => $email_address
+                )
+            )->row();
+            
+            if ($client_row_email != "") {
+                $this->client_pre_registration->delete($client_row_email->account_number);
+            }
+
+            // check if number is exist and mobile is exist from merchant/agent accounts - prevent from data inserting
+            $accounts_row_mobile = $this->client_accounts->get_datum(
+                '',
+                array(
+                    'account_mobile_no' => $mobile_no
+                )
+            )->row();
+            
+            if ($accounts_row_mobile != "") {
+                echo json_encode(
+                    array(
+                        'error'             => true,
+                        'error_description' => "Mobile phone number already used!"
+                    )
+                );
+                die();
+            }
+
+            $accounts_row_email = $this->client_accounts->get_datum(
+                '',
+                array(
+                    'account_email_address' => $email_address
+                )
+            )->row();
+
+            if ($accounts_row_email != "") {
+                echo json_encode(
+                    array(
+                        'error'             => true,
+                        'error_description' => "Email address already used!"
+                    )
+                );
+                die();
+            }
+
+       
 
 			$this->otp->insert(
 				array(

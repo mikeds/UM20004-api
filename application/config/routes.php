@@ -124,7 +124,7 @@ $route["clients/registration"]      = "api/Client_registration/submit";
 $route["merchants/registration"]    = "api/Merchant_registration/submit";
 $route["agents/registration"]       = "api/Agent_registration/submit";
 
-# CreateScanQR
+# CreatePayQR
 $route["transactions/client/createpayqr/create"]     = "api/Createpayqr_client/create";
 $route["transactions/merchant/createpayqr/accept"]   = "api/Createpayqr_merchant/accept";
 

@@ -29,6 +29,8 @@ class Cash_in_merchant extends Merchant_Controller {
 
         $legder_desc                    = "cash_in";
         $account                        = $this->_account;
+
+
         $transaction_type_group_id      = 3; // all cash in request
         $transaction_type_user_to       = 2; // all merchant
         $post                           = $this->get_post();
@@ -178,8 +180,19 @@ class Cash_in_merchant extends Merchant_Controller {
             $title      = "BambuPay - Cash In";
             $message    = "You have received PHP {$amount} on {$this->_today}. New balance is PHP {$client_balance} Ref No. {$sender_ref_id}";
 
-            $this->_send_sms($client_mobile_no, $message);
-            $this->_send_email($client_email, $title, $message);
+           $this->_send_sms($client_mobile_no, $message);
+           $this->_send_email($client_email, $title, $message);
+
+           // Send email notification to merchant
+           $data['post'] = array(
+                'sender_ref_id'     => $row->transaction_sender_ref_id,
+                'tx_amount'         => $amount,
+                'timestamp'         => $this->_today,
+                'balance'           => $merchant_balance
+            );
+           $merchant_email_notif = $this->load->view('templates/cash_in_merchant_email_notif', $data,true);
+           $this->_send_email($account->merchant_email_address, $title, $merchant_email_notif);
+        
         }
 
         echo json_encode(

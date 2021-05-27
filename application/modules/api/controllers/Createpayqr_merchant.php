@@ -191,22 +191,31 @@ class Createpayqr_merchant extends Merchant_Controller {
             $balance            = isset($balances['credit_new_balance']['new_balance']) ? $balances['credit_new_balance']['new_balance'] : "";
 
             // message to client
-            $title      = "BambuPAY - PayQR";
+            $title      = "BambuPAY - CreatePayQR";
             $message    = "Your payment of PHP {$debit_amount} to {$m_mobile_no} has been successfully processed on {$this->_today}. Ref No. {$sender_ref_id}";
 
             $this->_send_sms($c_mobile_no, $message);
             $this->_send_email($c_email_address, $title, $message);
 
-            // message to merchant
-            $message    = "You have received PHP {$credit_amount} on {$this->_today}. New balance is PHP {$balance} Ref No. {$sender_ref_id}";
-
-            $this->_send_sms($m_mobile_no, $message);
-            $this->_send_email($m_email_address, $title, $message);
+            // send email notif to merchant
+            $data['post']   = array(
+                'sender_ref_id' => $sender_ref_id,
+                'amount'        => $amount,
+                'fee'           => $fee,
+                'total_amount'  => $total_amount,
+                'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
+                'timestamp'     => $this->_today
+            )
+            );
+            $email_notif_merchant = $this->load->view('templates/createpayqr_email_notif', $data,true);
+            $this->_send_email($m_email_address, $title, $email_notif_merchant);
+            // $this->_send_sms($m_mobile_no, $message);
+            //$message    = "You have received PHP {$credit_amount} on {$this->_today}. New balance is PHP {$balance} Ref No. {$sender_ref_id}";
         }
 
         echo json_encode(
             array(
-                'message' => "Successfully accepted ScanPayQR.",
+                'message' => "Successfully accepted CreatePayQR.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
                     'amount'        => $amount,

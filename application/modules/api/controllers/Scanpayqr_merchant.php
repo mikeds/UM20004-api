@@ -73,6 +73,19 @@ class Scanpayqr_merchant extends Merchant_Controller {
         $sender_ref_id  = $tx_row['sender_ref_id'];
         $pin            = $tx_row['pin'];
 
+        // Send email notification to merchant
+        $data['post'] = array(
+            'sender_ref_id' => $sender_ref_id,
+            'amount'        => $amount,
+            'fee'           => $fee,
+            'total_amount'  => $total_amount,
+            'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
+            'timestamp'     => $this->_today
+        );
+        $title      = "BambuPAY - ScanPayQR";
+        $merchant_email_notif = $this->load->view('templates/scanpayqr_merchant_email_notif', $data,true);
+        $this->_send_email($account->merchant_email_address, $title, $merchant_email_notif);
+        
         echo json_encode(
             array(
                 'message' => "Successfully created ScanPayQR.",

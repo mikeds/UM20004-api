@@ -221,11 +221,26 @@ class Send_to extends Client_Controller {
             $amount         = number_format($amount, 2, '.', '');
             $client_balance = number_format($client_balance, 2, '.', '');
 
+            // Send email & sms to Receiver //
             $title      = "BambuPAY - Send Money";
             $message    = "You have received PHP {$amount} from {$sender_mobile_no} on {$this->_today}. New balance is PHP {$client_balance} Ref No. {$sender_ref_id}";
 
             $this->_send_sms($client_mobile_no, $message);
             $this->_send_email($client_email, $title, $message);
+
+            // Send email notif to Sender //
+            $data['post'] = array(
+                'amount'        => $amount,
+                'timestamp'     => $this->_today,
+                'receiver'      => $sender_mobile_no,
+                'fee'           => $fee,
+                'balance'       => $balance,
+                'sender_ref_id' => $sender_ref_id,
+                'total_amount'  => $total_amount
+
+            );
+            $sender_email_notif = $this->load->view('templates/sender_email_notif', $data,true);
+            $this->_send_email($account->account_email_address, $title, $sender_email_notif);
         }
 
         $this->transactions->update(

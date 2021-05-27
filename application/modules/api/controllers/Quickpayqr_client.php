@@ -221,7 +221,7 @@ class Quickpayqr_client extends Client_Controller {
 		$balance            = isset($balances['credit_new_balance']['new_balance']) ? $balances['credit_new_balance']['new_balance'] : "";
 
 		// message to client
-		$title      = "BambuPAY - QuickQR";
+		$title      = "BambuPAY - QuickPayQR";
 		$message    = "Your payment of PHP {$debit_amount} to {$m_mobile_no} has been successfully processed on {$this->_today}. Ref No. {$sender_ref_id}";
 
 		$this->_send_sms($c_mobile_no, $message);

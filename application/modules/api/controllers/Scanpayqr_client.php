@@ -164,7 +164,7 @@ class Scanpayqr_client extends Client_Controller {
             $merchant_balance   = number_format($merchant_balance, 2, '.', '');
 
             // message to client
-            $title      = "BambuPAY - PayQR";
+            $title      = "BambuPAY - CreatePayQR";
             $message    = "Your payment of PHP {$amount} to {$m_mobile_no} has been successfully processed on {$this->_today}. Ref No. {$sender_ref_id}";
 
             $this->_send_sms($mobile_no, $message);

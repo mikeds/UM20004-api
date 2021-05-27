@@ -106,23 +106,6 @@ class Agent_registration extends Tms_admin_Controller {
 				die();
 			}
 
-                // $m_row_email_validation = $this->merchants->get_datum(
-                //     '',
-                //     array(
-                //         'merchant_email_address' => $email_address
-                //     )
-                // )->row();
-
-                // if ($m_row_email_validation != "") {
-                //     echo json_encode(
-                //         array(
-                //             'error'             => true,
-                //             'error_description' => "Email Address is already used."
-                //         )
-                //     );
-                //     die();
-                // }
-
             if ($password == "") {
                 echo json_encode(
                     array(
@@ -144,22 +127,6 @@ class Agent_registration extends Tms_admin_Controller {
             }
 
 			
-                $m_row_mobile_validation = $this->merchants->get_datum(
-                    '',
-                    array(
-                        'merchant_mobile_no' => $mobile_no
-                    )
-                )->row();
-
-                if ($m_row_mobile_validation != "") {
-                    echo json_encode(
-                        array(
-                            'error'             => true,
-                            'error_description' => "Mobile no. is already used."
-                        )
-                    );
-                    die();
-                }
 			
             if ($dob == "") {
                 echo json_encode(
@@ -499,7 +466,7 @@ class Agent_registration extends Tms_admin_Controller {
             }
 
 
-            // check if number is exist and mobile is exist from agent_pre_registration then delete
+            // check if mobile is exist from agent_pre_registration then delete
             $row_mobile = $this->agent_pre_registration->get_datum(
                 '',
                 array(
@@ -523,7 +490,7 @@ class Agent_registration extends Tms_admin_Controller {
                 $this->agent_pre_registration->delete($row_email->account_number);
             }
 
-            // check if number is exist and mobile is exist from client_pre_registration then delete
+            // check if mobile is exist from client_pre_registration then delete
             $client_row_mobile = $this->client_pre_registration->get_datum(
                 '',
                 array(
@@ -546,7 +513,7 @@ class Agent_registration extends Tms_admin_Controller {
                 $this->client_pre_registration->delete($client_row_email->account_number);
             }
 
-            // check if number is exist and mobile is exist from merchant/agent accounts - prevent from data inserting
+            // check if mobile number exist from client/agent accounts - prevent from data inserting
             $accounts_row_mobile = $this->client_accounts->get_datum(
                 '',
                 array(

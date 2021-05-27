@@ -393,8 +393,9 @@ class Api_Controller extends MX_Controller {
 	}
 
 	public function _send_email($send_to, $title, $message) {
+		$SMTP_USER = getenv("SMTPUSER", true);
 		send_email(
-			SMTP_USER,
+			$SMTP_USER,
 			$send_to,
 			$title,
 			$message

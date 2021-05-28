@@ -205,8 +205,8 @@ class Createpayqr_merchant extends Merchant_Controller {
                 'total_amount'  => $total_amount,
                 'qr_code'       => base_url() . "qr-code/transactions/{$sender_ref_id}",
                 'timestamp'     => $this->_today
-            )
             );
+            
             $email_notif_merchant = $this->load->view('templates/createpayqr_email_notif', $data,true);
             $this->_send_email($m_email_address, $title, $email_notif_merchant);
             // $this->_send_sms($m_mobile_no, $message);

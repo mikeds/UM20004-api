@@ -90,6 +90,8 @@ class Scanpayqr_client extends Client_Controller {
         $fee            = $row->transaction_fee;
 
         $total_amount   = $amount + $fee;
+        $debit_amount = $total_amount;
+        $credit_amount = $amount;
 
         if ($client_balanace < $total_amount) {
             echo json_encode(
@@ -130,7 +132,7 @@ class Scanpayqr_client extends Client_Controller {
         );
 
         // send notification to receiver client
-        $receiver_oauth_bridge_id = $debit_oauth_bridge_id; // debit to client
+        $receiver_oauth_bridge_id = $credit_oauth_bridge_id; // debit to client
 
         $merchant_row = $this->merchant_accounts->get_datum(
             '',
@@ -164,7 +166,7 @@ class Scanpayqr_client extends Client_Controller {
             $merchant_balance   = number_format($merchant_balance, 2, '.', '');
 
             // message to client
-            $title      = "BambuPAY - CreatePayQR";
+            $title      = "BambuPAY - ScanPayQR";
             $message    = "Your payment of PHP {$amount} to {$m_mobile_no} has been successfully processed on {$this->_today}. Ref No. {$sender_ref_id}";
 
             $this->_send_sms($mobile_no, $message);
@@ -177,9 +179,10 @@ class Scanpayqr_client extends Client_Controller {
             $this->_send_email($m_email_address, $title, $message);
         }
 
+
         echo json_encode(
             array(
-                'message' => "Successfully accepted CreatePayQR.",
+                'message' => "Successfully accepted ScanPayQR.",
                 'response' => array(
                     'sender_ref_id' => $sender_ref_id,
                     'amount'        => $amount,

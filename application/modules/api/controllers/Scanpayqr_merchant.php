@@ -85,7 +85,7 @@ class Scanpayqr_merchant extends Merchant_Controller {
         $title      = "BambuPAY - ScanPayQR";
         $merchant_email_notif = $this->load->view('templates/scanpayqr_merchant_email_notif', $data,true);
         $this->_send_email($account->merchant_email_address, $title, $merchant_email_notif);
-        
+    
         echo json_encode(
             array(
                 'message' => "Successfully created ScanPayQR.",

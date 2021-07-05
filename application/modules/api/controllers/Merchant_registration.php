@@ -337,7 +337,7 @@ class Merchant_registration extends Tms_admin_Controller {
 					$admin_oauth_bridge_id,
 					$this->_today
 				),
-				"crc32"
+				"sha256"
 			);
 
 			$code = generate_code(4);
@@ -349,7 +349,7 @@ class Merchant_registration extends Tms_admin_Controller {
 					$code,
 					$this->_today
 				),
-				"crc32"
+				"sha256"
 			);
 
 			$expiration_time 	= 3;
@@ -638,13 +638,14 @@ class Merchant_registration extends Tms_admin_Controller {
 				)
 			);
 
-            $this->merchant_pre_registration->insert(
+            $reg_id = $this->merchant_pre_registration->insert(
                 $insert_data
             );
-
+    
 			echo json_encode(
 				array(
-					'message'   => 'Successfully Pre-registration!',
+					'message'   => 'Successfully Pre-registrationss!',
+                    'id'        => $account_number,
                     'response'  => array(
                         'timestamp' => $this->_today
                     )

@@ -192,7 +192,7 @@ class Api_Controller extends MX_Controller {
         return json_decode($response);
     }
 
-	public function send_sms_otp($mobile_no, $module = "grant_access") {
+	public function send_sms_otp($mobile_no, $module = "grant_access", $user_type) {
 		$expiration_time = 3;
 
 		if (isset($_GET['expiration_time'])) {
@@ -204,7 +204,7 @@ class Api_Controller extends MX_Controller {
 		$expiration_date 	= create_expiration_datetime($this->_today, $expiration_time);
 
 		if ($module == "reg") {
-			$this->otp_registration($mobile_no, $expiration_date);
+			$this->otp_registration($mobile_no, $expiration_date, $user_type );
 		} else if ($module == "login") {
 			$this->otp_login($mobile_no, $expiration_date);
 		} else {
@@ -313,25 +313,61 @@ class Api_Controller extends MX_Controller {
 		}
 	}
 
-	private function otp_registration($mobile_no, $expiration_date) {
+	private function otp_registration($mobile_no, $expiration_date, $user_type) {
 		$this->load->model("api/client_pre_registration_model", "client_pre_registration");
 		$this->load->model("api/client_accounts_model", "client_accounts");
+		$this->load->model("api/merchant_pre_registration_model", "merchant_pre_registration");
+		$this->load->model("api/merchant_accounts_model", "merchant_accounts");
 		$this->load->model("api/globe_access_tokens", "globe_access_token");
 		$this->load->model("api/otp_model", "otp");
 
-		$row_otp = 	$this->otp->get_datum(
-						'',
-						array(
-							'account_mobile_no' => $mobile_no
-						),
-						array(),
-						array(
-							array(
-								'table_name'	=> 'client_pre_registration',
-								'condition'		=> 'client_pre_registration.account_otp_number = otp_number'
-							)
-						)
-					)->row();
+		if($user_type == 'client'){
+			$row_otp = 	$this->otp->get_datum(
+				'',
+				array(
+					'account_mobile_no' => $mobile_no
+				),
+				array(),
+				array(
+					array(
+						'table_name'	=> 'client_pre_registration',
+						'condition'		=> 'client_pre_registration.account_otp_number = otp_number'
+					)
+				)
+			)->row();
+		}
+		
+		if($user_type == 'merchant'){
+			$row_otp = 	$this->otp->get_datum(
+				'',
+				array(
+					'account_mobile_no' => $mobile_no
+				),
+				array(),
+				array(
+					array(
+						'table_name'	=> 'merchant_pre_registration',
+						'condition'		=> 'merchant_pre_registration.account_otp_number = otp_number'
+					)
+				)
+			)->row();
+		}
+
+		if($user_type == 'agent'){
+			$row_otp = 	$this->otp->get_datum(
+				'',
+				array(
+					'account_mobile_no' => $mobile_no
+				),
+				array(),
+				array(
+					array(
+						'table_name'	=> 'agent_pre_registration',
+						'condition'		=> 'agent_pre_registration.account_otp_number = otp_number'
+					)
+				)
+			)->row();
+		}
 
 		if ($row_otp == "") {
 			echo json_encode(

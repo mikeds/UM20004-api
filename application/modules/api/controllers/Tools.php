@@ -58,7 +58,6 @@ class Tools extends Tms_admin_Controller {
 				'sort'		=> "ASC",
 			)
 		);
-
 		echo json_encode(
 			array(
 				'message'	=> "Successfully fetch provinces!",

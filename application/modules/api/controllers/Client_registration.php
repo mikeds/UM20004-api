@@ -337,7 +337,7 @@ class Client_registration extends Tms_admin_Controller {
 					$admin_oauth_bridge_id,
 					$this->_today
 				),
-				"crc32"
+				"sha256"
 			);
 
 			$code = generate_code(4);
@@ -349,7 +349,7 @@ class Client_registration extends Tms_admin_Controller {
 					$code,
 					$this->_today
 				),
-				"crc32"
+				"sha256"
 			);
 
 			$expiration_time 	= 3;
@@ -384,6 +384,7 @@ class Client_registration extends Tms_admin_Controller {
 			);
 
             $id_flag = false;
+
 
 			if ($_FILES) {
                 $id_front_base64    = "";

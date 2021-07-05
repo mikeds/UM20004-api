@@ -285,7 +285,7 @@ class Agent_registration extends Tms_admin_Controller {
 					$admin_oauth_bridge_id,
 					$this->_today
 				),
-				"crc32"
+				"sha256"
 			);
 
 			$code = generate_code(4);
@@ -297,7 +297,7 @@ class Agent_registration extends Tms_admin_Controller {
 					$code,
 					$this->_today
 				),
-				"crc32"
+				"sha256"
 			);
 
 			$expiration_time 	= 3;

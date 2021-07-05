@@ -133,9 +133,10 @@ class Otp_sms extends Api_Controller {
 			}
 
 			$mobile_no 		= $post['mobile_no'];
+			$user_type 		= $post['user_type'];
 			$module			= isset($post['module']) ? $post['module'] : "";
             
-			$this->send_sms_otp($mobile_no, $module);			
+			$this->send_sms_otp($mobile_no, $module, $user_type);			
 		}
 
 		// unauthorized access
@@ -146,6 +147,9 @@ class Otp_sms extends Api_Controller {
 		if ($_SERVER['REQUEST_METHOD'] == 'POST' || $this->JSON_POST()) {
 			$this->load->model("api/client_pre_registration_model", "client_pre_registration");
 			$this->load->model("api/client_accounts_model", "client_accounts");
+			$this->load->model("api/merchant_pre_registration_model", "merchant_pre_registration");
+			$this->load->model("api/merchant_accounts_model", "merchants_accounts");
+			$this->load->model("api/agent_pre_registration_model", "agent_pre_registration");
 			$this->load->model("api/tms_admin_accounts_model", "admin_accounts");
 			$this->load->model("api/otp_model", "otp");
 			$this->load->model("api/oauth_bridges_model", "bridges");
@@ -214,7 +218,7 @@ class Otp_sms extends Api_Controller {
 				)
 			);
 
-			// check otp is for pre_registration
+			// check otp is for client pre_registration
 			$row_cpr = $this->client_pre_registration->get_datum(
 				'',
 				array(
@@ -224,6 +228,64 @@ class Otp_sms extends Api_Controller {
 
 			if ($row_cpr != "") {
 				$this->client_pre_registration->update(
+					$row_cpr->account_number,
+					array(
+						'account_sms_status'	=> 1,
+						'account_otp_number'	=> ""
+					)
+				);
+
+				// delete used otp
+				$this->otp->delete($row->otp_number);
+
+				echo json_encode(
+					array(
+						'message' 	=> "Thank you for signing up. Kindly give us a maximum of 48 to 72 hours to review your application.",
+						'timestamp'	=> $this->_today
+					)
+				);
+				die();
+			}
+
+			 // check otp is for merchant pre_registration
+			$row_cpr = $this->merchant_pre_registration->get_datum(
+				'',
+				array(
+					'account_otp_number' => $row->otp_number
+				)
+			)->row();
+
+			if ($row_cpr != "") {
+				$this->merchant_pre_registration->update(
+					$row_cpr->account_number,
+					array(
+						'account_sms_status'	=> 1,
+						'account_otp_number'	=> ""
+					)
+				);
+
+				// delete used otp
+				$this->otp->delete($row->otp_number);
+
+				echo json_encode(
+					array(
+						'message' 	=> "Thank you for signing up. Kindly give us a maximum of 48 to 72 hours to review your application.",
+						'timestamp'	=> $this->_today
+					)
+				);
+				die();
+			}
+
+			// check otp is for agent pre_registration
+			$row_cpr = $this->agent_pre_registration->get_datum(
+				'',
+				array(
+					'account_otp_number' => $row->otp_number
+				)
+			)->row();
+
+			if ($row_cpr != "") {
+				$this->agent_pre_registration->update(
 					$row_cpr->account_number,
 					array(
 						'account_sms_status'	=> 1,
